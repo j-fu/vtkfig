@@ -1,0 +1,53 @@
+
+
+cmake_minimum_required(VERSION 3.0)
+
+PROJECT(visvtk)
+
+find_package(VTK REQUIRED)
+
+set(FLTK_PATH "../../usr/")
+find_package(FLTK NO_DEFAULT_PATH PATHS ${FLTK_PATH})
+include_directories(${FLTK_PATH}/include)
+
+
+
+
+include(${VTK_USE_FILE})
+
+add_executable(matplot2-example MACOSX_BUNDLE matplot2-example.cpp matplot2.cpp)
+set_property(TARGET matplot2-example PROPERTY CXX_STANDARD 11)
+
+if(VTK_LIBRARIES)
+  target_link_libraries(matplot2-example ${VTK_LIBRARIES})
+endif()
+
+add_executable(example1 MACOSX_BUNDLE example1.cpp visvtk.cxx)
+set_property(TARGET example1 PROPERTY CXX_STANDARD 11)
+
+if(VTK_LIBRARIES)
+  target_link_libraries(example1 ${VTK_LIBRARIES})
+endif()
+
+
+add_executable(ColoredElevationMap MACOSX_BUNDLE ColoredElevationMap.cxx)
+if(VTK_LIBRARIES)
+  target_link_libraries(ColoredElevationMap ${VTK_LIBRARIES})
+endif()
+
+add_executable(LinePlot MACOSX_BUNDLE LinePlot.cxx)
+if(VTK_LIBRARIES)
+  target_link_libraries(LinePlot ${VTK_LIBRARIES})
+endif()
+
+
+add_executable(Cone3 MACOSX_BUNDLE Cone3.cxx vtkFlRenderWindowInteractor.cxx)
+if(VTK_LIBRARIES)
+  target_link_libraries(Cone3 ${VTK_LIBRARIES} ${FLTK_LIBRARIES}  fltk fltk_gl dl)
+endif()
+
+add_executable(thread MACOSX_BUNDLE thread.cxx)
+if(VTK_LIBRARIES)
+  target_link_libraries(thread ${VTK_LIBRARIES})
+  set_property(TARGET thread PROPERTY CXX_STANDARD 11)
+endif()
