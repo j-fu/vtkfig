@@ -3,9 +3,13 @@
 
 #include "vtkFloatArray.h"
 #include "vtkSmartPointer.h"
+
 #include "vtkRectilinearGrid.h"
 #include "vtkStructuredGrid.h"
 #include "vtkXYPlotActor.h"
+
+#include "vtkActor.h"
+#include "vtkScalarBarActor.h"
 
 
 
@@ -17,7 +21,8 @@ namespace visvtk
   class Plot
   {
   public:
-    virtual vtkSmartPointer<vtkProp> GetActor()=0;
+    std::shared_ptr<std::vector<vtkSmartPointer<vtkProp>>>actors;
+    Plot(): actors(std::make_shared<std::vector<vtkSmartPointer<vtkProp>>>()) {};
   };
 
   class Figure
@@ -44,11 +49,8 @@ namespace visvtk
   {
     
   public:
-    
-    vtkSmartPointer<vtkProp> GetActor()    {   return xyplot;    }
     XYPlot();
-    
-    
+
     void Reset(void);
     
     template<typename V> 
@@ -68,6 +70,7 @@ namespace visvtk
       Add(xVal,yVal,col, linespec);
     }
     
+    void Title(const char *title);
     
     void Add(vtkSmartPointer<vtkFloatArray> xVal,
              vtkSmartPointer<vtkFloatArray> yVal, 
@@ -75,12 +78,61 @@ namespace visvtk
              const std::string linespec);
     
   private:
-    
-    vtkSmartPointer<vtkXYPlotActor>  xyplot;
-    int plot_no=0;
-    vtkSmartPointer<vtkRectilinearGrid> curves[10];
+    std::shared_ptr<std::vector<vtkSmartPointer<vtkRectilinearGrid>>> curves;
+    vtkSmartPointer<vtkXYPlotActor> xyplot;
   };
-  
+
+
+  class Contour2D: public Plot
+    {
+    public:
+
+      Contour2D();
+
+      
+      template<typename Vec_t>
+      void Set(const Vec_t &x, const Vec_t &y, const Vec_t &z)
+	{
+          const unsigned int Nx = x.size();
+          const unsigned int Ny = x.size();
+          unsigned int i, j, k;
+          
+          vtkSmartPointer<vtkFloatArray> xcoord = vtkSmartPointer<vtkFloatArray>::New();
+          xcoord->SetNumberOfComponents(1);
+          xcoord->SetNumberOfTuples(Nx);
+
+          vtkSmartPointer<vtkFloatArray> ycoord =vtkSmartPointer<vtkFloatArray>::New();
+          ycoord->SetNumberOfComponents(1);
+          ycoord->SetNumberOfTuples(Ny);
+          
+          for (i=0; i<Nx; i++)
+            xcoord->InsertComponent(i, 0, x[i]);
+          for (i=0; i<Ny; i++)
+            ycoord->InsertComponent(i, 0, y[i]);
+          
+          // add z-values as scalars to grid
+          vtkSmartPointer<vtkFloatArray>values = vtkSmartPointer<vtkFloatArray>::New();
+          values->SetNumberOfComponents(1);
+          values->SetNumberOfTuples(Nx*Ny);
+          k = 0;
+          for (j = 0; j < Ny; j++)
+            for (i = 0; i < Nx; i++)
+            {
+              values->InsertComponent(k, 0, z[j*Nx+i]);
+              k++;
+            }
+          Set(xcoord,ycoord, values);
+
+	}
+      void Set(vtkSmartPointer<vtkFloatArray> xcoord ,vtkSmartPointer<vtkFloatArray> ycoord ,vtkSmartPointer<vtkFloatArray> values );  
+
+    private:
+      vtkSmartPointer<vtkActor> outline;
+      vtkSmartPointer<vtkActor> surfplot;
+      vtkSmartPointer<vtkActor> contours;
+      vtkSmartPointer<vtkScalarBarActor> colorbar;
+  };
+
 }
 
 

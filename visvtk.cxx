@@ -12,25 +12,27 @@
 #include "vtkCommand.h"
 #include "vtkPNGWriter.h"
 
+// Plotxy
 #include "vtkPointData.h"
 #include "vtkProperty2D.h"
 #include "vtkTextProperty.h"
+
+// Contour
+#include "vtkRectilinearGridGeometryFilter.h"
+#include "vtkPolyDataMapper.h"
+#include "vtkContourFilter.h"
+#include "vtkOutlineFilter.h"
+#include "vtkProperty.h"
 
 /*
 #include "vtkAxesActor.h"
 #include "vtkCamera.h"
 #include "vtkCaptionActor2D.h"
-#include "vtkContourFilter.h"
 #include "vtkDataSetMapper.h"
 #include "vtkGlyph3D.h"
 #include "vtkGlyphSource2D.h"
-#include "vtkOutlineFilter.h"
 #include "vtkPolyData.h"
-#include "vtkPolyDataMapper.h"
-#include "vtkProperty.h"
-#include "vtkRectilinearGridGeometryFilter.h"
 #include "vtkStructuredGridGeometryFilter.h"
-#include "vtkScalarBarActor.h"
 #include "vtkTubeFilter.h"
 #include "vtkWarpScalar.h"
 */
@@ -41,7 +43,7 @@ namespace visvtk
 {
   ////////////////////////////////////////////////
   #define CMD_CLEAR 1
-  #define CMD_ADDACTOR 2
+  #define CMD_ADDACTORS 2
   #define CMD_DUMP 3
   #define CMD_TERMINATE 4
 
@@ -55,7 +57,7 @@ namespace visvtk
     int cmd;
     std::mutex mtx;
     std::condition_variable cv;
-    vtkSmartPointer<vtkProp> actor=0;
+    std::shared_ptr<std::vector<vtkSmartPointer<vtkProp>>> actors;
     std::string fname;
     Communicator(const Communicator& A)=delete;
     Communicator():vtkObjectBase() {};
@@ -75,17 +77,19 @@ namespace visvtk
                          unsigned long eventId,
                          void *vtkNotUsed(callData))
     {
-      if (vtkCommand::TimerEvent == eventId)
+      if (vtkCommand::TimerEvent == eventId && communicator->cmd)
       {
         
         std::unique_lock<std::mutex> lock(communicator->mtx);
         switch(communicator->cmd)
         {
-        case CMD_ADDACTOR:
+        case CMD_ADDACTORS:
         {
-          renderer->AddActor(communicator->actor);
+          int nactors=communicator->actors->size();
+          for (int i=0;i<nactors;i++)
+            renderer->AddActor(communicator->actors->at(i));
           interactor->Render();
-          communicator->actor=0;
+          communicator->actors=0;
         }
         break;
         case CMD_DUMP:
@@ -117,6 +121,7 @@ namespace visvtk
         break;
         default:;
         }
+        communicator->cmd=0;
         communicator->cv.notify_all();
       }
     }
@@ -165,9 +170,9 @@ namespace visvtk
   
   void Figure::Show(Plot &plot)
   {
-    communicator->cmd=CMD_ADDACTOR;
+    communicator->cmd=CMD_ADDACTORS;
     std::unique_lock<std::mutex> lock(communicator->mtx);
-    communicator->actor=plot.GetActor();
+    communicator->actors=plot.actors;
     communicator->cv.wait(lock);
   }
 
@@ -195,7 +200,9 @@ namespace visvtk
  
 
   ////////////////////////////////////////////////
-  XYPlot::XYPlot(): Plot()
+  XYPlot::XYPlot(): 
+    Plot(),
+    curves(std::make_shared<std::vector<vtkSmartPointer<vtkRectilinearGrid>>>())
   {
     xyplot = vtkSmartPointer<vtkXYPlotActor>::New();
     
@@ -225,16 +232,24 @@ namespace visvtk
     xyplot->SetAxisTitleTextProperty(text_prop);
     xyplot->SetAxisLabelTextProperty(text_prop);
     xyplot->SetTitleTextProperty(text_prop);
+    // how to read data
+    xyplot->SetXValuesToValue();
+
+    actors->push_back(xyplot);
+  }
+
+  void XYPlot::Title(const char * title)
+  {
+    xyplot->SetTitle(title);
+    xyplot->Modified();
   }
   
   void XYPlot::Reset(void)
   {
-    for (int i=0;i<plot_no;i++)
-    {
-      xyplot->RemoveDataSetInput(curves[plot_no]);
-      curves[plot_no]=0;
-    }
-    plot_no=0;
+    int ncurves=curves->size();
+    for (int i=0;i<ncurves;i++)
+      xyplot->RemoveDataSetInput(curves->at(i));
+    curves->clear();
   }
 
 
@@ -259,22 +274,97 @@ namespace visvtk
     }
     
     // Make a VTK Rectlinear grid from arrays
-    curves[plot_no] = vtkRectilinearGrid::New();
-    curves[plot_no]->SetDimensions(N, 1, 1);
-    curves[plot_no]->SetXCoordinates(X);
-    curves[plot_no]->GetPointData()->SetScalars(Y);
-    
+    vtkSmartPointer<vtkRectilinearGrid> curve = vtkSmartPointer<vtkRectilinearGrid>::New();
+    curve->SetDimensions(N, 1, 1);
+    curve->SetXCoordinates(X);
+    curve->GetPointData()->SetScalars(Y);
+    curves->push_back(curve);
     // attach gridfunction to plot
-    xyplot->AddDataSetInput(curves[plot_no]);
+    xyplot->AddDataSetInput(curve);
     
-    // how to read data
-    xyplot->SetXValuesToValue();
+    int plot_no=curves->size()-1;
     
     // set attributes
     xyplot->SetPlotColor(plot_no, col[0], col[1], col[2]);
     xyplot->SetPlotLines(plot_no, plot_lines);
     xyplot->SetPlotPoints(plot_no, plot_points);
-    plot_no++;
+
+  }
+
+  Contour2D::Contour2D()
+  {
+    outline = vtkSmartPointer<vtkActor>::New();
+    surfplot = vtkSmartPointer<vtkActor>::New();
+    contours = vtkSmartPointer<vtkActor>::New();
+    colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
+    
+    actors->push_back(outline);
+    actors->push_back(surfplot);
+    actors->push_back(contours);
+    actors->push_back(colorbar);
+
+  }
+
+  void Contour2D::Set(vtkSmartPointer<vtkFloatArray> xcoord ,vtkSmartPointer<vtkFloatArray> ycoord ,vtkSmartPointer<vtkFloatArray> values )
+  {
+
+
+    vtkSmartPointer<vtkRectilinearGrid> gridfunc=vtkSmartPointer<vtkRectilinearGrid>::New();
+    int Nx = xcoord->GetNumberOfTuples();
+    int Ny = ycoord->GetNumberOfTuples();
+    int lines=10;
+
+    // Create rectilinear grid
+    gridfunc->SetDimensions(Nx, Ny, 1);
+    gridfunc->SetXCoordinates(xcoord);
+    gridfunc->SetYCoordinates(ycoord);
+    gridfunc->GetPointData()->SetScalars(values);
+
+    // filter to geometry primitive
+    vtkSmartPointer<vtkRectilinearGridGeometryFilter> geometry =  vtkSmartPointer<vtkRectilinearGridGeometryFilter>::New();
+    geometry->SetInputDataObject(gridfunc);
+
+    // map gridfunction
+    vtkSmartPointer<vtkPolyDataMapper>mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputConnection(geometry->GetOutputPort());
+
+    double tmp[2];
+    gridfunc->GetScalarRange(tmp);
+    mapper->SetScalarRange(tmp[0], tmp[1]);
+
+    // create plot surface actor
+    surfplot->SetMapper(mapper);
+
+    // create contour lines (10 lines)
+    vtkSmartPointer<vtkContourFilter> contlines = vtkSmartPointer<vtkContourFilter>::New();
+    contlines->SetInputConnection(geometry->GetOutputPort());
+    double tempdiff = (tmp[1]-tmp[0])/(10*lines);
+    contlines->GenerateValues(lines, tmp[0]+tempdiff, tmp[1]-tempdiff);
+    vtkSmartPointer<vtkPolyDataMapper> contourMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    contourMapper->SetInputConnection(contlines->GetOutputPort());
+    contourMapper->SetScalarRange(tmp[0], tmp[1]);
+    contours->SetMapper(contourMapper);
+
+    // create outline
+    vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
+    outlinefilter->SetInputConnection(geometry->GetOutputPort());
+    vtkSmartPointer<vtkPolyDataMapper>outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    outlineMapper->SetInputDataObject(outlinefilter->GetOutput());
+
+
+
+    outline->SetMapper(outlineMapper);
+    outline->GetProperty()->SetColor(0, 0, 0);
+
+    // create colorbar
+    colorbar->SetLookupTable(contourMapper->GetLookupTable());
+
+    colorbar->SetWidth(0.085);
+    colorbar->SetHeight(0.9);
+    colorbar->SetPosition(0.9, 0.1);
+    vtkSmartPointer<vtkTextProperty> text_prop_cb = colorbar->GetLabelTextProperty();
+    text_prop_cb->SetColor(1.0, 1.0, 1.0);
+    colorbar->SetLabelTextProperty(text_prop_cb);
   }
   
 

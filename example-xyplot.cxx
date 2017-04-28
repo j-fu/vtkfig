@@ -28,7 +28,7 @@ int main(void)
   double color2[3] =
     { 1.0, 0.0, 0.0 };
   
-  
+  string title;
   
   double tt=0;
   int ii=0;
@@ -44,11 +44,15 @@ int main(void)
       y2[i] = cos(t)*(0.1-t);
       t+=dt;
     }
-
+    
+    char titlebuf[20];
+  
     {    
+      snprintf(titlebuf,20,"frame %d",ii++);
       auto plot=visvtk::XYPlot();
       plot.Add(x1, y1, color1, "-");
       plot.Add(x2, y2, color2, ".-");
+      plot.Title(titlebuf);
       fig.Clear();
       fig.Show(plot);
       if (ii==3) 
@@ -56,7 +60,6 @@ int main(void)
       plot.Reset();
     }
     tt+=0.1;
-    cout << ii++ << endl;
   }
 }
 

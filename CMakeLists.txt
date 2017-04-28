@@ -22,12 +22,17 @@ if(VTK_LIBRARIES)
   target_link_libraries(matplot2-example ${VTK_LIBRARIES})
 endif()
 
-add_executable(example1 MACOSX_BUNDLE example1.cpp visvtk.cxx)
-set_property(TARGET example1 PROPERTY CXX_STANDARD 11)
 
-if(VTK_LIBRARIES)
-  target_link_libraries(example1 ${VTK_LIBRARIES})
-endif()
+
+add_executable(example-xyplot MACOSX_BUNDLE example-xyplot.cxx visvtk.cxx)
+set_property(TARGET example-xyplot PROPERTY CXX_STANDARD 11)
+target_link_libraries(example-xyplot ${VTK_LIBRARIES})
+
+
+add_executable(example-contour2d MACOSX_BUNDLE example-contour2d.cxx visvtk.cxx)
+set_property(TARGET example-contour2d PROPERTY CXX_STANDARD 11)
+target_link_libraries(example-contour2d ${VTK_LIBRARIES})
+
 
 
 add_executable(ColoredElevationMap MACOSX_BUNDLE ColoredElevationMap.cxx)
