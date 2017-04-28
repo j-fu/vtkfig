@@ -36,6 +36,8 @@ namespace visvtk
     void Dump(std::string fname);
     
     void Clear(void);
+
+    void Update(void);
     
   private:
     void Terminate(void);

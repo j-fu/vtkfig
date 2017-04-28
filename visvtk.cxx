@@ -44,8 +44,9 @@ namespace visvtk
   ////////////////////////////////////////////////
   #define CMD_CLEAR 1
   #define CMD_ADDACTORS 2
-  #define CMD_DUMP 3
-  #define CMD_TERMINATE 4
+  #define CMD_UPDATE 3
+  #define CMD_DUMP 4
+  #define CMD_TERMINATE 5
 
   class Communicator: public vtkObjectBase
   {
@@ -85,9 +86,18 @@ namespace visvtk
         {
         case CMD_ADDACTORS:
         {
+          actors=communicator->actors;
           int nactors=communicator->actors->size();
           for (int i=0;i<nactors;i++)
             renderer->AddActor(communicator->actors->at(i));
+          interactor->Render();
+          communicator->actors=0;
+        }
+        case CMD_UPDATE:
+        {
+          int nactors=actors->size();
+          for (int i=0;i<nactors;i++)
+            actors->at(i)->Modified();
           interactor->Render();
           communicator->actors=0;
         }
@@ -109,6 +119,7 @@ namespace visvtk
         break;
         case CMD_CLEAR:
         {
+          actors=0;
           renderer->RemoveAllViewProps();
           renderer->Clear();
         }
@@ -129,6 +140,7 @@ namespace visvtk
     vtkSmartPointer<vtkRenderer> renderer;
     vtkSmartPointer<vtkRenderWindow> window;
     vtkSmartPointer<vtkRenderWindowInteractor> interactor;
+    std::shared_ptr<std::vector<vtkSmartPointer<vtkProp>>> actors;
   };
 
 
@@ -145,13 +157,15 @@ namespace visvtk
     window->SetSize(400,400);
     interactor->Initialize();
     vtkSmartPointer<TimerCallback> callback =  vtkSmartPointer<TimerCallback>::New();
+
     callback->renderer=renderer;
     callback->interactor=interactor;
     callback->communicator=communicator;
     callback->window=window;
+
     interactor->AddObserver(vtkCommand::TimerEvent,callback);
     interactor->Initialize();
-    int timerId = interactor->CreateRepeatingTimer(1);
+    int timerId = interactor->CreateRepeatingTimer(10);
     interactor->Start();
   }
 
@@ -173,6 +187,13 @@ namespace visvtk
     communicator->cmd=CMD_ADDACTORS;
     std::unique_lock<std::mutex> lock(communicator->mtx);
     communicator->actors=plot.actors;
+    communicator->cv.wait(lock);
+  }
+
+  void Figure::Update()
+  {
+    communicator->cmd=CMD_UPDATE;
+    std::unique_lock<std::mutex> lock(communicator->mtx);
     communicator->cv.wait(lock);
   }
 

@@ -1,4 +1,5 @@
 #include "visvtk.h"
+#include <cstdio>
 
 using namespace std;
 using namespace visvtk;
@@ -32,6 +33,9 @@ int main(void)
   
   double tt=0;
   int ii=0;
+
+  double t0=(double)clock()/(double)CLOCKS_PER_SEC;
+  double i0=ii;
   while (1)
   {
     double t = tt;
@@ -58,6 +62,15 @@ int main(void)
       if (ii==3) 
         fig.Dump("example1.png");
       plot.Reset();
+    }
+
+    double t1=(double)clock()/(double)CLOCKS_PER_SEC;
+    double i1=ii;
+    if (t1-t0>4.0)
+    {
+      printf("Frame rate: %.2f fps\n",(double)(i1-i0)/4.0);
+      t0=(double)clock()/(double)CLOCKS_PER_SEC;
+      i0=ii;
     }
     tt+=0.1;
   }

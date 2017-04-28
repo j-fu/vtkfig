@@ -41,6 +41,9 @@ int main(void)
 
   double t=0;
   double dt=0.1;
+  int ii=0;
+  double t0=(double)clock()/(double)CLOCKS_PER_SEC;
+  double i0=ii;
   while (1)
   {
     for (int i=0; i<Nx; i++)
@@ -51,6 +54,15 @@ int main(void)
     fig.Clear();
     fig.Show(contour);
     t+=dt;
+    double t1=(double)clock()/(double)CLOCKS_PER_SEC;
+    double i1=ii;
+    if (t1-t0>4.0)
+    {
+      printf("Frame rate: %.2f fps\n",(double)(i1-i0)/4.0);
+      t0=(double)clock()/(double)CLOCKS_PER_SEC;
+      i0=ii;
+    }
+    ii++;
   }
 
 }
