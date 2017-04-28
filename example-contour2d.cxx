@@ -50,6 +50,8 @@ int main(void)
       for (int j=0; j<Ny; j++)
         z[j*Nx+i] = G(x[i],y[j],t);
 
+    contour.Reset();
+
     contour.Set(x,y,z);
     fig.Clear();
     fig.Show(contour);

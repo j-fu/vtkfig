@@ -314,6 +314,12 @@ namespace visvtk
 
   Contour2D::Contour2D()
   {
+    Reset();
+  }
+
+  void Contour2D::Reset(void )
+  {
+    actors->clear();
     outline = vtkSmartPointer<vtkActor>::New();
     surfplot = vtkSmartPointer<vtkActor>::New();
     contours = vtkSmartPointer<vtkActor>::New();
@@ -325,6 +331,7 @@ namespace visvtk
     actors->push_back(colorbar);
 
   }
+
 
   void Contour2D::Set(vtkSmartPointer<vtkFloatArray> xcoord ,vtkSmartPointer<vtkFloatArray> ycoord ,vtkSmartPointer<vtkFloatArray> values )
   {

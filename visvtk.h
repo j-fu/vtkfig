@@ -90,7 +90,8 @@ namespace visvtk
     public:
 
       Contour2D();
-
+      
+      void Reset(void);
       
       template<typename Vec_t>
       void Set(const Vec_t &x, const Vec_t &y, const Vec_t &z)
