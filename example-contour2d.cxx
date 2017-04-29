@@ -28,7 +28,6 @@ int main(void)
   const double dy = (y_upp-y_low)/(Ny-1);
 
   auto fig=visvtk::Figure();
-  auto contour=visvtk::Contour2D();
 
   
 
@@ -46,15 +45,19 @@ int main(void)
   double i0=ii;
   while (1)
   {
-    for (int i=0; i<Nx; i++)
-      for (int j=0; j<Ny; j++)
-        z[j*Nx+i] = G(x[i],y[j],t);
+  auto contour=visvtk::Contour2D();
 
-    contour.Reset();
+  for (int i=0; i<Nx; i++)
+    for (int j=0; j<Ny; j++)
+      z[j*Nx+i] = G(x[i],y[j],t);
+  
 
-    contour.Set(x,y,z);
+    contour.Add(x,y,z);
     fig.Clear();
     fig.Show(contour);
+    if (ii==3) 
+      fig.Dump("example-contour2d.png");
+
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;
     double i1=ii;

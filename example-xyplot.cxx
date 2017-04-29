@@ -52,16 +52,15 @@ int main(void)
     char titlebuf[20];
   
     {    
-      snprintf(titlebuf,20,"frame %d",ii++);
       auto plot=visvtk::XYPlot();
+      snprintf(titlebuf,20,"frame %d",ii++);
+      plot.Title(titlebuf);
       plot.Add(x1, y1, color1, "-");
       plot.Add(x2, y2, color2, ".-");
-      plot.Title(titlebuf);
       fig.Clear();
       fig.Show(plot);
       if (ii==3) 
         fig.Dump("example1.png");
-      plot.Reset();
     }
 
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;
