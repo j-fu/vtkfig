@@ -33,6 +33,10 @@ add_executable(example-contour2d MACOSX_BUNDLE example-contour2d.cxx visvtk.cxx)
 set_property(TARGET example-contour2d PROPERTY CXX_STANDARD 11)
 target_link_libraries(example-contour2d ${VTK_LIBRARIES})
 
+add_executable(example-surf2d MACOSX_BUNDLE example-surf2d.cxx visvtk.cxx)
+set_property(TARGET example-surf2d PROPERTY CXX_STANDARD 11)
+target_link_libraries(example-surf2d ${VTK_LIBRARIES})
+
 
 
 add_executable(ColoredElevationMap MACOSX_BUNDLE ColoredElevationMap.cxx)

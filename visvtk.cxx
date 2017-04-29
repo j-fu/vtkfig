@@ -1,5 +1,3 @@
-#ifndef VISVTK_H
-#define VISVTK_H
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -11,12 +9,15 @@
 #include "vtkWindowToImageFilter.h"
 #include "vtkCommand.h"
 #include "vtkPNGWriter.h"
+#include "vtkInteractorStyleImage.h"
+#include "vtkInteractorStyleTrackballCamera.h"
 
 // Plotxy
 #include "vtkPointData.h"
 #include "vtkProperty2D.h"
 #include "vtkTextProperty.h"
 #include "vtkAxisActor2D.h"
+#include "vtkScalarBarActor.h"
 
 // Contour
 #include "vtkRectilinearGridGeometryFilter.h"
@@ -24,6 +25,14 @@
 #include "vtkContourFilter.h"
 #include "vtkOutlineFilter.h"
 #include "vtkProperty.h"
+#include "vtkLookupTable.h"
+
+
+// Surf2D
+#include "vtkStructuredGridGeometryFilter.h"
+#include "vtkWarpScalar.h"
+#include "vtkAxesActor.h"
+#include "vtkCaptionActor2D.h"
 
 /*
 #include "vtkCamera.h"
@@ -32,9 +41,7 @@
 #include "vtkGlyph3D.h"
 #include "vtkGlyphSource2D.h"
 #include "vtkPolyData.h"
-#include "vtkStructuredGridGeometryFilter.h"
 #include "vtkTubeFilter.h"
-#include "vtkWarpScalar.h"
 */
 
 #include "visvtk.h"
@@ -48,6 +55,7 @@ namespace visvtk
 #define CMD_SHOW 2
 #define CMD_DUMP 3
 #define CMD_TERMINATE 4
+#define CMD_INTERACTOR_STYLE 5
  
   class Communicator: public vtkObjectBase
   {
@@ -69,6 +77,16 @@ namespace visvtk
     /// Actors to be passed
     std::shared_ptr<std::vector<vtkSmartPointer<vtkProp>>> actors; 
 
+    /// Thread state
+    bool render_thread_alive=false;
+
+    /// space down state ?
+    bool space_down=false;
+
+    /// interactor style
+    bool interactor_style= INTERACTOR_STYLE_2D;
+
+
     Communicator():vtkObjectBase() {};
 
     Communicator(const Communicator& A)=delete;
@@ -78,6 +96,91 @@ namespace visvtk
 
   };
 
+
+  ////////////////////////////////////////////////////////////////
+  class myInteractorStyleImage : public vtkInteractorStyleImage
+  {
+  public:
+    vtkSmartPointer<Communicator> communicator=0;
+    
+    static myInteractorStyleImage* New()
+    {
+      return new myInteractorStyleImage();
+    }
+    myInteractorStyleImage(): vtkInteractorStyleImage() {};
+    
+    
+    virtual void OnChar() 
+    {
+      // Get the keypress
+      vtkRenderWindowInteractor *interactor = this->Interactor;
+      std::string key = interactor->GetKeySym();
+      
+      if(key == "e" || key== "q")
+      {
+        std::cout << "Exit keys are disabled" << std::endl;
+      }
+      else if (key=="space")
+      {
+        communicator->space_down=!communicator->space_down;
+      }
+      else
+        vtkInteractorStyleImage::OnChar();
+    }
+    
+    static void SetStyle(vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+                         vtkSmartPointer<Communicator> communicator)
+    {
+      vtkSmartPointer<myInteractorStyleImage> imageStyle = 
+        vtkSmartPointer<myInteractorStyleImage>::New();
+      imageStyle->communicator=communicator;
+      interactor->SetInteractorStyle(imageStyle);
+    }
+    
+  };
+  
+  ////////////////////////////////////////////////////////////////
+  class myInteractorStyleTrackballCamera : public vtkInteractorStyleTrackballCamera
+  {
+  public:
+    vtkSmartPointer<Communicator> communicator=0;
+    
+    static myInteractorStyleTrackballCamera* New()
+    {
+      return new myInteractorStyleTrackballCamera();
+    }
+    myInteractorStyleTrackballCamera(): vtkInteractorStyleTrackballCamera() {};
+    
+    
+    virtual void OnChar() 
+    {
+      // Get the keypress
+      vtkRenderWindowInteractor *interactor = this->Interactor;
+      std::string key = interactor->GetKeySym();
+      
+      if(key == "e" || key== "q")
+      {
+        std::cout << "Exit keys are disabled" << std::endl;
+      }
+      else if (key=="space")
+      {
+        communicator->space_down=!communicator->space_down;
+      }
+      else
+        vtkInteractorStyleTrackballCamera::OnChar();
+    }
+    
+    static void SetStyle(vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+                         vtkSmartPointer<Communicator> communicator)
+    {
+      vtkSmartPointer<myInteractorStyleTrackballCamera> imageStyle = 
+        vtkSmartPointer<myInteractorStyleTrackballCamera>::New();
+      imageStyle->communicator=communicator;
+      interactor->SetInteractorStyle(imageStyle);
+    }
+    
+  };
+  
 
   ////////////////////////////////////////////////
   class TimerCallback : public vtkCommand
@@ -95,6 +198,8 @@ namespace visvtk
                          unsigned long eventId,
                          void *vtkNotUsed(callData))
     {
+
+      if (communicator->space_down) return;
 
       if (
         vtkCommand::TimerEvent == eventId  // Check if timer event
@@ -146,6 +251,22 @@ namespace visvtk
         }
         break;
 
+        case CMD_INTERACTOR_STYLE:
+          // Switch interactor style
+        {
+          switch(communicator->interactor_style)
+          {
+          case INTERACTOR_STYLE_2D:
+            myInteractorStyleImage::SetStyle(interactor,communicator);
+            break;
+          case INTERACTOR_STYLE_3D:
+            myInteractorStyleTrackballCamera::SetStyle(interactor,communicator);
+            break;
+          default:
+            break;
+          }
+        }
+        break;
 
         case CMD_TERMINATE:
           // Close window and terminate
@@ -171,11 +292,12 @@ namespace visvtk
     For Subplots see http://public.kitware.com/pipermail/vtkusers/2009-October/054195.html
 
    */
-
   ////////////////////////////////////////////////
 
   void RenderThread(vtkSmartPointer<Communicator> communicator)
   {
+    
+
     vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
     vtkSmartPointer<vtkRenderWindow> window = vtkSmartPointer<vtkRenderWindow>::New();
     vtkSmartPointer<vtkRenderWindowInteractor>  interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
@@ -183,6 +305,7 @@ namespace visvtk
     interactor->SetRenderWindow(window);
 //    renderer->SetViewport(0.0,0.0,0.5,0.5);
     renderer->SetBackground(1., 1., 1.);
+
     window->SetSize(400,400);
     interactor->Initialize();
     vtkSmartPointer<TimerCallback> callback =  vtkSmartPointer<TimerCallback>::New();
@@ -192,19 +315,49 @@ namespace visvtk
     callback->communicator=communicator;
     callback->window=window;
 
+    myInteractorStyleTrackballCamera::SetStyle(interactor,communicator);
+
     interactor->AddObserver(vtkCommand::TimerEvent,callback);
     interactor->Initialize();
     int timerId = interactor->CreateRepeatingTimer(10);
+  
+    communicator->render_thread_alive=true;
     interactor->Start();
+    communicator->render_thread_alive=false;
+    communicator->cv.notify_all();
+    
+    interactor->SetRenderWindow(0);
+    interactor->TerminateApp();
+    window->Finalize();
   }
 
 
 
   ////////////////////////////////////////////////
   Figure::Figure():
-    communicator(Communicator::New()),
-    render_thread(std::make_shared<std::thread>(RenderThread,communicator))
-  {}
+    communicator(Communicator::New())
+  {
+    Start();
+  }
+
+  void Figure::Start(void)
+  {
+    render_thread=std::make_shared<std::thread>(RenderThread,communicator);
+    do
+    {
+      
+      std::this_thread::sleep_for (std::chrono::milliseconds(10));
+      cout<< "wait\n";
+    }
+    while (!communicator->render_thread_alive);
+
+  }
+  void Figure::Restart(void)
+  {
+    render_thread->join();
+    Start();
+  }
+
   
   Figure::~Figure()
   {
@@ -214,6 +367,12 @@ namespace visvtk
   
   void Figure::Show(Plot &plot)
   {
+    if (!communicator->render_thread_alive)
+      //      Restart();
+      throw std::runtime_error("Show: render thread is dead");
+
+      
+
     if (plot.actors->size()==0)
       throw std::runtime_error("No data in plot");
 
@@ -224,8 +383,13 @@ namespace visvtk
   }
 
 
+
+
   void Figure::Dump(std::string fname)
   {
+    if (!communicator->render_thread_alive)
+      throw std::runtime_error("Dump: render thread is dead");
+
     communicator->cmd=CMD_DUMP;
     communicator->fname=fname;
     std::unique_lock<std::mutex> lock(communicator->mtx);
@@ -241,11 +405,27 @@ namespace visvtk
   
   void Figure::Clear(void)
   {
+    if (!communicator->render_thread_alive)
+      //Restart();
+      throw std::runtime_error("Clear: render thread is dead");
+
     communicator->cmd=CMD_CLEAR;
     std::unique_lock<std::mutex> lock(communicator->mtx);
     communicator->cv.wait(lock);
   }
   
+  void Figure::InteractorStyle(int istyle)
+  {
+    if (!communicator->render_thread_alive)
+      //Restart();
+      throw std::runtime_error("InteractorStyle: render thread is dead");
+
+    communicator->interactor_style=istyle;
+    communicator->cmd=CMD_INTERACTOR_STYLE;
+    std::unique_lock<std::mutex> lock(communicator->mtx);
+    communicator->cv.wait(lock);
+  }
+
   
   ////////////////////////////////////////////////
   Plot::Plot(): actors(std::make_shared<std::vector<vtkSmartPointer<vtkProp>>>()) {};
@@ -330,6 +510,7 @@ namespace visvtk
     xyplot->SetPlotPoints(iplot, plot_points);
     iplot++;
   }
+
 ////////////////////////////////////////////////////////////
   Contour2D::Contour2D(): Plot()
   {
@@ -341,13 +522,6 @@ namespace visvtk
     
     if (Plot::actors->size()>0)
       throw std::runtime_error("Contor2D already has data");
-
-
-    vtkSmartPointer<vtkActor>     outline = vtkSmartPointer<vtkActor>::New();
-    vtkSmartPointer<vtkActor>     surfplot = vtkSmartPointer<vtkActor>::New();
-    vtkSmartPointer<vtkActor>     contours = vtkSmartPointer<vtkActor>::New();
-    vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
-    
 
 
     vtkSmartPointer<vtkRectilinearGrid> gridfunc=vtkSmartPointer<vtkRectilinearGrid>::New();
@@ -374,32 +548,145 @@ namespace visvtk
     mapper->SetScalarRange(tmp[0], tmp[1]);
 
     // create plot surface actor
+    vtkSmartPointer<vtkActor>     surfplot = vtkSmartPointer<vtkActor>::New();
     surfplot->SetMapper(mapper);
+
+
 
     // create contour lines (10 lines)
     vtkSmartPointer<vtkContourFilter> contlines = vtkSmartPointer<vtkContourFilter>::New();
     contlines->SetInputConnection(geometry->GetOutputPort());
     double tempdiff = (tmp[1]-tmp[0])/(10*lines);
     contlines->GenerateValues(lines, tmp[0]+tempdiff, tmp[1]-tempdiff);
+
+
+    vtkSmartPointer<vtkLookupTable>  lut = vtkSmartPointer<vtkLookupTable>::New();
+    lut->SetHueRange(0,0);
+    lut->SetSaturationRange(0,0);
+    lut->SetValueRange(0,0);
+    
     vtkSmartPointer<vtkPolyDataMapper> contourMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     contourMapper->SetInputConnection(contlines->GetOutputPort());
     contourMapper->SetScalarRange(tmp[0], tmp[1]);
+    contourMapper->SetLookupTable(lut);
+
+    vtkSmartPointer<vtkActor>     contours = vtkSmartPointer<vtkActor>::New();
     contours->SetMapper(contourMapper);
+    contours->GetProperty()->SetColor(1.0, 0.8941, 0.7686);
+
+
+    // vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
+    // outlinefilter->SetInputConnection(geometry->GetOutputPort());
+
+    // vtkSmartPointer<vtkPolyDataMapper>outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    // outlineMapper->SetInputDataObject(outlinefilter->GetOutput());
+
+    // vtkSmartPointer<vtkActor>     outline = vtkSmartPointer<vtkActor>::New();
+    // outline->SetMapper(outlineMapper);
+    // outline->GetProperty()->SetColor(0, 0, 0);
+
+
+    vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
+    colorbar->SetLookupTable(mapper->GetLookupTable());
+    colorbar->SetWidth(0.085);
+    colorbar->SetHeight(0.9);
+    colorbar->SetNumberOfLabels(10);
+    colorbar->SetPosition(0.9, 0.1);
+
+    vtkSmartPointer<vtkTextProperty> text_prop_cb = colorbar->GetLabelTextProperty();
+    text_prop_cb->SetColor(0,0,0);
+    text_prop_cb->SetFontSize(40);
+    colorbar->SetLabelTextProperty(text_prop_cb);
+
+    surfplot->PickableOff();
+    surfplot->DragableOff();
+
+
+//        Plot::actors->push_back(outline);
+    Plot::actors->push_back(surfplot);
+    Plot::actors->push_back(contours);
+    Plot::actors->push_back(colorbar);
+
+  }
+
+////////////////////////////////////////////////////////////
+  Surf2D::Surf2D(): Plot()
+  {
+  }
+
+
+  void Surf2D::Add(vtkSmartPointer<vtkStructuredGrid> gridfunc)
+  {
+
+    bool do_warp=true;
+    bool draw_box=true;
+    bool draw_axes=true;
+    bool draw_colorbar=true;
+   
+    // filter to geometry primitive
+    vtkSmartPointer<vtkStructuredGridGeometryFilter>geometry =
+      vtkSmartPointer<vtkStructuredGridGeometryFilter>::New();
+    geometry->SetInputDataObject(gridfunc);
+
+    // warp to fit in box
+    vtkSmartPointer<vtkWarpScalar> warp = vtkSmartPointer<vtkWarpScalar>::New();
+    if (do_warp)
+    {
+	double scale = Lxy/Lz;
+	warp->SetInputConnection(geometry->GetOutputPort());
+	warp->XYPlaneOn();
+	warp->SetScaleFactor(scale);
+    }
+
+    // map gridfunction
+    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    if (do_warp)
+	mapper->SetInputConnection(warp->GetOutputPort());
+    else
+	mapper->SetInputConnection(geometry->GetOutputPort());
+
+    double tmp[2];
+    gridfunc->GetScalarRange(tmp);
+    mapper->SetScalarRange(tmp[0], tmp[1]);
+
+    // create plot surface actor
+    vtkSmartPointer<vtkActor> surfplot = vtkSmartPointer<vtkActor>::New();
+    surfplot->SetMapper(mapper);
 
     // create outline
-    vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
-    outlinefilter->SetInputConnection(geometry->GetOutputPort());
+    vtkSmartPointer<vtkOutlineFilter> outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
+    if (do_warp)
+	outlinefilter->SetInputConnection(warp->GetOutputPort());
+    else
+	outlinefilter->SetInputConnection(geometry->GetOutputPort());
+
     vtkSmartPointer<vtkPolyDataMapper>outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     outlineMapper->SetInputDataObject(outlinefilter->GetOutput());
-
-
-
+    vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
     outline->SetMapper(outlineMapper);
     outline->GetProperty()->SetColor(0, 0, 0);
 
-    // create colorbar
-    colorbar->SetLookupTable(contourMapper->GetLookupTable());
+    // create axes
+    vtkSmartPointer<vtkAxesActor> axes = vtkSmartPointer<vtkAxesActor>::New();
+    axes->SetShaftTypeToCylinder();
+    axes->SetNormalizedShaftLength( 0.85, 0.85, 0.85);
+    axes->SetNormalizedTipLength( 0.15, 0.15, 0.15);
+    axes->SetCylinderRadius( 0.500 * axes->GetCylinderRadius() );
+    axes->SetConeRadius( 1.025 * axes->GetConeRadius() );
+    axes->SetSphereRadius( 1.500 * axes->GetSphereRadius() );
+    vtkTextProperty* text_prop_ax = axes->GetXAxisCaptionActor2D()->
+	GetCaptionTextProperty();
+    text_prop_ax->SetColor(0.0, 0.0, 0.0);
+    text_prop_ax->SetFontFamilyToArial();
+    text_prop_ax->SetFontSize(8);
+    axes->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->
+	ShallowCopy(text_prop_ax);
+    axes->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->
+	ShallowCopy(text_prop_ax);
 
+    // create colorbar
+    vtkSmartPointer<vtkScalarBarActor> colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
+    colorbar->SetLookupTable(mapper->GetLookupTable());
     colorbar->SetWidth(0.085);
     colorbar->SetHeight(0.9);
     colorbar->SetPosition(0.9, 0.1);
@@ -407,13 +694,16 @@ namespace visvtk
     text_prop_cb->SetColor(1.0, 1.0, 1.0);
     colorbar->SetLabelTextProperty(text_prop_cb);
 
-    Plot::actors->push_back(outline);
+    // renderer
     Plot::actors->push_back(surfplot);
-    Plot::actors->push_back(contours);
-    Plot::actors->push_back(colorbar);
-
+    if (draw_box)
+	Plot::actors->push_back(outline);
+    if (draw_axes)
+	Plot::actors->push_back(axes);
+    if (draw_colorbar)
+	Plot::actors->push_back(colorbar);
+    
   }
   
-
+  
 }
-#endif

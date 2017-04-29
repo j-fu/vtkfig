@@ -28,6 +28,7 @@ int main(void)
   const double dy = (y_upp-y_low)/(Ny-1);
 
   auto fig=visvtk::Figure();
+  fig.InteractorStyle(3);
 
   
 
@@ -45,18 +46,18 @@ int main(void)
   double i0=ii;
   while (1)
   {
-  auto contour=visvtk::Contour2D();
+  auto surf=visvtk::Surf2D();
 
   for (int i=0; i<Nx; i++)
     for (int j=0; j<Ny; j++)
       z[j*Nx+i] = G(x[i],y[j],t);
   
 
-    contour.Add(x,y,z);
+    surf.Add(x,y,z);
     fig.Clear();
-    fig.Show(contour);
+    fig.Show(surf);
     if (ii==3) 
-      fig.Dump("example-contour2d.png");
+      fig.Dump("example-surf2d.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;
