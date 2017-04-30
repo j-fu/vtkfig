@@ -34,11 +34,15 @@
 #include "vtkAxesActor.h"
 #include "vtkCaptionActor2D.h"
 
+
+// Quiver
+#include "vtkGlyph3D.h"
+#include "vtkGlyphSource2D.h"
+
 /*
 #include "vtkCamera.h"
 #include "vtkCaptionActor2D.h"
 #include "vtkDataSetMapper.h"
-#include "vtkGlyph3D.h"
 #include "vtkGlyphSource2D.h"
 #include "vtkPolyData.h"
 #include "vtkTubeFilter.h"
@@ -230,7 +234,7 @@ namespace visvtk
           // Remove all actors, clear window
         {
           renderer->RemoveAllViewProps();
-          renderer->Clear();
+//          renderer->Clear();
         }
         break;
 
@@ -448,6 +452,8 @@ namespace visvtk
   
   ////////////////////////////////////////////////
   Plot::Plot(): actors(std::make_shared<std::vector<vtkSmartPointer<vtkProp>>>()) {};
+  void Plot::AddActor(vtkSmartPointer<vtkProp> prop) {actors->push_back(prop);}
+  bool Plot::IsEmpty(void) {return (actors->size()==0);}
 
   ////////////////////////////////////////////////
   XYPlot::XYPlot():Plot()
@@ -485,7 +491,7 @@ namespace visvtk
     xyplot->Modified();
     xyplot->SetXValuesToValue();
 
-    Plot::actors->push_back(xyplot);
+    Plot::AddActor(xyplot);
   }
 
   void XYPlot::Title(const char * title)
@@ -539,7 +545,7 @@ namespace visvtk
   void Contour2D::Add(vtkSmartPointer<vtkFloatArray> xcoord ,vtkSmartPointer<vtkFloatArray> ycoord ,vtkSmartPointer<vtkFloatArray> values )
   {
     
-    if (Plot::actors->size()>0)
+    if (!Plot::IsEmpty())
       throw std::runtime_error("Contor2D already has data");
 
 
@@ -617,15 +623,11 @@ namespace visvtk
     text_prop_cb->SetFontSize(40);
     colorbar->SetLabelTextProperty(text_prop_cb);
 
-    surfplot->PickableOff();
-    surfplot->DragableOff();
 
-
-//        Plot::actors->push_back(outline);
-    Plot::actors->push_back(surfplot);
-    Plot::actors->push_back(contours);
-    Plot::actors->push_back(colorbar);
-
+//        Plot::AddActor(outline);
+    Plot::AddActor(surfplot);
+    Plot::AddActor(contours);
+    Plot::AddActor(colorbar);
   }
 
 ////////////////////////////////////////////////////////////
@@ -634,7 +636,7 @@ namespace visvtk
   }
 
 
-  void Surf2D::Add(vtkSmartPointer<vtkStructuredGrid> gridfunc)
+  void Surf2D::Add(vtkSmartPointer<vtkStructuredGrid> gridfunc, double Lxy, double Lz)
   {
 
     bool do_warp=true;
@@ -712,15 +714,91 @@ namespace visvtk
     colorbar->SetLabelTextProperty(text_prop_cb);
 
     // renderer
-    Plot::actors->push_back(surfplot);
+    Plot::AddActor(surfplot);
     if (draw_box)
-	Plot::actors->push_back(outline);
+	Plot::AddActor(outline);
     if (draw_axes)
-	Plot::actors->push_back(axes);
+	Plot::AddActor(axes);
     if (draw_colorbar)
-	Plot::actors->push_back(colorbar);
+	Plot::AddActor(colorbar);
     
+  }
+
+
+
+  ////////////////////////////////////////////////////////////
+  Quiver2D::Quiver2D(): Plot()  {  }
+  
+  void  Quiver2D::Add(const vtkSmartPointer<vtkFloatArray> xcoord,
+                      const vtkSmartPointer<vtkFloatArray> ycoord,
+                      const vtkSmartPointer<vtkFloatArray> colors,
+                      const vtkSmartPointer<vtkFloatArray> vectors)
+  {
+    vtkSmartPointer<vtkRectilinearGrid> gridfunc= vtkSmartPointer<vtkRectilinearGrid>::New();
+    int Nx = xcoord->GetNumberOfTuples();
+    int Ny = ycoord->GetNumberOfTuples();
+    gridfunc->SetDimensions(Nx, Ny, 1);
+    gridfunc->SetXCoordinates(xcoord);
+    gridfunc->SetYCoordinates(ycoord);
+    gridfunc->GetPointData()->SetScalars(colors);
+    gridfunc->GetPointData()->SetVectors(vectors);
+
+    // filter to geometry primitive
+    vtkSmartPointer<vtkRectilinearGridGeometryFilter> geometry =
+      vtkSmartPointer<vtkRectilinearGridGeometryFilter>::New();
+    geometry->SetInputDataObject(gridfunc);
+
+    // make a vector glyph
+    vtkSmartPointer<vtkGlyphSource2D> vec = vtkSmartPointer<vtkGlyphSource2D>::New();
+    vec->SetGlyphTypeToArrow();
+    double s=0.1;
+    vec->SetScale(s);
+    vec->FilledOff();
+
+    vtkSmartPointer<vtkGlyph3D> glyph = vtkSmartPointer<vtkGlyph3D>::New();
+    glyph->SetInputConnection(geometry->GetOutputPort());
+    glyph->SetSourceConnection(vec->GetOutputPort());
+    glyph->SetColorModeToColorByScalar();
+
+    // map gridfunction
+    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputConnection(glyph->GetOutputPort());
+
+    double tmp[2];
+    gridfunc->GetScalarRange(tmp);
+    mapper->SetScalarRange(tmp[0], tmp[1]);
+
+    // create plot quiver actor
+    vtkSmartPointer<vtkActor> quiver_actor = vtkSmartPointer<vtkActor>::New();
+    quiver_actor->SetMapper(mapper);
+
+    // create colorbar
+    vtkSmartPointer<vtkScalarBarActor> colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
+    colorbar->SetLookupTable(mapper->GetLookupTable());
+    colorbar->SetWidth(0.085);
+    colorbar->SetHeight(0.9);
+    colorbar->SetPosition(0.9, 0.1);
+    vtkSmartPointer<vtkTextProperty> text_prop_cb = colorbar->GetLabelTextProperty();
+    text_prop_cb->SetColor(1.0, 1.0, 1.0);
+    colorbar->SetLabelTextProperty(text_prop_cb);
+
+    // create outline
+    vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
+    outlinefilter->SetInputConnection(geometry->GetOutputPort());
+    vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    outlineMapper->SetInputDataObject(outlinefilter->GetOutput());
+    vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
+    outline->SetMapper(outlineMapper);
+    outline->GetProperty()->SetColor(0, 0, 0);
+
+    // add actors to renderer
+    Plot::AddActor(quiver_actor);
+    Plot::AddActor(colorbar);
+    Plot::AddActor(outline);
   }
   
   
 }
+
+
+
