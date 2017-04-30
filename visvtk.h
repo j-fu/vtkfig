@@ -37,6 +37,8 @@ namespace visvtk
     void Clear(void);
     
     void Show(Plot & plot);
+
+    void ShowInteractive(Plot & plot);
     
     void InteractorStyle(int istyle);
     
@@ -150,7 +152,7 @@ namespace visvtk
     vtkSmartPointer<vtkStructuredGrid> 	    gridfunc= vtkSmartPointer<vtkStructuredGrid>::New();
     gridfunc->SetDimensions(Nx, Ny, 1);
     
-    vtkSmartPointer<vtkPoints> points = vtkPoints::New();
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     for (j = 0; j < Ny; j++)
     {
       for (i = 0; i < Nx; i++)

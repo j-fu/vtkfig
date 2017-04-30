@@ -84,7 +84,7 @@ namespace visvtk
     bool space_down=false;
 
     /// interactor style
-    bool interactor_style= INTERACTOR_STYLE_2D;
+    int interactor_style= INTERACTOR_STYLE_2D;
 
 
     Communicator():vtkObjectBase() {};
@@ -315,7 +315,7 @@ namespace visvtk
     callback->communicator=communicator;
     callback->window=window;
 
-    myInteractorStyleTrackballCamera::SetStyle(interactor,communicator);
+    myInteractorStyleImage::SetStyle(interactor,communicator);
 
     interactor->AddObserver(vtkCommand::TimerEvent,callback);
     interactor->Initialize();
@@ -345,9 +345,7 @@ namespace visvtk
     render_thread=std::make_shared<std::thread>(RenderThread,communicator);
     do
     {
-      
       std::this_thread::sleep_for (std::chrono::milliseconds(10));
-      cout<< "wait\n";
     }
     while (!communicator->render_thread_alive);
 
@@ -371,7 +369,20 @@ namespace visvtk
       //      Restart();
       throw std::runtime_error("Show: render thread is dead");
 
-      
+    if (plot.actors->size()==0)
+      throw std::runtime_error("No data in plot");
+
+    communicator->cmd=CMD_SHOW;
+    std::unique_lock<std::mutex> lock(communicator->mtx);
+    communicator->actors=plot.actors;
+    communicator->cv.wait(lock);
+  }
+
+  void Figure::ShowInteractive(Plot &plot)
+  {
+    if (!communicator->render_thread_alive)
+      //      Restart();
+      throw std::runtime_error("Show: render thread is dead");
 
     if (plot.actors->size()==0)
       throw std::runtime_error("No data in plot");
@@ -380,6 +391,14 @@ namespace visvtk
     std::unique_lock<std::mutex> lock(communicator->mtx);
     communicator->actors=plot.actors;
     communicator->cv.wait(lock);
+
+    communicator->space_down=true;
+    do
+    {
+      std::this_thread::sleep_for (std::chrono::milliseconds(10));
+    }
+    while (communicator->space_down);
+
   }
 
 
@@ -674,15 +693,13 @@ namespace visvtk
     axes->SetCylinderRadius( 0.500 * axes->GetCylinderRadius() );
     axes->SetConeRadius( 1.025 * axes->GetConeRadius() );
     axes->SetSphereRadius( 1.500 * axes->GetSphereRadius() );
-    vtkTextProperty* text_prop_ax = axes->GetXAxisCaptionActor2D()->
+    vtkSmartPointer<vtkTextProperty> text_prop_ax = axes->GetXAxisCaptionActor2D()->
 	GetCaptionTextProperty();
     text_prop_ax->SetColor(0.0, 0.0, 0.0);
     text_prop_ax->SetFontFamilyToArial();
     text_prop_ax->SetFontSize(8);
-    axes->GetYAxisCaptionActor2D()->GetCaptionTextProperty()->
-	ShallowCopy(text_prop_ax);
-    axes->GetZAxisCaptionActor2D()->GetCaptionTextProperty()->
-	ShallowCopy(text_prop_ax);
+    axes->GetYAxisCaptionActor2D()->SetCaptionTextProperty(text_prop_ax);
+    axes->GetZAxisCaptionActor2D()->SetCaptionTextProperty(text_prop_ax);
 
     // create colorbar
     vtkSmartPointer<vtkScalarBarActor> colorbar = vtkSmartPointer<vtkScalarBarActor>::New();

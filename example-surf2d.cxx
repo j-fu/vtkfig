@@ -56,6 +56,7 @@ int main(void)
     surf.Add(x,y,z);
     fig.Clear();
     fig.Show(surf);
+
     if (ii==3) 
       fig.Dump("example-surf2d.png");
 
