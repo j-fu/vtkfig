@@ -58,7 +58,9 @@ int main(void)
       plot.Add(x1, y1, color1, "-");
       plot.Add(x2, y2, color2, ".-");
       fig.Clear();
-      fig.Show(plot);
+      fig.Add(plot);
+      fig.Show();
+
       if (ii==3) 
         fig.Dump("example1.png");
     }

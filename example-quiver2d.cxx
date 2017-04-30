@@ -1,44 +1,121 @@
 #include "visvtk.h"
 
+#include "visvtk.h"
 
-// parameters for quiver plot
-const int NNx = 20;
-const int NNy = 20;
-const double xx_low = 0;
-const double xx_upp = 1;
-const double yy_low = 0;
-const double yy_upp = 1.5;
-const double dxx = (xx_upp-xx_low)/(NNx-1);
-const double dyy = (yy_upp-yy_low)/(NNy-1);
+using namespace std;
+using namespace visvtk;
+
+inline double G(double x,double y, double t) 
+{
+  
+  return exp(-(x*x+y*y))*sin(t+x)*cos(y-t);
+}
+
 
 int main(void)
 {
-    // Example: Quiver ========================================
-    std::vector<double> xx(NNx);
-    std::vector<double> yy(NNy);
-    std::vector<double> u(NNx*NNy);
-    std::vector<double> v(NNx*NNy);
+  
+  const int Nx = 20;
+  const int Ny = 25;
+  
+  std::vector<double> x(Nx);
+  std::vector<double> y(Ny);
+  std::vector<double> z(Nx*Ny);
+  std::vector<double> u(Nx*Ny);
+  std::vector<double> v(Nx*Ny);
 
-    for (int i=0; i<NNx; i++)
-	xx[i] = xx_low+i*dxx;
+  
+  const double x_low = -2.5;
+  const double x_upp = 1.5;
+  const double y_low = -2.5;
+  const double y_upp = 4;
+  const double dx = (x_upp-x_low)/(Nx-1);
+  const double dy = (y_upp-y_low)/(Ny-1);
 
-    for (int i=0; i<NNy; i++)
-	yy[i] = yy_low + i*dyy;
+  auto fig=visvtk::Figure();
+  auto colors=Plot::RGBTable
+    { 
+      {0.0, 0.3, 0.3, 1.0},
+      {0.5, 0.3, 1.0, 0.3},
+      {1.0, 1.0, 0.3, 0.3}
+    };
+  auto qcolors=Plot::RGBTable
+    { 
+      {0.0, 0.0, 0.0, 0.0},
+      {1.0, 0.0, 0.0, 0.0}
+    };
+  
+  for (int i=0; i<Nx; i++)
+    x[i] = x_low+i*dx;
+  
+  for (int i=0; i<Ny; i++)
+    y[i] = y_low + i*dy;
 
-    for (int i=0; i<NNx; i++)
-	for (int j=0; j<NNy; j++)
-	{
-	    u[j*NNx+i] = -yy[j];
-	    v[j*NNx+i] = xx[i];
-	}
 
-    
+  double t=0;
+  double dt=0.1;
+  int ii=0;
+  double t0=(double)clock()/(double)CLOCKS_PER_SEC;
+  double i0=ii;
+  while (1)
+  {
+    auto contour=visvtk::Contour2D();
+    contour.SetSurfaceRGBTable(colors,255);
+    contour.ShowContour(false);
 
-    auto fig=visvtk::Figure();
-    auto plot=visvtk::Quiver2D();
-    plot.SetBackground(0,0,0);
-    plot.Add(xx, yy, u, v);
-    fig.ShowInteractive(plot);
+    auto quiver=visvtk::Quiver2D();
+    quiver.ShowColorbar(false);
+    quiver.SetRGBTable(qcolors, 2);
+    quiver.SetArrowScale(0.5);
 
-    return 0;
+    for (int i=0; i<Nx; i++)
+      for (int j=0; j<Ny; j++)
+      {
+        z[j*Nx+i] = G(x[i],y[j],t);
+      }
+
+    for (int i=0; i<Nx; i++)
+      for (int j=0; j<Ny; j++)
+      {
+        int ij=j*Nx+i;
+
+        if (i==0) 
+          u[ij]=(z[ij+1]-z[ij])/(x[i+1]-x[i]);
+        else if (i==(Nx-1))
+          u[ij]=(z[ij]-z[ij-1])/(x[i]-x[i-1]);
+        else
+          u[ij]=(z[ij+1]-z[ij-1])/(x[i+1]-x[i-1]);
+
+        if (j==0) 
+          v[ij]=(z[ij+Nx]-z[ij])/(y[j+1]-y[j]);
+        else if (j==(Ny-1))
+          v[ij]=(z[ij]-z[ij-Nx])/(y[j]-y[j-1]);
+        else
+          v[ij]=(z[ij+Nx]-z[ij-Nx])/(y[j+1]-y[j-1]);
+
+      }
+
+    contour.Add(x,y,z);
+    quiver.Add(x,y,u,v);
+
+    fig.Clear();
+    fig.Add(contour);
+    fig.Add(quiver);
+    fig.Show();
+
+    if (ii==3) 
+      fig.Dump("example-quiver2d.png");
+
+    t+=dt;
+    double t1=(double)clock()/(double)CLOCKS_PER_SEC;
+    double i1=ii;
+    if (t1-t0>4.0)
+    {
+      printf("Frame rate: %.2f fps\n",(double)(i1-i0)/4.0);
+      t0=(double)clock()/(double)CLOCKS_PER_SEC;
+      i0=ii;
+    }
+    ii++;
+  }
+
 }

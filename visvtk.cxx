@@ -11,17 +11,16 @@
 #include "vtkPNGWriter.h"
 #include "vtkInteractorStyleImage.h"
 #include "vtkInteractorStyleTrackballCamera.h"
+#include "vtkCamera.h"
 
 // Plotxy
 #include "vtkPointData.h"
 #include "vtkProperty2D.h"
 #include "vtkTextProperty.h"
 #include "vtkAxisActor2D.h"
-#include "vtkScalarBarActor.h"
 
 // Contour
 #include "vtkRectilinearGridGeometryFilter.h"
-#include "vtkPolyDataMapper.h"
 #include "vtkContourFilter.h"
 #include "vtkOutlineFilter.h"
 #include "vtkProperty.h"
@@ -40,7 +39,6 @@
 #include "vtkGlyphSource2D.h"
 
 /*
-#include "vtkCamera.h"
 #include "vtkCaptionActor2D.h"
 #include "vtkDataSetMapper.h"
 #include "vtkGlyphSource2D.h"
@@ -96,7 +94,10 @@ namespace visvtk
       
     
 
-    Communicator():vtkObjectBase() {};
+    Communicator():vtkObjectBase() 
+    {
+      actors=std::make_shared<std::vector<vtkSmartPointer<vtkProp>>>();
+    };
 
     Communicator(const Communicator& A)=delete;
 
@@ -234,7 +235,6 @@ namespace visvtk
                                   communicator->bgcolor[1],
                                   communicator->bgcolor[2]);
           interactor->Render();
-          communicator->actors=0;
         }
         break;
 
@@ -328,6 +328,11 @@ namespace visvtk
     callback->window=window;
 
     myInteractorStyleImage::SetStyle(interactor,communicator);
+    renderer->GetActiveCamera()->SetPosition(0,0,20);
+    renderer->GetActiveCamera()->SetFocalPoint(0,0,0);
+    renderer->GetActiveCamera()->OrthogonalizeViewUp();
+    
+
 
     interactor->AddObserver(vtkCommand::TimerEvent,callback);
     interactor->Initialize();
@@ -375,38 +380,30 @@ namespace visvtk
     render_thread->join();
   }
   
-  void Figure::Show(Plot &plot)
+  void Figure::Show()
   {
     if (!communicator->render_thread_alive)
-      //      Restart();
       throw std::runtime_error("Show: render thread is dead");
-
-    if (plot.actors->size()==0)
-      throw std::runtime_error("No data in plot");
 
     communicator->cmd=CMD_SHOW;
     std::unique_lock<std::mutex> lock(communicator->mtx);
-    communicator->actors=plot.actors;
     communicator->cv.wait(lock);
   }
 
-  void Figure::ShowInteractive(Plot &plot)
+  void Figure::Add(Plot &plot)
   {
-    if (!communicator->render_thread_alive)
-      //      Restart();
-      throw std::runtime_error("Show: render thread is dead");
 
-    if (plot.actors->size()==0)
-      throw std::runtime_error("No data in plot");
-
-    communicator->cmd=CMD_SHOW;
-    std::unique_lock<std::mutex> lock(communicator->mtx);
-    communicator->actors=plot.actors;
+    for (int i=0;i<plot.actors->size(); i++)
+      communicator->actors->push_back(plot.actors->at(i));
     communicator->bgcolor[0]=plot.bgcolor[0];
     communicator->bgcolor[1]=plot.bgcolor[1];
     communicator->bgcolor[2]=plot.bgcolor[2];
-    communicator->cv.wait(lock);
+  }
 
+  void Figure::Interact()
+  {
+    if (!communicator->render_thread_alive)
+      throw std::runtime_error("Show: render thread is dead");
     communicator->communication_blocked=true;
     do
     {
@@ -440,12 +437,12 @@ namespace visvtk
   void Figure::Clear(void)
   {
     if (!communicator->render_thread_alive)
-      //Restart();
       throw std::runtime_error("Clear: render thread is dead");
-
+    
     communicator->cmd=CMD_CLEAR;
     std::unique_lock<std::mutex> lock(communicator->mtx);
     communicator->cv.wait(lock);
+    communicator->actors=std::make_shared<std::vector<vtkSmartPointer<vtkProp>>>();
   }
   
   void Figure::SetInteractorStyle(int istyle)
@@ -550,10 +547,10 @@ namespace visvtk
 ////////////////////////////////////////////////////////////
   Contour2D::Contour2D(): Plot()
   {
-    RGBTable surface_rgb={{0,1,0,0},{1,0,0,1}};
+    RGBTable surface_rgb={{0,0,0,1},{1,1,0,0}};
     RGBTable contour_rgb={{0,0,0,0},{1,0,0,0}};
     surface_lut=BuildLookupTable(surface_rgb,255);
-    contour_lut=BuildLookupTable(contour_rgb,255);
+    contour_lut=BuildLookupTable(contour_rgb,2);
   }
   
   
@@ -577,6 +574,21 @@ namespace visvtk
     return lut;
   }
 
+  vtkSmartPointer<vtkScalarBarActor> Plot::BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper)
+  {
+        vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
+        colorbar->SetLookupTable(mapper->GetLookupTable());
+        colorbar->SetWidth(0.085);
+        colorbar->SetHeight(0.9);
+        colorbar->SetNumberOfLabels(10);
+        colorbar->SetPosition(0.9, 0.1);
+
+        vtkSmartPointer<vtkTextProperty> text_prop_cb = colorbar->GetLabelTextProperty();
+        text_prop_cb->SetColor(0,0,0);
+        text_prop_cb->SetFontSize(40);
+        colorbar->SetLabelTextProperty(text_prop_cb);
+        return colorbar;
+  }
 
   void Contour2D::Add(vtkSmartPointer<vtkFloatArray> xcoord ,vtkSmartPointer<vtkFloatArray> ycoord ,vtkSmartPointer<vtkFloatArray> values )
   {
@@ -616,20 +628,7 @@ namespace visvtk
       Plot::AddActor(plot);
       
       if (show_surface_colorbar)
-      {
-        vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
-        colorbar->SetLookupTable(surface_lut);
-        colorbar->SetWidth(0.085);
-        colorbar->SetHeight(0.9);
-        colorbar->SetNumberOfLabels(10);
-        colorbar->SetPosition(0.9, 0.1);
-
-        vtkSmartPointer<vtkTextProperty> text_prop_cb = colorbar->GetLabelTextProperty();
-        text_prop_cb->SetColor(0,0,0);
-        text_prop_cb->SetFontSize(40);
-        colorbar->SetLabelTextProperty(text_prop_cb);
-        Plot::AddActor(colorbar);
-      }
+        Plot::AddActor(Plot::BuildColorBar(mapper));
     }
 
 
@@ -649,19 +648,7 @@ namespace visvtk
       plot->SetMapper(mapper);
       Plot::AddActor(plot);
       if (show_contour_colorbar)
-      {
-        vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
-        colorbar->SetLookupTable(contour_lut);
-        colorbar->SetWidth(0.085);
-        colorbar->SetHeight(0.9);
-        colorbar->SetNumberOfLabels(10);
-        colorbar->SetPosition(0.9, 0.1);
-        vtkSmartPointer<vtkTextProperty> text_prop_cb = colorbar->GetLabelTextProperty();
-        text_prop_cb->SetColor(0,0,0);
-        text_prop_cb->SetFontSize(40);
-        colorbar->SetLabelTextProperty(text_prop_cb);
-        Plot::AddActor(colorbar);
-      }
+        Plot::AddActor(Plot::BuildColorBar(mapper));
 
     }
 
@@ -670,6 +657,8 @@ namespace visvtk
 ////////////////////////////////////////////////////////////
   Surf2D::Surf2D(): Plot()
   {
+    RGBTable surface_rgb={{0,0,0,1},{1,1,0,0}};
+    lut=BuildLookupTable(surface_rgb,255);
   }
 
 
@@ -710,6 +699,7 @@ namespace visvtk
     // create plot surface actor
     vtkSmartPointer<vtkActor> surfplot = vtkSmartPointer<vtkActor>::New();
     surfplot->SetMapper(mapper);
+    mapper->SetLookupTable(lut);
 
     // create outline
     vtkSmartPointer<vtkOutlineFilter> outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
@@ -740,15 +730,7 @@ namespace visvtk
     axes->GetYAxisCaptionActor2D()->SetCaptionTextProperty(text_prop_ax);
     axes->GetZAxisCaptionActor2D()->SetCaptionTextProperty(text_prop_ax);
 
-    // create colorbar
-    vtkSmartPointer<vtkScalarBarActor> colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
-    colorbar->SetLookupTable(mapper->GetLookupTable());
-    colorbar->SetWidth(0.085);
-    colorbar->SetHeight(0.9);
-    colorbar->SetPosition(0.9, 0.1);
-    vtkSmartPointer<vtkTextProperty> text_prop_cb = colorbar->GetLabelTextProperty();
-    text_prop_cb->SetColor(1.0, 1.0, 1.0);
-    colorbar->SetLabelTextProperty(text_prop_cb);
+
 
     // renderer
     Plot::AddActor(surfplot);
@@ -756,15 +738,19 @@ namespace visvtk
 	Plot::AddActor(outline);
     if (draw_axes)
 	Plot::AddActor(axes);
-    if (draw_colorbar)
-	Plot::AddActor(colorbar);
+    if (show_colorbar)
+      Plot::AddActor(Plot::BuildColorBar(mapper));
     
   }
 
 
 
   ////////////////////////////////////////////////////////////
-  Quiver2D::Quiver2D(): Plot()  {  }
+  Quiver2D::Quiver2D(): Plot()  
+  {  
+    RGBTable quiver_rgb={{0,0,0,1},{1,1,0,0}};
+    lut=BuildLookupTable(quiver_rgb,255);
+  }
   
   void  Quiver2D::Add(const vtkSmartPointer<vtkFloatArray> xcoord,
                       const vtkSmartPointer<vtkFloatArray> ycoord,
@@ -788,8 +774,8 @@ namespace visvtk
     // make a vector glyph
     vtkSmartPointer<vtkGlyphSource2D> vec = vtkSmartPointer<vtkGlyphSource2D>::New();
     vec->SetGlyphTypeToArrow();
-    double s=0.1;
-    vec->SetScale(s);
+
+    vec->SetScale(arrow_scale);
     vec->FilledOff();
 
     vtkSmartPointer<vtkGlyph3D> glyph = vtkSmartPointer<vtkGlyph3D>::New();
@@ -800,6 +786,7 @@ namespace visvtk
     // map gridfunction
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(glyph->GetOutputPort());
+    mapper->SetLookupTable(lut);
 
     double vrange[2];
     gridfunc->GetScalarRange(vrange);
@@ -809,15 +796,7 @@ namespace visvtk
     vtkSmartPointer<vtkActor> quiver_actor = vtkSmartPointer<vtkActor>::New();
     quiver_actor->SetMapper(mapper);
 
-    // create colorbar
-    vtkSmartPointer<vtkScalarBarActor> colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
-    colorbar->SetLookupTable(mapper->GetLookupTable());
-    colorbar->SetWidth(0.085);
-    colorbar->SetHeight(0.9);
-    colorbar->SetPosition(0.9, 0.1);
-    vtkSmartPointer<vtkTextProperty> text_prop_cb = colorbar->GetLabelTextProperty();
-    text_prop_cb->SetColor(1.0, 1.0, 1.0);
-    colorbar->SetLabelTextProperty(text_prop_cb);
+
 
     // create outline
     vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
@@ -830,8 +809,9 @@ namespace visvtk
 
     // add actors to renderer
     Plot::AddActor(quiver_actor);
-    Plot::AddActor(colorbar);
     Plot::AddActor(outline);
+    if (show_colorbar)
+      Plot::AddActor(Plot::BuildColorBar(mapper));
   }
   
   

@@ -6,6 +6,9 @@
 
 #include "vtkFloatArray.h"
 #include "vtkSmartPointer.h"
+#include "vtkScalarBarActor.h"
+#include "vtkPolyDataMapper.h"
+
 
 #include "vtkRectilinearGrid.h"
 #include "vtkStructuredGrid.h"
@@ -36,9 +39,11 @@ namespace visvtk
     
     void Clear(void);
     
-    void Show(Plot & plot);
+    void Add(Plot & plot);
 
-    void ShowInteractive(Plot & plot);
+    void Show();
+
+    void Interact();
     
     void SetInteractorStyle(int istyle);
     
@@ -71,6 +76,7 @@ namespace visvtk
     struct RGBPoint { double x,r,g,b;};
     typedef std::vector<RGBPoint> RGBTable;
     static vtkSmartPointer<vtkLookupTable>  BuildLookupTable(RGBTable & xrgb, int size);
+    static vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper);
 
   protected:
     void AddActor(vtkSmartPointer<vtkProp> prop);
@@ -126,13 +132,13 @@ namespace visvtk
       void ShowSurfaceColorbar(bool b) {show_surface_colorbar=b;}
       void ShowContourColorbar(bool b) {show_contour_colorbar=b;}
 
-      void SetSurfaceRGBTable(RGBTable & tab)
+      void SetSurfaceRGBTable(RGBTable & tab, int tabsize)
       {
-        surface_lut=BuildLookupTable(tab,256);
+        surface_lut=BuildLookupTable(tab,tabsize);
       }
-      void SetContourRGBTable(RGBTable & tab)
+      void SetContourRGBTable(RGBTable & tab, int tabsize)
       {
-        contour_lut=BuildLookupTable(tab,256);
+        contour_lut=BuildLookupTable(tab,tabsize);
       }
       
     private:
@@ -156,12 +162,22 @@ namespace visvtk
       
       Surf2D();
       
+
       template<typename V>
       void Add(const V &xcoord, 
                const V &ycoord, 
                const V &values);
+
+      void SetRGBTable(RGBTable & tab, int tabsize)
+      {
+        lut=BuildLookupTable(tab,tabsize);
+      }
+      void ShowColorbar(bool b) {show_colorbar=b;}
+
     private:
       void Add(vtkSmartPointer<vtkStructuredGrid> gridfunc, double Lxy, double Lz);
+      vtkSmartPointer<vtkLookupTable> lut;
+      bool show_colorbar=true;
   };
 
   ///////////////////////////////////////////
@@ -176,13 +192,24 @@ namespace visvtk
                const V &y, 
                const V &u,
                const V &v);
-      
+
+      void SetRGBTable(RGBTable & tab, int tabsize)
+      {
+        lut=BuildLookupTable(tab,tabsize);
+      }
+      void ShowColorbar(bool b) {show_colorbar=b;}
+
+      void SetArrowScale(double scale) {arrow_scale=scale;}
+
     private:
       void Add(const vtkSmartPointer<vtkFloatArray> xcoord,
                const vtkSmartPointer<vtkFloatArray> ycoord,
                const vtkSmartPointer<vtkFloatArray> colors,
                const vtkSmartPointer<vtkFloatArray> values);
 
+      vtkSmartPointer<vtkLookupTable> lut;
+      bool show_colorbar=true;
+      double arrow_scale=0.333;
   };
 
   template<typename V>
