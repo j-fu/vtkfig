@@ -40,7 +40,7 @@ namespace visvtk
 
     void ShowInteractive(Plot & plot);
     
-    void InteractorStyle(int istyle);
+    void SetInteractorStyle(int istyle);
     
   private:
     void Restart(void);
@@ -65,12 +65,20 @@ namespace visvtk
     friend class Figure;
   public:
     Plot();
+    void SetBackground(double r, double g, double b) { bgcolor[0]=r; bgcolor[1]=g; bgcolor[2]=b;}
+    bool IsEmpty();
+
+    struct RGBPoint { double x,r,g,b;};
+    typedef std::vector<RGBPoint> RGBTable;
+    static vtkSmartPointer<vtkLookupTable>  BuildLookupTable(RGBTable & xrgb, int size);
+
   protected:
     void AddActor(vtkSmartPointer<vtkProp> prop);
-    bool IsEmpty();
     
+
   private:
     std::shared_ptr<std::vector<vtkSmartPointer<vtkProp>>>actors;
+    double bgcolor[3]={1,1,1};
   };
   
   ///////////////////////////////////////////////////
@@ -112,11 +120,33 @@ namespace visvtk
                const V &ycoord, 
                const V &values);
 
+      
+      void ShowSurface(bool b) {show_surface=b;}
+      void ShowContour(bool b) {show_contour=b;}
+      void ShowSurfaceColorbar(bool b) {show_surface_colorbar=b;}
+      void ShowContourColorbar(bool b) {show_contour_colorbar=b;}
+
+      void SetSurfaceRGBTable(RGBTable & tab)
+      {
+        surface_lut=BuildLookupTable(tab,256);
+      }
+      void SetContourRGBTable(RGBTable & tab)
+      {
+        contour_lut=BuildLookupTable(tab,256);
+      }
+      
     private:
       void Add(const vtkSmartPointer<vtkFloatArray> xcoord,
                const vtkSmartPointer<vtkFloatArray> ycoord,
                const vtkSmartPointer<vtkFloatArray> values);
-      
+
+      vtkSmartPointer<vtkLookupTable> surface_lut;
+      vtkSmartPointer<vtkLookupTable> contour_lut;
+
+      bool show_surface=true;
+      bool show_contour=true;
+      bool show_surface_colorbar=true;
+      bool show_contour_colorbar=false;
   };
 
   ///////////////////////////////////////////
@@ -130,7 +160,6 @@ namespace visvtk
       void Add(const V &xcoord, 
                const V &ycoord, 
                const V &values);
-      
     private:
       void Add(vtkSmartPointer<vtkStructuredGrid> gridfunc, double Lxy, double Lz);
   };

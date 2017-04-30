@@ -28,7 +28,7 @@ int main(void)
   const double dy = (y_upp-y_low)/(Ny-1);
 
   auto fig=visvtk::Figure();
-  fig.InteractorStyle(3);
+  fig.SetInteractorStyle(3);
 
   
 

@@ -36,6 +36,7 @@ int main(void)
 
     auto fig=visvtk::Figure();
     auto plot=visvtk::Quiver2D();
+    plot.SetBackground(0,0,0);
     plot.Add(xx, yy, u, v);
     fig.ShowInteractive(plot);
 

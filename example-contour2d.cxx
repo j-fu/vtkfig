@@ -19,6 +19,7 @@ int main(void)
   std::vector<double> x(Nx);
   std::vector<double> y(Ny);
   std::vector<double> z(Nx*Ny);
+  std::vector<double> z1(Nx*Ny);
   
   const double x_low = -2.5;
   const double x_upp = 1.5;
@@ -28,8 +29,12 @@ int main(void)
   const double dy = (y_upp-y_low)/(Ny-1);
 
   auto fig=visvtk::Figure();
-
-  
+  auto colors=Plot::RGBTable
+    { 
+      {0.0, 0.0, 0.0, 1.0},
+      {0.5, 0.0, 1.0, 0.0},
+      {1.0, 1.0, 0.0, 0.0}
+    };
 
   for (int i=0; i<Nx; i++)
     x[i] = x_low+i*dx;
@@ -45,16 +50,25 @@ int main(void)
   double i0=ii;
   while (1)
   {
-  auto contour=visvtk::Contour2D();
+    auto contour=visvtk::Contour2D();
+    contour.SetSurfaceRGBTable(colors);
+    contour.ShowContour(false);
 
-  for (int i=0; i<Nx; i++)
-    for (int j=0; j<Ny; j++)
-      z[j*Nx+i] = G(x[i],y[j],t);
-  
+    auto contour1=visvtk::Contour2D();
+    contour1.ShowSurface(false);
+
+    for (int i=0; i<Nx; i++)
+      for (int j=0; j<Ny; j++)
+      {
+        z[j*Nx+i] = G(x[i],y[j],t);
+        z1[j*Nx+i] = G(x[i],y[j],t-10);
+      }
 
     contour.Add(x,y,z);
+    contour1.Add(x,y,z1);
     fig.Clear();
     fig.Show(contour);
+    fig.Show(contour1);
     if (ii==3) 
       fig.Dump("example-contour2d.png");
 

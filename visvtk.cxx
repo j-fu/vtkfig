@@ -26,7 +26,7 @@
 #include "vtkOutlineFilter.h"
 #include "vtkProperty.h"
 #include "vtkLookupTable.h"
-
+#include "vtkColorTransferFunction.h"
 
 // Surf2D
 #include "vtkStructuredGridGeometryFilter.h"
@@ -60,6 +60,7 @@ namespace visvtk
 #define CMD_DUMP 3
 #define CMD_TERMINATE 4
 #define CMD_INTERACTOR_STYLE 5
+#define CMD_BGCOLOR 4
  
   class Communicator: public vtkObjectBase
   {
@@ -74,22 +75,26 @@ namespace visvtk
 
     /// condition variable signalizing finished command
     std::condition_variable cv; 
-
+    
     /// File name to be passed 
     std::string fname; 
     
     /// Actors to be passed
     std::shared_ptr<std::vector<vtkSmartPointer<vtkProp>>> actors; 
-
+    
     /// Thread state
     bool render_thread_alive=false;
-
+    
     /// space down state ?
-    bool space_down=false;
-
+    bool communication_blocked=false;
+    
     /// interactor style
     int interactor_style= INTERACTOR_STYLE_2D;
-
+    
+    /// backgroud color
+    double bgcolor[3]={1,1,1};
+      
+    
 
     Communicator():vtkObjectBase() {};
 
@@ -126,7 +131,7 @@ namespace visvtk
       }
       else if (key=="space")
       {
-        communicator->space_down=!communicator->space_down;
+        communicator->communication_blocked=!communicator->communication_blocked;
       }
       else
         vtkInteractorStyleImage::OnChar();
@@ -168,7 +173,7 @@ namespace visvtk
       }
       else if (key=="space")
       {
-        communicator->space_down=!communicator->space_down;
+        communicator->communication_blocked=!communicator->communication_blocked;
       }
       else
         vtkInteractorStyleTrackballCamera::OnChar();
@@ -203,7 +208,7 @@ namespace visvtk
                          void *vtkNotUsed(callData))
     {
 
-      if (communicator->space_down) return;
+      if (communicator->communication_blocked) return;
 
       if (
         vtkCommand::TimerEvent == eventId  // Check if timer event
@@ -225,6 +230,9 @@ namespace visvtk
           int nactors=communicator->actors->size();
           for (int i=0;i<nactors;i++)
             renderer->AddActor(communicator->actors->at(i));
+          renderer->SetBackground(communicator->bgcolor[0],
+                                  communicator->bgcolor[1],
+                                  communicator->bgcolor[2]);
           interactor->Render();
           communicator->actors=0;
         }
@@ -394,14 +402,17 @@ namespace visvtk
     communicator->cmd=CMD_SHOW;
     std::unique_lock<std::mutex> lock(communicator->mtx);
     communicator->actors=plot.actors;
+    communicator->bgcolor[0]=plot.bgcolor[0];
+    communicator->bgcolor[1]=plot.bgcolor[1];
+    communicator->bgcolor[2]=plot.bgcolor[2];
     communicator->cv.wait(lock);
 
-    communicator->space_down=true;
+    communicator->communication_blocked=true;
     do
     {
       std::this_thread::sleep_for (std::chrono::milliseconds(10));
     }
-    while (communicator->space_down);
+    while (communicator->communication_blocked);
 
   }
 
@@ -437,7 +448,7 @@ namespace visvtk
     communicator->cv.wait(lock);
   }
   
-  void Figure::InteractorStyle(int istyle)
+  void Figure::SetInteractorStyle(int istyle)
   {
     if (!communicator->render_thread_alive)
       //Restart();
@@ -539,6 +550,31 @@ namespace visvtk
 ////////////////////////////////////////////////////////////
   Contour2D::Contour2D(): Plot()
   {
+    RGBTable surface_rgb={{0,1,0,0},{1,0,0,1}};
+    RGBTable contour_rgb={{0,0,0,0},{1,0,0,0}};
+    surface_lut=BuildLookupTable(surface_rgb,255);
+    contour_lut=BuildLookupTable(contour_rgb,255);
+  }
+  
+  
+  vtkSmartPointer<vtkLookupTable>  Plot::BuildLookupTable(std::vector<RGBPoint> & xrgb, int size)
+  {
+    vtkSmartPointer<vtkColorTransferFunction> ctf = vtkSmartPointer<vtkColorTransferFunction>::New();
+    for (int i=0;i<xrgb.size(); i++)
+      ctf->AddRGBPoint(xrgb[i].x,xrgb[i].r,xrgb[i].g, xrgb[i].b);
+    
+    vtkSmartPointer<vtkLookupTable> lut = vtkSmartPointer<vtkLookupTable>::New();
+    
+    lut->SetNumberOfTableValues(size);
+    lut->Build();
+    
+    for(size_t i = 0; i < size; ++i)
+     {
+       double rgb[3];
+       ctf->GetColor(static_cast<double>(i)/(double)size,rgb);
+       lut->SetTableValue(i,rgb[0],rgb[1],rgb[2]);
+     }
+    return lut;
   }
 
 
@@ -563,71 +599,72 @@ namespace visvtk
     // filter to geometry primitive
     vtkSmartPointer<vtkRectilinearGridGeometryFilter> geometry =  vtkSmartPointer<vtkRectilinearGridGeometryFilter>::New();
     geometry->SetInputDataObject(gridfunc);
+    double vrange[2];
+    gridfunc->GetScalarRange(vrange);
 
-    // map gridfunction
-    vtkSmartPointer<vtkPolyDataMapper>mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    mapper->SetInputConnection(geometry->GetOutputPort());
+    vtkSmartPointer<vtkPolyDataMapper> surfaceMapper;
 
-    double tmp[2];
-    gridfunc->GetScalarRange(tmp);
-    mapper->SetScalarRange(tmp[0], tmp[1]);
+    if (show_surface)
+    {
+      vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+      mapper->SetInputConnection(geometry->GetOutputPort());
+      mapper->SetScalarRange(vrange[0], vrange[1]);
+      mapper->SetLookupTable(surface_lut);
+      
+      vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
+      plot->SetMapper(mapper);
+      Plot::AddActor(plot);
+      
+      if (show_surface_colorbar)
+      {
+        vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
+        colorbar->SetLookupTable(surface_lut);
+        colorbar->SetWidth(0.085);
+        colorbar->SetHeight(0.9);
+        colorbar->SetNumberOfLabels(10);
+        colorbar->SetPosition(0.9, 0.1);
 
-    // create plot surface actor
-    vtkSmartPointer<vtkActor>     surfplot = vtkSmartPointer<vtkActor>::New();
-    surfplot->SetMapper(mapper);
-
-
-
-    // create contour lines (10 lines)
-    vtkSmartPointer<vtkContourFilter> contlines = vtkSmartPointer<vtkContourFilter>::New();
-    contlines->SetInputConnection(geometry->GetOutputPort());
-    double tempdiff = (tmp[1]-tmp[0])/(10*lines);
-    contlines->GenerateValues(lines, tmp[0]+tempdiff, tmp[1]-tempdiff);
-
-
-    vtkSmartPointer<vtkLookupTable>  lut = vtkSmartPointer<vtkLookupTable>::New();
-    lut->SetHueRange(0,0);
-    lut->SetSaturationRange(0,0);
-    lut->SetValueRange(0,0);
-    
-    vtkSmartPointer<vtkPolyDataMapper> contourMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    contourMapper->SetInputConnection(contlines->GetOutputPort());
-    contourMapper->SetScalarRange(tmp[0], tmp[1]);
-    contourMapper->SetLookupTable(lut);
-
-    vtkSmartPointer<vtkActor>     contours = vtkSmartPointer<vtkActor>::New();
-    contours->SetMapper(contourMapper);
-    contours->GetProperty()->SetColor(1.0, 0.8941, 0.7686);
+        vtkSmartPointer<vtkTextProperty> text_prop_cb = colorbar->GetLabelTextProperty();
+        text_prop_cb->SetColor(0,0,0);
+        text_prop_cb->SetFontSize(40);
+        colorbar->SetLabelTextProperty(text_prop_cb);
+        Plot::AddActor(colorbar);
+      }
+    }
 
 
-    // vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
-    // outlinefilter->SetInputConnection(geometry->GetOutputPort());
+    if (show_contour)
+    {
+      vtkSmartPointer<vtkContourFilter> contlines = vtkSmartPointer<vtkContourFilter>::New();
+      contlines->SetInputConnection(geometry->GetOutputPort());
+      double tempdiff = (vrange[1]-vrange[0])/(10*lines);
+      contlines->GenerateValues(lines, vrange[0]+tempdiff, vrange[1]-tempdiff);
+      
+      vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+      mapper->SetInputConnection(contlines->GetOutputPort());
+      mapper->SetScalarRange(vrange[0], vrange[1]);
+      mapper->SetLookupTable(contour_lut);
 
-    // vtkSmartPointer<vtkPolyDataMapper>outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    // outlineMapper->SetInputDataObject(outlinefilter->GetOutput());
+      vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
+      plot->SetMapper(mapper);
+      Plot::AddActor(plot);
+      if (show_contour_colorbar)
+      {
+        vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
+        colorbar->SetLookupTable(contour_lut);
+        colorbar->SetWidth(0.085);
+        colorbar->SetHeight(0.9);
+        colorbar->SetNumberOfLabels(10);
+        colorbar->SetPosition(0.9, 0.1);
+        vtkSmartPointer<vtkTextProperty> text_prop_cb = colorbar->GetLabelTextProperty();
+        text_prop_cb->SetColor(0,0,0);
+        text_prop_cb->SetFontSize(40);
+        colorbar->SetLabelTextProperty(text_prop_cb);
+        Plot::AddActor(colorbar);
+      }
 
-    // vtkSmartPointer<vtkActor>     outline = vtkSmartPointer<vtkActor>::New();
-    // outline->SetMapper(outlineMapper);
-    // outline->GetProperty()->SetColor(0, 0, 0);
+    }
 
-
-    vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
-    colorbar->SetLookupTable(mapper->GetLookupTable());
-    colorbar->SetWidth(0.085);
-    colorbar->SetHeight(0.9);
-    colorbar->SetNumberOfLabels(10);
-    colorbar->SetPosition(0.9, 0.1);
-
-    vtkSmartPointer<vtkTextProperty> text_prop_cb = colorbar->GetLabelTextProperty();
-    text_prop_cb->SetColor(0,0,0);
-    text_prop_cb->SetFontSize(40);
-    colorbar->SetLabelTextProperty(text_prop_cb);
-
-
-//        Plot::AddActor(outline);
-    Plot::AddActor(surfplot);
-    Plot::AddActor(contours);
-    Plot::AddActor(colorbar);
   }
 
 ////////////////////////////////////////////////////////////
@@ -666,9 +703,9 @@ namespace visvtk
     else
 	mapper->SetInputConnection(geometry->GetOutputPort());
 
-    double tmp[2];
-    gridfunc->GetScalarRange(tmp);
-    mapper->SetScalarRange(tmp[0], tmp[1]);
+    double vrange[2];
+    gridfunc->GetScalarRange(vrange);
+    mapper->SetScalarRange(vrange[0], vrange[1]);
 
     // create plot surface actor
     vtkSmartPointer<vtkActor> surfplot = vtkSmartPointer<vtkActor>::New();
@@ -764,9 +801,9 @@ namespace visvtk
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(glyph->GetOutputPort());
 
-    double tmp[2];
-    gridfunc->GetScalarRange(tmp);
-    mapper->SetScalarRange(tmp[0], tmp[1]);
+    double vrange[2];
+    gridfunc->GetScalarRange(vrange);
+    mapper->SetScalarRange(vrange[0], vrange[1]);
 
     // create plot quiver actor
     vtkSmartPointer<vtkActor> quiver_actor = vtkSmartPointer<vtkActor>::New();
