@@ -332,9 +332,9 @@ namespace visvtk
     callback->window=window;
 
     myInteractorStyleImage::SetStyle(interactor,communicator);
-    // renderer->GetActiveCamera()->SetPosition(0,0,20);
-    // renderer->GetActiveCamera()->SetFocalPoint(0,0,0);
-    // renderer->GetActiveCamera()->OrthogonalizeViewUp();
+    renderer->GetActiveCamera()->SetPosition(0,0,20);
+    renderer->GetActiveCamera()->SetFocalPoint(0,0,0);
+    renderer->GetActiveCamera()->OrthogonalizeViewUp();
     
 
 
@@ -440,6 +440,7 @@ namespace visvtk
   
   void Figure::Clear(void)
   {
+    cleared_flag=true;
     if (!communicator->render_thread_alive)
       throw std::runtime_error("Clear: render thread is dead");
     
@@ -637,14 +638,14 @@ namespace visvtk
 
     if (show_contour)
     {
-      vtkSmartPointer<vtkContourFilter> contlines = vtkSmartPointer<vtkContourFilter>::New();
-      contlines->SetInputConnection(geometry->GetOutputPort());
+      vtkSmartPointer<vtkContourFilter> isocontours = vtkSmartPointer<vtkContourFilter>::New();
+      isocontours->SetInputConnection(geometry->GetOutputPort());
       double tempdiff = (vrange[1]-vrange[0])/(10*lines);
-      contlines->GenerateValues(lines, vrange[0]+tempdiff, vrange[1]-tempdiff);
+      isocontours->GenerateValues(lines, vrange[0]+tempdiff, vrange[1]-tempdiff);
 
 
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      mapper->SetInputConnection(contlines->GetOutputPort());
+      mapper->SetInputConnection(isocontours->GetOutputPort());
       mapper->SetScalarRange(vrange[0], vrange[1]);
       mapper->SetLookupTable(contour_lut);
 
@@ -803,17 +804,17 @@ namespace visvtk
 
 
     // create outline
-    vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
-    outlinefilter->SetInputConnection(geometry->GetOutputPort());
-    vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
-    vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
-    outline->SetMapper(outlineMapper);
-    outline->GetProperty()->SetColor(0, 0, 0);
+    // vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
+    // outlinefilter->SetInputConnection(geometry->GetOutputPort());
+    // vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    // outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
+    // vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
+    // outline->SetMapper(outlineMapper);
+    // outline->GetProperty()->SetColor(0, 0, 0);
+    // Plot::AddActor(outline);
 
     // add actors to renderer
     Plot::AddActor(quiver_actor);
-    Plot::AddActor(outline);
     if (show_colorbar)
       Plot::AddActor(Plot::BuildColorBar(mapper));
   }
@@ -848,7 +849,7 @@ namespace visvtk
     int Ny = ycoord->GetNumberOfTuples();
     int Nz = zcoord->GetNumberOfTuples();
 
-    int nisosurfaces=10;
+    int nisocontours=10;
 
     // Create rectilinear grid
     gridfunc->SetDimensions(Nx, Ny, Nz);
@@ -857,15 +858,13 @@ namespace visvtk
     gridfunc->SetZCoordinates(zcoord);
 
     gridfunc->GetPointData()->SetScalars(values);
-
+    double vrange[2];
+    gridfunc->GetScalarRange(vrange);
 
     // filter to geometry primitive
     vtkSmartPointer<vtkRectilinearGridGeometryFilter> geometry =  vtkSmartPointer<vtkRectilinearGridGeometryFilter>::New();
     geometry->SetInputDataObject(gridfunc);
 
-    double vrange[2];
-    gridfunc->GetScalarRange(vrange);
-    cout << vrange[0] << " " << vrange[1] << endl;
 
     if (show_slice)
     {
@@ -885,34 +884,21 @@ namespace visvtk
 
     if (show_contour)
     {
-      vtkSmartPointer<vtkContourFilter> isosurfaces = vtkSmartPointer<vtkContourFilter>::New();
-      isosurfaces->SetInputConnection(geometry->GetOutputPort());
+      vtkSmartPointer<vtkContourFilter> isocontours = vtkSmartPointer<vtkContourFilter>::New();
+      isocontours->SetInputData(gridfunc);
 
+      double tempdiff = (vrange[1]-vrange[0])/(10*nisocontours);
+      isocontours->GenerateValues(nisocontours, vrange[0]+tempdiff, vrange[1]-tempdiff);
 
-      double tempdiff = (vrange[1]-vrange[0])/(10*nisosurfaces);
-      isosurfaces->GenerateValues(nisosurfaces, vrange[0]+tempdiff, vrange[1]-tempdiff);
-      // isosurfaces->SetNumberOfContours(1);
-      // isosurfaces->SetValue(0,0.0);
-      isosurfaces->ComputeScalarsOn(); 
-      isosurfaces->ComputeNormalsOn();
-      isosurfaces->Update();
-
-
-
-      vtkSmartPointer<vtkPolyDataNormals> isonormals = vtkSmartPointer<vtkPolyDataNormals>::New();
-      isonormals->SetInputConnection(isosurfaces->GetOutputPort());
-      isonormals->Update();
 
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      mapper->SetInputConnection(isosurfaces->GetOutputPort());
+      mapper->SetInputConnection(isocontours->GetOutputPort());
       mapper->SetScalarRange(vrange[0], vrange[1]);
       mapper->SetLookupTable(contour_lut);
-      mapper->Update();
 
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
       plot->SetMapper(mapper);
       Plot::AddActor(plot);
-
       if (show_contour_colorbar)
         Plot::AddActor(Plot::BuildColorBar(mapper));
 

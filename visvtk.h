@@ -53,6 +53,7 @@ namespace visvtk
     void Terminate(void);
     vtkSmartPointer<Communicator> communicator;
     std::shared_ptr<std::thread> render_thread;
+    bool cleared_flag=true;
   };
   
   /// Base class for all plots.
