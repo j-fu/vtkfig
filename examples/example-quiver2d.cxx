@@ -1,5 +1,5 @@
-#include "vtkfig.h";
 #include "vtkfigFrame.h"
+#include "vtkfig.h"
 
 inline double G(double x,double y, double t) 
 {

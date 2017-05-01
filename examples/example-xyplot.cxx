@@ -1,5 +1,5 @@
-#include "vtkfig.h"
 #include "vtkfigFrame.h"
+#include "vtkfigXYPlot.h"
 #include <cstdio>
 
 
