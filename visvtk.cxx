@@ -713,7 +713,7 @@ namespace visvtk
 	outlinefilter->SetInputConnection(geometry->GetOutputPort());
 
     vtkSmartPointer<vtkPolyDataMapper>outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    outlineMapper->SetInputDataObject(outlinefilter->GetOutput());
+    outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
     vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
     outline->SetMapper(outlineMapper);
     outline->GetProperty()->SetColor(0, 0, 0);
@@ -806,7 +806,7 @@ namespace visvtk
     vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
     outlinefilter->SetInputConnection(geometry->GetOutputPort());
     vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    outlineMapper->SetInputDataObject(outlinefilter->GetOutput());
+    outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
     vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
     outline->SetMapper(outlineMapper);
     outline->GetProperty()->SetColor(0, 0, 0);
@@ -886,8 +886,7 @@ namespace visvtk
     if (show_contour)
     {
       vtkSmartPointer<vtkContourFilter> isosurfaces = vtkSmartPointer<vtkContourFilter>::New();
-      isosurfaces->SetInputDataObject(geometry->GetOutput());
-//      isosurfaces->ComputeNormalsOn();
+      isosurfaces->SetInputConnection(geometry->GetOutputPort());
 
 
       double tempdiff = (vrange[1]-vrange[0])/(10*nisosurfaces);
@@ -895,16 +894,17 @@ namespace visvtk
       // isosurfaces->SetNumberOfContours(1);
       // isosurfaces->SetValue(0,0.0);
       isosurfaces->ComputeScalarsOn(); 
+      isosurfaces->ComputeNormalsOn();
       isosurfaces->Update();
 
 
 
       vtkSmartPointer<vtkPolyDataNormals> isonormals = vtkSmartPointer<vtkPolyDataNormals>::New();
-      isonormals->SetInputDataObject(isosurfaces->GetOutput());
+      isonormals->SetInputConnection(isosurfaces->GetOutputPort());
       isonormals->Update();
 
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      mapper->SetInputDataObject(isosurfaces->GetOutput());
+      mapper->SetInputConnection(isosurfaces->GetOutputPort());
       mapper->SetScalarRange(vrange[0], vrange[1]);
       mapper->SetLookupTable(contour_lut);
       mapper->Update();
@@ -922,7 +922,7 @@ namespace visvtk
     vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
     outlinefilter->SetInputConnection(geometry->GetOutputPort());
     vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    outlineMapper->SetInputDataObject(outlinefilter->GetOutput());
+    outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
     vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
     outline->SetMapper(outlineMapper);
     outline->GetProperty()->SetColor(0, 0, 0);
