@@ -22,6 +22,7 @@
 // Contour
 #include "vtkRectilinearGridGeometryFilter.h"
 #include "vtkContourFilter.h"
+#include "vtkMarchingContourFilter.h"
 #include "vtkOutlineFilter.h"
 #include "vtkProperty.h"
 #include "vtkLookupTable.h"
@@ -37,6 +38,9 @@
 // Quiver
 #include "vtkGlyph3D.h"
 #include "vtkGlyphSource2D.h"
+
+
+#include "vtkPolyDataNormals.h"
 
 /*
 #include "vtkCaptionActor2D.h"
@@ -328,9 +332,9 @@ namespace visvtk
     callback->window=window;
 
     myInteractorStyleImage::SetStyle(interactor,communicator);
-    renderer->GetActiveCamera()->SetPosition(0,0,20);
-    renderer->GetActiveCamera()->SetFocalPoint(0,0,0);
-    renderer->GetActiveCamera()->OrthogonalizeViewUp();
+    // renderer->GetActiveCamera()->SetPosition(0,0,20);
+    // renderer->GetActiveCamera()->SetFocalPoint(0,0,0);
+    // renderer->GetActiveCamera()->OrthogonalizeViewUp();
     
 
 
@@ -462,6 +466,42 @@ namespace visvtk
   Plot::Plot(): actors(std::make_shared<std::vector<vtkSmartPointer<vtkProp>>>()) {};
   void Plot::AddActor(vtkSmartPointer<vtkProp> prop) {actors->push_back(prop);}
   bool Plot::IsEmpty(void) {return (actors->size()==0);}
+  vtkSmartPointer<vtkLookupTable>  Plot::BuildLookupTable(std::vector<RGBPoint> & xrgb, int size)
+  {
+    vtkSmartPointer<vtkColorTransferFunction> ctf = vtkSmartPointer<vtkColorTransferFunction>::New();
+    for (int i=0;i<xrgb.size(); i++)
+      ctf->AddRGBPoint(xrgb[i].x,xrgb[i].r,xrgb[i].g, xrgb[i].b);
+    
+    vtkSmartPointer<vtkLookupTable> lut = vtkSmartPointer<vtkLookupTable>::New();
+    
+    lut->SetNumberOfTableValues(size);
+    lut->Build();
+    
+    for(size_t i = 0; i < size; ++i)
+     {
+       double rgb[3];
+       ctf->GetColor(static_cast<double>(i)/(double)size,rgb);
+       lut->SetTableValue(i,rgb[0],rgb[1],rgb[2]);
+     }
+    return lut;
+  }
+
+  vtkSmartPointer<vtkScalarBarActor> Plot::BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper)
+  {
+        vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
+        colorbar->SetLookupTable(mapper->GetLookupTable());
+        colorbar->SetWidth(0.085);
+        colorbar->SetHeight(0.9);
+        colorbar->SetNumberOfLabels(10);
+        colorbar->SetPosition(0.9, 0.1);
+
+        vtkSmartPointer<vtkTextProperty> text_prop_cb = colorbar->GetLabelTextProperty();
+        text_prop_cb->SetColor(0,0,0);
+        text_prop_cb->SetFontSize(40);
+        colorbar->SetLabelTextProperty(text_prop_cb);
+        return colorbar;
+  }
+
 
   ////////////////////////////////////////////////
   XYPlot::XYPlot():Plot()
@@ -554,42 +594,6 @@ namespace visvtk
   }
   
   
-  vtkSmartPointer<vtkLookupTable>  Plot::BuildLookupTable(std::vector<RGBPoint> & xrgb, int size)
-  {
-    vtkSmartPointer<vtkColorTransferFunction> ctf = vtkSmartPointer<vtkColorTransferFunction>::New();
-    for (int i=0;i<xrgb.size(); i++)
-      ctf->AddRGBPoint(xrgb[i].x,xrgb[i].r,xrgb[i].g, xrgb[i].b);
-    
-    vtkSmartPointer<vtkLookupTable> lut = vtkSmartPointer<vtkLookupTable>::New();
-    
-    lut->SetNumberOfTableValues(size);
-    lut->Build();
-    
-    for(size_t i = 0; i < size; ++i)
-     {
-       double rgb[3];
-       ctf->GetColor(static_cast<double>(i)/(double)size,rgb);
-       lut->SetTableValue(i,rgb[0],rgb[1],rgb[2]);
-     }
-    return lut;
-  }
-
-  vtkSmartPointer<vtkScalarBarActor> Plot::BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper)
-  {
-        vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
-        colorbar->SetLookupTable(mapper->GetLookupTable());
-        colorbar->SetWidth(0.085);
-        colorbar->SetHeight(0.9);
-        colorbar->SetNumberOfLabels(10);
-        colorbar->SetPosition(0.9, 0.1);
-
-        vtkSmartPointer<vtkTextProperty> text_prop_cb = colorbar->GetLabelTextProperty();
-        text_prop_cb->SetColor(0,0,0);
-        text_prop_cb->SetFontSize(40);
-        colorbar->SetLabelTextProperty(text_prop_cb);
-        return colorbar;
-  }
-
   void Contour2D::Add(vtkSmartPointer<vtkFloatArray> xcoord ,vtkSmartPointer<vtkFloatArray> ycoord ,vtkSmartPointer<vtkFloatArray> values )
   {
     
@@ -614,7 +618,6 @@ namespace visvtk
     double vrange[2];
     gridfunc->GetScalarRange(vrange);
 
-    vtkSmartPointer<vtkPolyDataMapper> surfaceMapper;
 
     if (show_surface)
     {
@@ -638,7 +641,8 @@ namespace visvtk
       contlines->SetInputConnection(geometry->GetOutputPort());
       double tempdiff = (vrange[1]-vrange[0])/(10*lines);
       contlines->GenerateValues(lines, vrange[0]+tempdiff, vrange[1]-tempdiff);
-      
+
+
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       mapper->SetInputConnection(contlines->GetOutputPort());
       mapper->SetScalarRange(vrange[0], vrange[1]);
@@ -814,6 +818,118 @@ namespace visvtk
       Plot::AddActor(Plot::BuildColorBar(mapper));
   }
   
+
+
+////////////////////////////////////////////////////////////
+  Contour3D::Contour3D(): Plot()
+  {
+    RGBTable slice_rgb={{0,0,0,1},{1,1,0,0}};
+    RGBTable contour_rgb={{0,0,0,0},{1,0,0,0}};
+    slice_lut=BuildLookupTable(slice_rgb,255);
+    contour_lut=BuildLookupTable(contour_rgb,2);
+  }
+  
+  
+  void Contour3D::Add(
+    vtkSmartPointer<vtkFloatArray> xcoord ,
+    vtkSmartPointer<vtkFloatArray> ycoord ,
+    vtkSmartPointer<vtkFloatArray> zcoord ,
+    vtkSmartPointer<vtkFloatArray> values
+    )
+  {
+    
+    if (!Plot::IsEmpty())
+      throw std::runtime_error("Contor3D already has data");
+
+
+    vtkSmartPointer<vtkRectilinearGrid> gridfunc=vtkSmartPointer<vtkRectilinearGrid>::New();
+
+    int Nx = xcoord->GetNumberOfTuples();
+    int Ny = ycoord->GetNumberOfTuples();
+    int Nz = zcoord->GetNumberOfTuples();
+
+    int nisosurfaces=10;
+
+    // Create rectilinear grid
+    gridfunc->SetDimensions(Nx, Ny, Nz);
+    gridfunc->SetXCoordinates(xcoord);
+    gridfunc->SetYCoordinates(ycoord);
+    gridfunc->SetZCoordinates(zcoord);
+
+    gridfunc->GetPointData()->SetScalars(values);
+
+
+    // filter to geometry primitive
+    vtkSmartPointer<vtkRectilinearGridGeometryFilter> geometry =  vtkSmartPointer<vtkRectilinearGridGeometryFilter>::New();
+    geometry->SetInputDataObject(gridfunc);
+
+    double vrange[2];
+    gridfunc->GetScalarRange(vrange);
+    cout << vrange[0] << " " << vrange[1] << endl;
+
+    if (show_slice)
+    {
+      vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+      mapper->SetInputConnection(geometry->GetOutputPort());
+      mapper->SetScalarRange(vrange[0], vrange[1]);
+      mapper->SetLookupTable(slice_lut);
+      
+      vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
+      plot->SetMapper(mapper);
+      Plot::AddActor(plot);
+      
+      if (show_slice_colorbar)
+        Plot::AddActor(Plot::BuildColorBar(mapper));
+    }
+
+
+    if (show_contour)
+    {
+      vtkSmartPointer<vtkContourFilter> isosurfaces = vtkSmartPointer<vtkContourFilter>::New();
+      isosurfaces->SetInputDataObject(geometry->GetOutput());
+//      isosurfaces->ComputeNormalsOn();
+
+
+      double tempdiff = (vrange[1]-vrange[0])/(10*nisosurfaces);
+      isosurfaces->GenerateValues(nisosurfaces, vrange[0]+tempdiff, vrange[1]-tempdiff);
+      // isosurfaces->SetNumberOfContours(1);
+      // isosurfaces->SetValue(0,0.0);
+      isosurfaces->ComputeScalarsOn(); 
+      isosurfaces->Update();
+
+
+
+      vtkSmartPointer<vtkPolyDataNormals> isonormals = vtkSmartPointer<vtkPolyDataNormals>::New();
+      isonormals->SetInputDataObject(isosurfaces->GetOutput());
+      isonormals->Update();
+
+      vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+      mapper->SetInputDataObject(isosurfaces->GetOutput());
+      mapper->SetScalarRange(vrange[0], vrange[1]);
+      mapper->SetLookupTable(contour_lut);
+      mapper->Update();
+
+      vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
+      plot->SetMapper(mapper);
+      Plot::AddActor(plot);
+
+      if (show_contour_colorbar)
+        Plot::AddActor(Plot::BuildColorBar(mapper));
+
+    }
+
+    // create outline
+    vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
+    outlinefilter->SetInputConnection(geometry->GetOutputPort());
+    vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    outlineMapper->SetInputDataObject(outlinefilter->GetOutput());
+    vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
+    outline->SetMapper(outlineMapper);
+    outline->GetProperty()->SetColor(0, 0, 0);
+    Plot::AddActor(outline);
+
+  }
+
   
 }
 
