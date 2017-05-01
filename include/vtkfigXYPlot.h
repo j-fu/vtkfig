@@ -33,9 +33,7 @@ namespace vtkfig
     vtkSmartPointer<vtkXYPlotActor> xyplot;
     int iplot=0;
   };
-
-
-
+  
 
   template<typename V>
     inline

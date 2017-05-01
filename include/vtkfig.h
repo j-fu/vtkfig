@@ -4,16 +4,10 @@
 
 
 
-#include "vtkFloatArray.h"
-#include "vtkSmartPointer.h"
-#include "vtkScalarBarActor.h"
-#include "vtkPolyDataMapper.h"
-
-
 #include "vtkRectilinearGrid.h"
 #include "vtkStructuredGrid.h"
-#include "vtkXYPlotActor.h"
 #include "vtkPointData.h"
+#include "vtkFloatArray.h"
 
 
 #include "vtkfigFigure.h"
@@ -21,72 +15,6 @@
 namespace vtkfig
 {
 
-
-  ///////////////////////////////////////////
-  class Contour2D: public Figure
-  {
-  public:
-  
-  Contour2D();
-  
-  template<typename V>
-      void Add(const V &xcoord, 
-               const V &ycoord, 
-               const V &values);
-
-      
-      void ShowSurface(bool b) {show_surface=b;}
-      void ShowContour(bool b) {show_contour=b;}
-      void ShowSurfaceColorbar(bool b) {show_surface_colorbar=b;}
-      void ShowContourColorbar(bool b) {show_contour_colorbar=b;}
-
-      void SetSurfaceRGBTable(RGBTable & tab, int tabsize)
-      {
-        surface_lut=BuildLookupTable(tab,tabsize);
-      }
-      void SetContourRGBTable(RGBTable & tab, int tabsize)
-      {
-        contour_lut=BuildLookupTable(tab,tabsize);
-      }
-      
-    private:
-      void Add(const vtkSmartPointer<vtkFloatArray> xcoord,
-               const vtkSmartPointer<vtkFloatArray> ycoord,
-               const vtkSmartPointer<vtkFloatArray> values);
-
-      vtkSmartPointer<vtkLookupTable> surface_lut;
-      vtkSmartPointer<vtkLookupTable> contour_lut;
-
-      bool show_surface=true;
-      bool show_contour=true;
-      bool show_surface_colorbar=true;
-      bool show_contour_colorbar=false;
-  };
-
-  ///////////////////////////////////////////
-  class Surf2D: public Figure
-    {
-    public:
-      
-      Surf2D();
-      
-
-      template<typename V>
-      void Add(const V &xcoord, 
-               const V &ycoord, 
-               const V &values);
-
-      void SetRGBTable(RGBTable & tab, int tabsize)
-      {
-        lut=BuildLookupTable(tab,tabsize);
-      }
-      void ShowColorbar(bool b) {show_colorbar=b;}
-
-    private:
-      void Add(vtkSmartPointer<vtkStructuredGrid> gridfunc, double Lxy, double Lz);
-      vtkSmartPointer<vtkLookupTable> lut;
-      bool show_colorbar=true;
-  };
 
   ///////////////////////////////////////////
   class Quiver2D: public Figure
@@ -166,94 +94,10 @@ namespace vtkfig
   }
 
 
-  template<typename V>
-  inline
-  void Contour2D::Add(const V &x, const V &y, const V &z)
-  {
-    const unsigned int Nx = x.size();
-    const unsigned int Ny = y.size();
-    
-    vtkSmartPointer<vtkFloatArray> xcoord = vtkSmartPointer<vtkFloatArray>::New();
-    xcoord->SetNumberOfComponents(1);
-    xcoord->SetNumberOfTuples(Nx);
-    
-    vtkSmartPointer<vtkFloatArray> ycoord =vtkSmartPointer<vtkFloatArray>::New();
-    ycoord->SetNumberOfComponents(1);
-    ycoord->SetNumberOfTuples(Ny);
-    
-    for (int i=0; i<Nx; i++)
-      xcoord->InsertComponent(i, 0, x[i]);
-    for (int i=0; i<Ny; i++)
-      ycoord->InsertComponent(i, 0, y[i]);
-    
-    vtkSmartPointer<vtkFloatArray>values = vtkSmartPointer<vtkFloatArray>::New();
-    values->SetNumberOfComponents(1);
-    values->SetNumberOfTuples(Nx*Ny);
-    
-    for (int j = 0, k=0; j < Ny; j++)
-      for (int i = 0; i < Nx; i++)
-        values->InsertComponent(k++, 0, z[j*Nx+i]);
-    
-    Add(xcoord,ycoord, values);
-    
-  }
 
   
   
   
-  template<typename V>
-  inline
-  void Surf2D::Add(const V &x, const V &y, const V &z)
-  {
-    const unsigned int Nx = x.size();
-    const unsigned int Ny = y.size();
-    int i,j,k;
-    double Lxy,Lz;
-    
-    if (x[Nx-1]-x[0] > y[Ny-1]-y[0])
-      Lxy = x[Nx-1]-x[0];
-    else
-      Lxy = y[Ny-1]-y[0];
-    double z_low = 10000, z_upp = -10000;
-    
-    
-    vtkSmartPointer<vtkStructuredGrid> 	    gridfunc= vtkSmartPointer<vtkStructuredGrid>::New();
-    gridfunc->SetDimensions(Nx, Ny, 1);
-    
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-    for (j = 0; j < Ny; j++)
-    {
-      for (i = 0; i < Nx; i++)
-      {
-        points->InsertNextPoint(x[i], y[j], z[j*Nx+i]);
-        
-        if (z[j*Nx+i]< z_low)
-          z_low = z[j*Nx+i];
-        if (z[j*Nx+i]> z_upp)
-          z_upp = z[j*Nx+i];
-      }
-    }
-    gridfunc->SetPoints(points);
-    
-    
-    vtkSmartPointer<vtkFloatArray> colors = vtkSmartPointer<vtkFloatArray>::New();
-    colors->SetNumberOfComponents(1);
-    colors->SetNumberOfTuples(Nx*Ny);
-    k = 0;
-    for (j = 0; j < Ny; j++)
-      for (i = 0; i < Nx; i++)
-      {
-        colors->InsertComponent(k, 0, z[j*Nx+i]);
-        k++;
-      }
-    
-    gridfunc->GetPointData()->SetScalars(colors);
-    
-    Lz = z_upp-z_low;
-    
-    Add(gridfunc,Lxy,Lz);
-    
-  }
 
   
 

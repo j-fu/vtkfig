@@ -1,3 +1,6 @@
+#ifndef VTKFIG_FIGURE_H
+#define VTKFIG_FIGURE_H
+
 #include <memory>
 #include <vector>
 
@@ -45,3 +48,4 @@ namespace vtkfig
 
 }
 
+#endif
