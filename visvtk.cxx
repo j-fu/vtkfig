@@ -6,6 +6,7 @@
 #include "vtkRenderer.h"
 #include "vtkRenderWindow.h"
 #include "vtkRenderWindowInteractor.h"
+
 #include "vtkWindowToImageFilter.h"
 #include "vtkCommand.h"
 #include "vtkPNGWriter.h"
@@ -855,25 +856,20 @@ namespace visvtk
     double vrange[2];
     gridfunc->GetScalarRange(vrange);
 
-    // filter to geometry primitive
-    vtkSmartPointer<vtkRectilinearGridGeometryFilter> geometry =  vtkSmartPointer<vtkRectilinearGridGeometryFilter>::New();
-    geometry->SetInputDataObject(gridfunc);
-
-
-    if (show_slice)
-    {
-      vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      mapper->SetInputConnection(geometry->GetOutputPort());
-      mapper->SetScalarRange(vrange[0], vrange[1]);
-      mapper->SetLookupTable(slice_lut);
+    // if (show_slice)
+    // {
+    //   vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    //   mapper->SetInputConnection(geometry->GetOutputPort());
+    //   mapper->SetScalarRange(vrange[0], vrange[1]);
+    //   mapper->SetLookupTable(slice_lut);
       
-      vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
-      plot->SetMapper(mapper);
-      Plot::AddActor(plot);
+    //   vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
+    //   plot->SetMapper(mapper);
+    //   Plot::AddActor(plot);
       
-      if (show_slice_colorbar)
-        Plot::AddActor(Plot::BuildColorBar(mapper));
-    }
+    //   if (show_slice_colorbar)
+    //     Plot::AddActor(Plot::BuildColorBar(mapper));
+    // }
 
 
     if (show_contour)
@@ -900,7 +896,7 @@ namespace visvtk
 
     // create outline
     vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
-    outlinefilter->SetInputConnection(geometry->GetOutputPort());
+    outlinefilter->SetInputData(gridfunc);
     vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
     vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
