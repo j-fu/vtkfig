@@ -56,21 +56,22 @@ namespace visvtk
 {
   ////////////////////////////////////////////////
   /// Communicator class Figure-> RenderThread
-#define CMD_NONE 0
-#define CMD_CLEAR 1
-#define CMD_SHOW 2
-#define CMD_DUMP 3
-#define CMD_TERMINATE 4
-#define CMD_INTERACTOR_STYLE 5
-#define CMD_BGCOLOR 4
  
   class Communicator: public vtkObjectBase
   {
   public:
-
+    enum class Command
+    {
+      None=0,
+        Show,
+        Dump,            
+        Terminate,
+        SetInteractorStyle,
+        SetBackgroundColor          
+    };
 
     /// Communication command
-    int cmd; 
+    Command cmd; 
 
     /// mutex to organize communication
     std::mutex mtx; 
@@ -91,7 +92,7 @@ namespace visvtk
     bool communication_blocked=false;
     
     /// interactor style
-    int interactor_style= INTERACTOR_STYLE_2D;
+    Figure::InteractorStyle interactor_style= Figure::InteractorStyle::Planar;
     
     /// backgroud color
     double bgcolor[3]={1,1,1};
@@ -217,7 +218,7 @@ namespace visvtk
 
       if (
         vtkCommand::TimerEvent == eventId  // Check if timer event
-        && communicator->cmd!= CMD_NONE  // Check if command has been given
+        && communicator->cmd!=Communicator::Command::None  // Check if command has been given
         )
       {
 
@@ -229,9 +230,10 @@ namespace visvtk
         {
 
           
-        case CMD_SHOW:
+        case Communicator::Command::Show:
           // Add actors to renderer
         {
+          renderer->RemoveAllViewProps();
           int nactors=communicator->actors->size();
           for (int i=0;i<nactors;i++)
             renderer->AddActor(communicator->actors->at(i));
@@ -242,15 +244,7 @@ namespace visvtk
         }
         break;
 
-        case CMD_CLEAR:
-          // Remove all actors, clear window
-        {
-          renderer->RemoveAllViewProps();
-//          renderer->Clear();
-        }
-        break;
-
-        case CMD_DUMP:
+        case Communicator::Command::Dump:
           // Write picture to file
         {
           vtkSmartPointer<vtkWindowToImageFilter> imgfilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
@@ -267,15 +261,15 @@ namespace visvtk
         }
         break;
 
-        case CMD_INTERACTOR_STYLE:
+        case Communicator::Command::SetInteractorStyle:
           // Switch interactor style
         {
           switch(communicator->interactor_style)
           {
-          case INTERACTOR_STYLE_2D:
+          case Figure::InteractorStyle::Planar:
             myInteractorStyleImage::SetStyle(interactor,communicator);
             break;
-          case INTERACTOR_STYLE_3D:
+          case  Figure::InteractorStyle::Volumetric:
             myInteractorStyleTrackballCamera::SetStyle(interactor,communicator);
             break;
           default:
@@ -284,7 +278,7 @@ namespace visvtk
         }
         break;
 
-        case CMD_TERMINATE:
+        case Communicator::Command::Terminate:
           // Close window and terminate
         {
           window->Finalize();
@@ -296,7 +290,7 @@ namespace visvtk
         }
         
         // Clear command
-        communicator->cmd=CMD_NONE;
+        communicator->cmd=Communicator::Command::None;
 
         // Notify that command was exeuted
         communicator->cv.notify_all();
@@ -389,7 +383,7 @@ namespace visvtk
     if (!communicator->render_thread_alive)
       throw std::runtime_error("Show: render thread is dead");
 
-    communicator->cmd=CMD_SHOW;
+    communicator->cmd=Communicator::Command::Show;
     std::unique_lock<std::mutex> lock(communicator->mtx);
     communicator->cv.wait(lock);
   }
@@ -425,7 +419,7 @@ namespace visvtk
     if (!communicator->render_thread_alive)
       throw std::runtime_error("Dump: render thread is dead");
 
-    communicator->cmd=CMD_DUMP;
+    communicator->cmd=Communicator::Command::Dump;
     communicator->fname=fname;
     std::unique_lock<std::mutex> lock(communicator->mtx);
     communicator->cv.wait(lock);
@@ -433,31 +427,31 @@ namespace visvtk
   
   void Figure::Terminate(void)
   {
-    communicator->cmd=CMD_TERMINATE;
+    communicator->cmd=Communicator::Command::Terminate;
     std::unique_lock<std::mutex> lock(communicator->mtx);
     communicator->cv.wait(lock);
   }
   
   void Figure::Clear(void)
   {
-    cleared_flag=true;
-    if (!communicator->render_thread_alive)
-      throw std::runtime_error("Clear: render thread is dead");
+
+    // if (!communicator->render_thread_alive)
+    //   throw std::runtime_error("Clear: render thread is dead");
     
-    communicator->cmd=CMD_CLEAR;
-    std::unique_lock<std::mutex> lock(communicator->mtx);
-    communicator->cv.wait(lock);
+    // communicator->cmd=Communicator::Command::CLEAR;
+    // std::unique_lock<std::mutex> lock(communicator->mtx);
+    // communicator->cv.wait(lock);
     communicator->actors=std::make_shared<std::vector<vtkSmartPointer<vtkProp>>>();
   }
   
-  void Figure::SetInteractorStyle(int istyle)
+  void Figure::SetInteractorStyle(Figure::InteractorStyle istyle)
   {
     if (!communicator->render_thread_alive)
       //Restart();
       throw std::runtime_error("InteractorStyle: render thread is dead");
 
     communicator->interactor_style=istyle;
-    communicator->cmd=CMD_INTERACTOR_STYLE;
+    communicator->cmd=Communicator::Command::SetInteractorStyle;
     std::unique_lock<std::mutex> lock(communicator->mtx);
     communicator->cv.wait(lock);
   }

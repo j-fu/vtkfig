@@ -23,14 +23,19 @@ namespace visvtk
   
   class Communicator;
   class Plot;
-  
 
-  #define INTERACTOR_STYLE_2D 2
-  #define INTERACTOR_STYLE_3D 3
 
   class Figure
   {
   public:
+
+  enum class InteractorStyle
+  {
+    Planar=2,
+      Volumetric=3
+      };
+
+
     Figure();
 
     ~Figure();
@@ -45,7 +50,7 @@ namespace visvtk
 
     void Interact();
     
-    void SetInteractorStyle(int istyle);
+    void SetInteractorStyle(InteractorStyle style);
     
   private:
     void Restart(void);
@@ -53,7 +58,6 @@ namespace visvtk
     void Terminate(void);
     vtkSmartPointer<Communicator> communicator;
     std::shared_ptr<std::thread> render_thread;
-    bool cleared_flag=true;
   };
   
   /// Base class for all plots.
