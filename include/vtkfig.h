@@ -1,8 +1,8 @@
+
 #ifndef VTKFIG_H
 #define VTKFIG_H
 
-#include <memory>
-#include <thread>
+
 
 #include "vtkFloatArray.h"
 #include "vtkSmartPointer.h"
@@ -16,81 +16,13 @@
 #include "vtkPointData.h"
 
 
-
+#include "vtkfigFigure.h"
 
 namespace vtkfig
 {
   
-  class Communicator;
-  class Figure;
 
-
-  class Frame
-  {
-  public:
-
-  enum class InteractorStyle
-  {
-    Planar=2,
-      Volumetric=3
-      };
-
-
-    Frame();
-
-    ~Frame();
-    
-    void Dump(std::string fname);
-    
-    void Clear(void);
-    
-    void Add(Figure & figure);
-
-    void Show();
-
-    void Interact();
-    
-    void SetInteractorStyle(InteractorStyle style);
-    
-  private:
-    void Restart(void);
-    void Start(void);
-    void Terminate(void);
-    vtkSmartPointer<Communicator> communicator;
-    std::shared_ptr<std::thread> render_thread;
-  };
   
-  /// Base class for all figures.
-  ///
-  /// It justs consists of a set of instances of vtkActor which
-  /// contains the data  used by vtk.
-  /// 
-  /// Derived classes just should fill these actors by calling Figure::AddActor
-  ///
-  /// In this way, any vtk rendering pipeline can be used. 
-  /// 
-
-  class Figure
-  {
-    friend class Frame;
-  public:
-    Figure();
-    void SetBackground(double r, double g, double b) { bgcolor[0]=r; bgcolor[1]=g; bgcolor[2]=b;}
-    bool IsEmpty();
-
-    struct RGBPoint { double x,r,g,b;};
-    typedef std::vector<RGBPoint> RGBTable;
-    static vtkSmartPointer<vtkLookupTable>  BuildLookupTable(RGBTable & xrgb, int size);
-    static vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper);
-
-  protected:
-    void AddActor(vtkSmartPointer<vtkProp> prop);
-    
-
-  private:
-    std::shared_ptr<std::vector<vtkSmartPointer<vtkProp>>>actors;
-    double bgcolor[3]={1,1,1};
-  };
   
   ///////////////////////////////////////////////////
   class XYPlot: public Figure

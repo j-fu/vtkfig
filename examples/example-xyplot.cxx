@@ -1,4 +1,5 @@
 #include "vtkfig.h"
+#include "vtkfigFrame.h"
 #include <cstdio>
 
 
