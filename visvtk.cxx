@@ -40,6 +40,10 @@
 #include "vtkGlyph3D.h"
 #include "vtkGlyphSource2D.h"
 
+// Contour3d
+#include "vtkPlane.h"
+#include "vtkCutter.h"
+
 
 #include "vtkPolyDataNormals.h"
 
@@ -856,20 +860,32 @@ namespace visvtk
     double vrange[2];
     gridfunc->GetScalarRange(vrange);
 
-    // if (show_slice)
-    // {
-    //   vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    //   mapper->SetInputConnection(geometry->GetOutputPort());
-    //   mapper->SetScalarRange(vrange[0], vrange[1]);
-    //   mapper->SetLookupTable(slice_lut);
-      
-    //   vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
-    //   plot->SetMapper(mapper);
-    //   Plot::AddActor(plot);
-      
-    //   if (show_slice_colorbar)
-    //     Plot::AddActor(Plot::BuildColorBar(mapper));
-    // }
+    if (show_slice)
+    {
+
+      vtkSmartPointer<vtkPlane> plane= vtkSmartPointer<vtkPlane>::New();
+      plane->SetOrigin(gridfunc->GetCenter());
+      plane->SetNormal(1,0,0);
+
+      vtkSmartPointer<vtkCutter> planecut= vtkSmartPointer<vtkCutter>::New();
+      planecut->SetInputDataObject(gridfunc);
+      planecut->SetCutFunction(plane);
+
+
+      vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+
+      mapper->SetInputConnection(planecut->GetOutputPort());
+      mapper->SetScalarRange(vrange[0], vrange[1]);
+      mapper->SetLookupTable(contour_lut);
+    
+      vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
+      plot->SetMapper(mapper);
+      Plot::AddActor(plot);
+    
+      if (show_slice_colorbar)
+        Plot::AddActor(Plot::BuildColorBar(mapper));
+
+    }
 
 
     if (show_contour)

@@ -414,7 +414,7 @@ class Contour3D: public Plot
       vtkSmartPointer<vtkLookupTable> slice_lut;
       vtkSmartPointer<vtkLookupTable> contour_lut;
 
-      bool show_slice=false;
+      bool show_slice=true;
       bool show_contour=true;
       bool show_slice_colorbar=true;
       bool show_contour_colorbar=true;
