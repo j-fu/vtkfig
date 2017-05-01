@@ -1,15 +1,12 @@
-#include "visvtk.h"
+#include "vtkfig.h"
 #include <cstdio>
-
-using namespace std;
-using namespace visvtk;
 
 
 int main(void)
 {
 
 
-  auto fig=visvtk::Figure();
+  auto frame=vtkfig::Frame();
   
   const int NN = 40;
   const double t_low = 0;
@@ -29,7 +26,7 @@ int main(void)
   double color2[3] =
     { 1.0, 0.0, 0.0 };
   
-  string title;
+  std::string title;
   
   double tt=0;
   int ii=0;
@@ -52,17 +49,17 @@ int main(void)
     char titlebuf[20];
   
     {    
-      auto plot=visvtk::XYPlot();
+      auto xyplot=vtkfig::XYPlot();
       snprintf(titlebuf,20,"frame %d",ii++);
-      plot.Title(titlebuf);
-      plot.Add(x1, y1, color1, "-");
-      plot.Add(x2, y2, color2, ".-");
-      fig.Clear();
-      fig.Add(plot);
-      fig.Show();
+      xyplot.Title(titlebuf);
+      xyplot.Add(x1, y1, color1, "-");
+      xyplot.Add(x2, y2, color2, ".-");
+      frame.Clear();
+      frame.Add(xyplot);
+      frame.Show();
 
       if (ii==3) 
-        fig.Dump("example1.png");
+        frame.Dump("example1.png");
     }
 
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

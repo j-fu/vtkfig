@@ -1,7 +1,5 @@
-#include "visvtk.h"
+#include "vtkfig.h"
 
-using namespace std;
-using namespace visvtk;
 
 inline double G(double x,double y, double t) 
 {
@@ -27,8 +25,8 @@ int main(void)
   const double dx = (x_upp-x_low)/(Nx-1);
   const double dy = (y_upp-y_low)/(Ny-1);
 
-  auto fig=visvtk::Figure();
-  auto colors=Plot::RGBTable
+  auto frame=vtkfig::Frame();
+  auto colors=vtkfig::Figure::RGBTable
     { 
       {0.0, 0.0, 0.0, 1.0},
       {0.5, 0.0, 1.0, 0.0},
@@ -49,7 +47,7 @@ int main(void)
   double i0=ii;
   while (1)
   {
-    auto contour=visvtk::Contour2D();
+    auto contour=vtkfig::Contour2D();
     contour.SetSurfaceRGBTable(colors,255);
 
     for (int i=0; i<Nx; i++)
@@ -59,12 +57,12 @@ int main(void)
       }
 
     contour.Add(x,y,z);
-    fig.Clear();
-    fig.Add(contour);
-    fig.Show();
+    frame.Clear();
+    frame.Add(contour);
+    frame.Show();
 
     if (ii==3) 
-      fig.Dump("example-contour2d.png");
+      frame.Dump("example-contour2d.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

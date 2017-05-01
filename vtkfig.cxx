@@ -55,12 +55,12 @@
 #include "vtkTubeFilter.h"
 */
 
-#include "visvtk.h"
+#include "vtkfig.h"
 
-namespace visvtk
+namespace vtkfig
 {
   ////////////////////////////////////////////////
-  /// Communicator class Figure-> RenderThread
+  /// Communicator class Frame-> RenderThread
  
   class Communicator: public vtkObjectBase
   {
@@ -97,7 +97,7 @@ namespace visvtk
     bool communication_blocked=false;
     
     /// interactor style
-    Figure::InteractorStyle interactor_style= Figure::InteractorStyle::Planar;
+    Frame::InteractorStyle interactor_style= Frame::InteractorStyle::Planar;
     
     /// backgroud color
     double bgcolor[3]={1,1,1};
@@ -271,10 +271,10 @@ namespace visvtk
         {
           switch(communicator->interactor_style)
           {
-          case Figure::InteractorStyle::Planar:
+          case Frame::InteractorStyle::Planar:
             myInteractorStyleImage::SetStyle(interactor,communicator);
             break;
-          case  Figure::InteractorStyle::Volumetric:
+          case  Frame::InteractorStyle::Volumetric:
             myInteractorStyleTrackballCamera::SetStyle(interactor,communicator);
             break;
           default:
@@ -354,13 +354,13 @@ namespace visvtk
 
 
   ////////////////////////////////////////////////
-  Figure::Figure():
+  Frame::Frame():
     communicator(Communicator::New())
   {
     Start();
   }
 
-  void Figure::Start(void)
+  void Frame::Start(void)
   {
     render_thread=std::make_shared<std::thread>(RenderThread,communicator);
     do
@@ -370,20 +370,20 @@ namespace visvtk
     while (!communicator->render_thread_alive);
 
   }
-  void Figure::Restart(void)
+  void Frame::Restart(void)
   {
     render_thread->join();
     Start();
   }
 
   
-  Figure::~Figure()
+  Frame::~Frame()
   {
     Terminate();
     render_thread->join();
   }
   
-  void Figure::Show()
+  void Frame::Show()
   {
     if (!communicator->render_thread_alive)
       throw std::runtime_error("Show: render thread is dead");
@@ -393,7 +393,7 @@ namespace visvtk
     communicator->cv.wait(lock);
   }
 
-  void Figure::Add(Plot &plot)
+  void Frame::Add(Figure &plot)
   {
 
     for (int i=0;i<plot.actors->size(); i++)
@@ -403,7 +403,7 @@ namespace visvtk
     communicator->bgcolor[2]=plot.bgcolor[2];
   }
 
-  void Figure::Interact()
+  void Frame::Interact()
   {
     if (!communicator->render_thread_alive)
       throw std::runtime_error("Show: render thread is dead");
@@ -419,7 +419,7 @@ namespace visvtk
 
 
 
-  void Figure::Dump(std::string fname)
+  void Frame::Dump(std::string fname)
   {
     if (!communicator->render_thread_alive)
       throw std::runtime_error("Dump: render thread is dead");
@@ -430,14 +430,14 @@ namespace visvtk
     communicator->cv.wait(lock);
   }
   
-  void Figure::Terminate(void)
+  void Frame::Terminate(void)
   {
     communicator->cmd=Communicator::Command::Terminate;
     std::unique_lock<std::mutex> lock(communicator->mtx);
     communicator->cv.wait(lock);
   }
   
-  void Figure::Clear(void)
+  void Frame::Clear(void)
   {
 
     // if (!communicator->render_thread_alive)
@@ -449,7 +449,7 @@ namespace visvtk
     communicator->actors=std::make_shared<std::vector<vtkSmartPointer<vtkProp>>>();
   }
   
-  void Figure::SetInteractorStyle(Figure::InteractorStyle istyle)
+  void Frame::SetInteractorStyle(Frame::InteractorStyle istyle)
   {
     if (!communicator->render_thread_alive)
       //Restart();
@@ -463,10 +463,10 @@ namespace visvtk
 
   
   ////////////////////////////////////////////////
-  Plot::Plot(): actors(std::make_shared<std::vector<vtkSmartPointer<vtkProp>>>()) {};
-  void Plot::AddActor(vtkSmartPointer<vtkProp> prop) {actors->push_back(prop);}
-  bool Plot::IsEmpty(void) {return (actors->size()==0);}
-  vtkSmartPointer<vtkLookupTable>  Plot::BuildLookupTable(std::vector<RGBPoint> & xrgb, int size)
+  Figure::Figure(): actors(std::make_shared<std::vector<vtkSmartPointer<vtkProp>>>()) {};
+  void Figure::AddActor(vtkSmartPointer<vtkProp> prop) {actors->push_back(prop);}
+  bool Figure::IsEmpty(void) {return (actors->size()==0);}
+  vtkSmartPointer<vtkLookupTable>  Figure::BuildLookupTable(std::vector<RGBPoint> & xrgb, int size)
   {
     vtkSmartPointer<vtkColorTransferFunction> ctf = vtkSmartPointer<vtkColorTransferFunction>::New();
     for (int i=0;i<xrgb.size(); i++)
@@ -486,7 +486,7 @@ namespace visvtk
     return lut;
   }
 
-  vtkSmartPointer<vtkScalarBarActor> Plot::BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper)
+  vtkSmartPointer<vtkScalarBarActor> Figure::BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper)
   {
         vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
         colorbar->SetLookupTable(mapper->GetLookupTable());
@@ -504,7 +504,7 @@ namespace visvtk
 
 
   ////////////////////////////////////////////////
-  XYPlot::XYPlot():Plot()
+  XYPlot::XYPlot():Figure()
   {
     xyplot = vtkSmartPointer<vtkXYPlotActor>::New();
     
@@ -539,7 +539,7 @@ namespace visvtk
     xyplot->Modified();
     xyplot->SetXValuesToValue();
 
-    Plot::AddActor(xyplot);
+    Figure::AddActor(xyplot);
   }
 
   void XYPlot::Title(const char * title)
@@ -585,7 +585,7 @@ namespace visvtk
   }
 
 ////////////////////////////////////////////////////////////
-  Contour2D::Contour2D(): Plot()
+  Contour2D::Contour2D(): Figure()
   {
     RGBTable surface_rgb={{0,0,0,1},{1,1,0,0}};
     RGBTable contour_rgb={{0,0,0,0},{1,0,0,0}};
@@ -597,7 +597,7 @@ namespace visvtk
   void Contour2D::Add(vtkSmartPointer<vtkFloatArray> xcoord ,vtkSmartPointer<vtkFloatArray> ycoord ,vtkSmartPointer<vtkFloatArray> values )
   {
     
-    if (!Plot::IsEmpty())
+    if (!Figure::IsEmpty())
       throw std::runtime_error("Contor2D already has data");
 
 
@@ -628,10 +628,10 @@ namespace visvtk
       
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
       plot->SetMapper(mapper);
-      Plot::AddActor(plot);
+      Figure::AddActor(plot);
       
       if (show_surface_colorbar)
-        Plot::AddActor(Plot::BuildColorBar(mapper));
+        Figure::AddActor(Figure::BuildColorBar(mapper));
     }
 
 
@@ -650,16 +650,16 @@ namespace visvtk
 
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
       plot->SetMapper(mapper);
-      Plot::AddActor(plot);
+      Figure::AddActor(plot);
       if (show_contour_colorbar)
-        Plot::AddActor(Plot::BuildColorBar(mapper));
+        Figure::AddActor(Figure::BuildColorBar(mapper));
 
     }
 
   }
 
 ////////////////////////////////////////////////////////////
-  Surf2D::Surf2D(): Plot()
+  Surf2D::Surf2D(): Figure()
   {
     RGBTable surface_rgb={{0,0,0,1},{1,1,0,0}};
     lut=BuildLookupTable(surface_rgb,255);
@@ -737,20 +737,20 @@ namespace visvtk
 
 
     // renderer
-    Plot::AddActor(surfplot);
+    Figure::AddActor(surfplot);
     if (draw_box)
-	Plot::AddActor(outline);
+	Figure::AddActor(outline);
     if (draw_axes)
-	Plot::AddActor(axes);
+	Figure::AddActor(axes);
     if (show_colorbar)
-      Plot::AddActor(Plot::BuildColorBar(mapper));
+      Figure::AddActor(Figure::BuildColorBar(mapper));
     
   }
 
 
 
   ////////////////////////////////////////////////////////////
-  Quiver2D::Quiver2D(): Plot()  
+  Quiver2D::Quiver2D(): Figure()  
   {  
     RGBTable quiver_rgb={{0,0,0,1},{1,1,0,0}};
     lut=BuildLookupTable(quiver_rgb,255);
@@ -810,18 +810,18 @@ namespace visvtk
     // vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
     // outline->SetMapper(outlineMapper);
     // outline->GetProperty()->SetColor(0, 0, 0);
-    // Plot::AddActor(outline);
+    // Figure::AddActor(outline);
 
     // add actors to renderer
-    Plot::AddActor(quiver_actor);
+    Figure::AddActor(quiver_actor);
     if (show_colorbar)
-      Plot::AddActor(Plot::BuildColorBar(mapper));
+      Figure::AddActor(Figure::BuildColorBar(mapper));
   }
   
 
 
 ////////////////////////////////////////////////////////////
-  Contour3D::Contour3D(): Plot()
+  Contour3D::Contour3D(): Figure()
   {
     RGBTable slice_rgb={{0,0,0,1},{1,1,0,0}};
     RGBTable contour_rgb={{0,0,0,0},{1,0,0,0}};
@@ -838,7 +838,7 @@ namespace visvtk
     )
   {
     
-    if (!Plot::IsEmpty())
+    if (!Figure::IsEmpty())
       throw std::runtime_error("Contor3D already has data");
 
 
@@ -880,10 +880,10 @@ namespace visvtk
     
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
       plot->SetMapper(mapper);
-      Plot::AddActor(plot);
+      Figure::AddActor(plot);
     
       if (show_slice_colorbar)
-        Plot::AddActor(Plot::BuildColorBar(mapper));
+        Figure::AddActor(Figure::BuildColorBar(mapper));
 
     }
 
@@ -903,10 +903,11 @@ namespace visvtk
       mapper->SetLookupTable(contour_lut);
 
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
+      plot->GetProperty()->SetOpacity(0.5);
       plot->SetMapper(mapper);
-      Plot::AddActor(plot);
+      Figure::AddActor(plot);
       if (show_contour_colorbar)
-        Plot::AddActor(Plot::BuildColorBar(mapper));
+        Figure::AddActor(Figure::BuildColorBar(mapper));
 
     }
 
@@ -918,7 +919,7 @@ namespace visvtk
     vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
     outline->SetMapper(outlineMapper);
     outline->GetProperty()->SetColor(0, 0, 0);
-    Plot::AddActor(outline);
+    Figure::AddActor(outline);
 
   }
 

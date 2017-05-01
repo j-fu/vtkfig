@@ -1,7 +1,5 @@
-#include "visvtk.h"
+#include "vtkfig.h"
 
-using namespace std;
-using namespace visvtk;
 
 inline double G(double x,double y, double t) 
 {
@@ -27,8 +25,8 @@ int main(void)
   const double dx = (x_upp-x_low)/(Nx-1);
   const double dy = (y_upp-y_low)/(Ny-1);
 
-  auto fig=visvtk::Figure();
-  fig.SetInteractorStyle(Figure::InteractorStyle::Volumetric);
+  auto frame=vtkfig::Frame();
+  frame.SetInteractorStyle(vtkfig::Frame::InteractorStyle::Volumetric);
 
   
 
@@ -46,7 +44,7 @@ int main(void)
   double i0=ii;
   while (1)
   {
-  auto surf=visvtk::Surf2D();
+  auto surf=vtkfig::Surf2D();
 
   for (int i=0; i<Nx; i++)
     for (int j=0; j<Ny; j++)
@@ -54,12 +52,12 @@ int main(void)
   
 
     surf.Add(x,y,z);
-    fig.Clear();
-    fig.Add(surf);
-    fig.Show();
+    frame.Clear();
+    frame.Add(surf);
+    frame.Show();
 
     if (ii==3) 
-      fig.Dump("example-surf2d.png");
+      frame.Dump("example-surf2d.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

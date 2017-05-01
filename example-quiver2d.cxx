@@ -1,9 +1,4 @@
-#include "visvtk.h"
-
-#include "visvtk.h"
-
-using namespace std;
-using namespace visvtk;
+#include "vtkfig.h";
 
 inline double G(double x,double y, double t) 
 {
@@ -32,14 +27,14 @@ int main(void)
   const double dx = (x_upp-x_low)/(Nx-1);
   const double dy = (y_upp-y_low)/(Ny-1);
 
-  auto fig=visvtk::Figure();
-  auto colors=Plot::RGBTable
+  auto frame=vtkfig::Frame();
+  auto colors=vtkfig::Figure::RGBTable
     { 
       {0.0, 0.3, 0.3, 1.0},
       {0.5, 0.3, 1.0, 0.3},
       {1.0, 1.0, 0.3, 0.3}
     };
-  auto qcolors=Plot::RGBTable
+  auto qcolors=vtkfig::Figure::RGBTable
     { 
       {0.0, 0.0, 0.0, 0.0},
       {1.0, 0.0, 0.0, 0.0}
@@ -59,11 +54,11 @@ int main(void)
   double i0=ii;
   while (1)
   {
-    auto contour=visvtk::Contour2D();
+    auto contour=vtkfig::Contour2D();
     contour.SetSurfaceRGBTable(colors,255);
     contour.ShowContour(false);
 
-    auto quiver=visvtk::Quiver2D();
+    auto quiver=vtkfig::Quiver2D();
     quiver.ShowColorbar(false);
     quiver.SetRGBTable(qcolors, 2);
     quiver.SetArrowScale(0.5);
@@ -98,13 +93,13 @@ int main(void)
     contour.Add(x,y,z);
     quiver.Add(x,y,u,v);
 
-    fig.Clear();
-    fig.Add(contour);
-    fig.Add(quiver);
-    fig.Show();
+    frame.Clear();
+    frame.Add(contour);
+    frame.Add(quiver);
+    frame.Show();
 
     if (ii==3) 
-      fig.Dump("example-quiver2d.png");
+      frame.Dump("example-quiver2d.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

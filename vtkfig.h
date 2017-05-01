@@ -1,5 +1,5 @@
-#ifndef VISVTK_H
-#define VISVTK_H
+#ifndef VTKFIG_H
+#define VTKFIG_H
 
 #include <memory>
 #include <thread>
@@ -18,14 +18,14 @@
 
 
 
-namespace visvtk
+namespace vtkfig
 {
   
   class Communicator;
-  class Plot;
+  class Figure;
 
 
-  class Figure
+  class Frame
   {
   public:
 
@@ -36,15 +36,15 @@ namespace visvtk
       };
 
 
-    Figure();
+    Frame();
 
-    ~Figure();
+    ~Frame();
     
     void Dump(std::string fname);
     
     void Clear(void);
     
-    void Add(Plot & plot);
+    void Add(Figure & figure);
 
     void Show();
 
@@ -60,21 +60,21 @@ namespace visvtk
     std::shared_ptr<std::thread> render_thread;
   };
   
-  /// Base class for all plots.
+  /// Base class for all figures.
   ///
   /// It justs consists of a set of instances of vtkActor which
   /// contains the data  used by vtk.
   /// 
-  /// Derived classes just should fill these actors by calling Plot::AddActor
+  /// Derived classes just should fill these actors by calling Figure::AddActor
   ///
   /// In this way, any vtk rendering pipeline can be used. 
   /// 
 
-  class Plot
+  class Figure
   {
-    friend class Figure;
+    friend class Frame;
   public:
-    Plot();
+    Figure();
     void SetBackground(double r, double g, double b) { bgcolor[0]=r; bgcolor[1]=g; bgcolor[2]=b;}
     bool IsEmpty();
 
@@ -93,7 +93,7 @@ namespace visvtk
   };
   
   ///////////////////////////////////////////////////
-  class XYPlot: public Plot
+  class XYPlot: public Figure
   {
     
   public:
@@ -120,7 +120,7 @@ namespace visvtk
   };
 
   ///////////////////////////////////////////
-  class Contour2D: public Plot
+  class Contour2D: public Figure
     {
     public:
       
@@ -161,7 +161,7 @@ namespace visvtk
   };
 
   ///////////////////////////////////////////
-  class Surf2D: public Plot
+  class Surf2D: public Figure
     {
     public:
       
@@ -186,7 +186,7 @@ namespace visvtk
   };
 
   ///////////////////////////////////////////
-  class Quiver2D: public Plot
+  class Quiver2D: public Figure
     {
     public:
       
@@ -377,7 +377,7 @@ namespace visvtk
 
 
 ///////////////////////////////////////////
-class Contour3D: public Plot
+class Contour3D: public Figure
     {
     public:
       
