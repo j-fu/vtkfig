@@ -7,6 +7,7 @@
 
 #include "vtkfigContour2D.h"
 
+
 namespace vtkfig
 {
 
