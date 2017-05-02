@@ -7,7 +7,7 @@ int main(void)
 {
 
 
-  auto frame=vtkfig::Frame();
+  auto frame=vtkfig::Frame::New();
   
   const int NN = 40;
   const double t_low = 0;
@@ -34,6 +34,9 @@ int main(void)
 
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
+  auto xyplot=vtkfig::XYPlot::New();
+  frame->AddFigure(xyplot);
+
   while (1)
   {
     double t = tt;
@@ -49,19 +52,15 @@ int main(void)
     
     char titlebuf[20];
   
-    {    
-      auto xyplot=vtkfig::XYPlot();
-      snprintf(titlebuf,20,"frame %d",ii++);
-      xyplot.Title(titlebuf);
-      xyplot.Add(x1, y1, color1, "-");
-      xyplot.Add(x2, y2, color2, ".-");
-      frame.Clear();
-      frame.Add(xyplot);
-      frame.Show();
-
-      if (ii==3) 
-        frame.Dump("example1.png");
-    }
+    snprintf(titlebuf,20,"frame %d",ii++);
+    xyplot->Clear();
+    xyplot->Title(titlebuf);
+    xyplot->AddPlot(x1, y1, color1, "-");
+    xyplot->AddPlot(x2, y2, color2, ".-");
+    frame->Show();
+    
+    if (ii==3) 
+        frame->Dump("example-xyplot.png");
 
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;
     double i1=ii;

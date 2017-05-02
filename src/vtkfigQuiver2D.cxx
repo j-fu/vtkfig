@@ -25,10 +25,7 @@ namespace vtkfig
     lut=BuildLookupTable(quiver_rgb,255);
   }
   
-  void  Quiver2D::Add(const vtkSmartPointer<vtkFloatArray> xcoord,
-                      const vtkSmartPointer<vtkFloatArray> ycoord,
-                      const vtkSmartPointer<vtkFloatArray> colors,
-                      const vtkSmartPointer<vtkFloatArray> vectors)
+  void  Quiver2D::Build()
   {
     vtkSmartPointer<vtkRectilinearGrid> gridfunc= vtkSmartPointer<vtkRectilinearGrid>::New();
     int Nx = xcoord->GetNumberOfTuples();
@@ -60,10 +57,8 @@ namespace vtkfig
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(glyph->GetOutputPort());
     mapper->SetLookupTable(lut);
+    mapper->UseLookupTableScalarRangeOn();
 
-    double vrange[2];
-    gridfunc->GetScalarRange(vrange);
-    mapper->SetScalarRange(vrange[0], vrange[1]);
 
     // create plot quiver actor
     vtkSmartPointer<vtkActor> quiver_actor = vtkSmartPointer<vtkActor>::New();
@@ -84,7 +79,7 @@ namespace vtkfig
     // add actors to renderer
     Figure::AddActor(quiver_actor);
     if (show_colorbar)
-      Figure::AddActor(BuildColorBar(mapper));
+      Figure::AddActor2D(BuildColorBar(mapper));
   }
 
 }

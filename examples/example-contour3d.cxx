@@ -36,8 +36,8 @@ int main(void)
   const double dy = (y_upp-y_low)/(Ny-1);
   const double dz = (z_upp-z_low)/(Nz-1);
 
-  auto frame=vtkfig::Frame();
-  frame.SetInteractorStyle(vtkfig::Frame::InteractorStyle::Volumetric);
+  auto frame=vtkfig::Frame::New();
+  frame->SetInteractorStyle(vtkfig::Frame::InteractorStyle::Volumetric);
   auto colors=vtkfig::RGBTable
     { 
       {0.0, 0.0, 0.0, 1.0},
@@ -60,10 +60,13 @@ int main(void)
   int ii=0;
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
+  auto contour=vtkfig::Contour3D::New();
+  contour->SetContourRGBTable(colors,255);
+  contour->SetGrid(x,y,z);
+  frame->AddFigure(contour);
+
   while (1)
   {
-    auto contour=vtkfig::Contour3D();
-    contour.SetContourRGBTable(colors,255);
 
     for (int i=0; i<Nx; i++)
       for (int j=0; j<Ny; j++)
@@ -72,15 +75,11 @@ int main(void)
         v[k*Nx*Ny+j*Nx+i] = G(x[i],y[j],z[k],t);
       }
 
-    assert(v.size()==(Nx*Ny*Nz));
-
-    contour.Add(x,y,z,v);
-    frame.Clear();
-    frame.Add(contour);
-    frame.Show();
+    contour->UpdateValues(v);
+    frame->Show();
 
     if (ii==3) 
-      frame.Dump("example-contour3d.png");
+      frame->Dump("example-contour3d.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

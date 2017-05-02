@@ -11,8 +11,15 @@ namespace vtkfig
   ////////////////////////////////////////////////
   XYPlot::XYPlot():Figure()
   {
+    Init();
+  }
+
+
+  void XYPlot::Init()
+  {
+
     xyplot = vtkSmartPointer<vtkXYPlotActor>::New();
-    
+    iplot=0;
     xyplot->GetProperty()->SetColor(0.0, 0.0, 0.0);
     xyplot->SetBorder(10);
     xyplot->GetPositionCoordinate()->SetValue(0.0, 0.0, 0);
@@ -44,7 +51,16 @@ namespace vtkfig
     xyplot->Modified();
     xyplot->SetXValuesToValue();
 
-    Figure::AddActor(xyplot);
+  }
+
+  void XYPlot::Build()
+  {
+    Figure::AddActor2D(xyplot);
+  }
+  void XYPlot::Clear()
+  {
+    Figure::ClearActors2D();
+    Init();
   }
 
   void XYPlot::Title(const char * title)
@@ -55,10 +71,10 @@ namespace vtkfig
   
 
 
-  void XYPlot::Add(vtkSmartPointer<vtkFloatArray> X,
-                   vtkSmartPointer<vtkFloatArray> Y, 
-                   const double col[3],
-                   const std::string linespec)
+  void XYPlot::AddPlot(vtkSmartPointer<vtkFloatArray> X,
+                       vtkSmartPointer<vtkFloatArray> Y, 
+                       const double col[3],
+                       const std::string linespec)
   {
     int N = X->GetNumberOfTuples();
     int plot_points = 0;
@@ -74,7 +90,8 @@ namespace vtkfig
       plot_points = 1;
       plot_lines = 1;
     }
-    
+
+
     // Make a VTK Rectlinear grid from arrays
     vtkSmartPointer<vtkRectilinearGrid> curve = vtkSmartPointer<vtkRectilinearGrid>::New();
     curve->SetDimensions(N, 1, 1);
@@ -82,11 +99,12 @@ namespace vtkfig
     curve->GetPointData()->SetScalars(Y);
 
 
-    xyplot->AddDataSetInput(curve);
     xyplot->SetPlotColor(iplot, col[0], col[1], col[2]);
     xyplot->SetPlotLines(iplot, plot_lines);
     xyplot->SetPlotPoints(iplot, plot_points);
+    xyplot->AddDataSetInput(curve);
     iplot++;
+    xyplot->Modified();
   }
 
 

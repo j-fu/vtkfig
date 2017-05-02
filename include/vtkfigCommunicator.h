@@ -9,9 +9,11 @@
 
 
 #include "vtkObjectBase.h"
-#include "vtkProp.h"
+#include "vtkActor.h"
+#include "vtkActor2D.h"
 
 #include "vtkfigFrame.h"
+#include "vtkfigFigure.h"
 
 namespace vtkfig
 {
@@ -26,6 +28,7 @@ namespace vtkfig
       None=0,
         Show,
         Dump,            
+        Clear,            
         Terminate,
         SetInteractorStyle,
         SetBackgroundColor          
@@ -42,9 +45,8 @@ namespace vtkfig
     
     /// File name to be passed 
     std::string fname; 
-    
-    /// Actors to be passed
-    std::shared_ptr<std::vector<vtkSmartPointer<vtkProp>>> actors; 
+
+    std::shared_ptr<std::vector<std::shared_ptr<Figure>>> figures;
     
     /// Thread state
     bool render_thread_alive=false;
@@ -54,9 +56,6 @@ namespace vtkfig
     
     /// interactor style
     Frame::InteractorStyle interactor_style= Frame::InteractorStyle::Planar;
-    
-    /// backgroud color
-    double bgcolor[3]={1,1,1};
 
     Communicator();
 

@@ -40,7 +40,7 @@ int main(void)
   int npoints=points.size()/2;
   std::vector<double>values(npoints);
 
-  auto frame=vtkfig::Frame();
+  auto frame=vtkfig::Frame::New();
   auto colors=vtkfig::RGBTable
     { 
       {0.0, 0.0, 0.0, 1.0},
@@ -53,19 +53,21 @@ int main(void)
   int ii=0;
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
+
+  auto contour=vtkfig::TriContour2D::New();
+  contour->SetSurfaceRGBTable(colors,255);
+  contour->SetGrid(points,cells);
+  frame->AddFigure(contour);
+
   while (1)
   {
     for (int ipoint=0, ival=0;ipoint<points.size(); ipoint+=2,ival++)
       values[ival]=G(points[ipoint+0],points[ipoint+1],t);
-    
-    auto contour=vtkfig::TriContour2D();
-    contour.SetSurfaceRGBTable(colors,255);
-    contour.Add(points,cells,values);
-    frame.Clear();
-    frame.Add(contour);
-    frame.Show();
+
+    contour->UpdateValues(values);
+    frame->Show();
      if (ii==3) 
-      frame.Dump("example-tricontour2d.png");
+      frame->Dump("example-tricontour2d.png");
    
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

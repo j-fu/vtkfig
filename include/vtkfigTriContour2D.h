@@ -4,7 +4,7 @@
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
 #include "vtkCellArray.h"
-
+#include "vtkContourFilter.h"
 
 #include "vtkfigFigure.h"
 #include "vtkfigTools.h"
@@ -23,11 +23,7 @@ namespace vtkfig
   public:
     
     TriContour2D();
-    
-    // template<typename V>
-    //     void Add(const V &xcoord, 
-    //              const V &ycoord, 
-    //              const V &values);
+    static std::shared_ptr<TriContour2D> New() { return std::make_shared<TriContour2D>(); }
     
     
     void ShowSurface(bool b) {show_surface=b;}
@@ -44,57 +40,100 @@ namespace vtkfig
       contour_lut=BuildLookupTable(tab,tabsize);
     }
     
-
     template <class V, class IV>
-      void Add(const V& points, 
-               const IV& cells, 
-               const V& values)
+    void SetGrid(const V& points, 
+                 const IV& cells);
+    
+    template <class V>
+    void UpdateValues(const V&values);
+    
+    void Build();
+    
+    
+    
+    
+  private:
+    double vmin,vmax;
+    
+    vtkSmartPointer<vtkUnstructuredGrid> gridfunc;
+    vtkSmartPointer<vtkFloatArray> gridvalues;
+
+    vtkSmartPointer<vtkLookupTable> surface_lut;
+    vtkSmartPointer<vtkLookupTable> contour_lut;
+    vtkSmartPointer<vtkContourFilter> isocontours;
+    
+    bool show_surface=true;
+    bool show_contour=true;
+    bool show_surface_colorbar=true;
+    bool show_contour_colorbar=false;
+    int ncont=10;
+  };
+  
+
+
+
+
+
+  template <class V, class IV>
+  inline
+  void TriContour2D::SetGrid(const V& points, 
+                            const IV& cells)
+  {
+    int npoints=points.size()/2;
+    int ncells=cells.size()/3;
+    
+    
+    gridfunc=vtkSmartPointer<vtkUnstructuredGrid>::New();
+    
+    for (int icell=0;icell<cells.size(); icell+=3)
     {
-      int npoints=points.size()/2;
-      int ncells=cells.size()/3;
-      assert(npoints==values.size());
-      
-      vtkSmartPointer<vtkUnstructuredGrid> grid=vtkSmartPointer<vtkUnstructuredGrid>::New();
-      
-      for (int icell=0;icell<cells.size(); icell+=3)
-      {
-        vtkIdType 	 c[3]={cells[icell+0],cells[icell+1],cells[icell+2]};
-        grid->InsertNextCell(VTK_TRIANGLE,3,c);
-      }
-      
-      vtkSmartPointer<vtkPoints> gridpoints = vtkSmartPointer<vtkPoints>::New();
-      for (int ipoint=0;ipoint<points.size(); ipoint+=2)
-      {
-        gridpoints->InsertNextPoint(points[ipoint+0],points[ipoint+1],0);
-      }
-      grid->SetPoints(gridpoints);
-      
-      
-      vtkSmartPointer<vtkFloatArray> gridvalues = vtkSmartPointer<vtkFloatArray>::New();
-      gridvalues->SetNumberOfComponents(1);
-      gridvalues->SetNumberOfTuples(npoints);
-      for (int i=0;i<npoints; i++)
-      {
-        gridvalues->InsertComponent(i,0,values[i]);
-      }
-      
-      grid->GetPointData()->SetScalars(gridvalues);
-      Add(grid);
+      vtkIdType 	 c[3]={cells[icell+0],cells[icell+1],cells[icell+2]};
+      gridfunc->InsertNextCell(VTK_TRIANGLE,3,c);
     }
     
-        
-    private:
-  void Add(vtkSmartPointer<vtkUnstructuredGrid> gridfunc);
+    vtkSmartPointer<vtkPoints> gridpoints = vtkSmartPointer<vtkPoints>::New();
+    for (int ipoint=0;ipoint<points.size(); ipoint+=2)
+    {
+      gridpoints->InsertNextPoint(points[ipoint+0],points[ipoint+1],0);
+    }
+    gridfunc->SetPoints(gridpoints);
+    
+    
+    gridvalues = vtkSmartPointer<vtkFloatArray>::New();
+    gridvalues->SetNumberOfComponents(1);
+    gridvalues->SetNumberOfTuples(npoints);
+    for (int i=0;i<npoints; i++)
+    {
+      gridvalues->InsertComponent(i,0,0);
+    }
+    
+    gridfunc->GetPointData()->SetScalars(gridvalues);
+  }
+  
+  template <class V>
+  inline
+  void TriContour2D::UpdateValues(const V& values)
+  {
+    int npoints=values.size();
+    for (int i=0;i<npoints; i++)
+    {
+        double v=values[i];
+        vmin=std::min(v,vmin);
+        vmax=std::max(v,vmax);
+        gridvalues->InsertComponent(i,0,v);
+    }
+    gridvalues->Modified();
+    surface_lut->SetTableRange(vmin,vmax);
+    surface_lut->Modified();
+    contour_lut->SetTableRange(vmin,vmax);
+    contour_lut->Modified();
 
-      vtkSmartPointer<vtkLookupTable> surface_lut;
-      vtkSmartPointer<vtkLookupTable> contour_lut;
+    double tempdiff = (vmax-vmin)/(10*ncont);
+    isocontours->GenerateValues(ncont, vmin+tempdiff, vmax-tempdiff);
+    isocontours->Modified();
+  }
 
-      bool show_surface=true;
-      bool show_contour=true;
-      bool show_surface_colorbar=true;
-      bool show_contour_colorbar=false;
-  };
+
 }
-
 
 #endif

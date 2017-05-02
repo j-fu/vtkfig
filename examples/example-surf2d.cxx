@@ -26,8 +26,8 @@ int main(void)
   const double dx = (x_upp-x_low)/(Nx-1);
   const double dy = (y_upp-y_low)/(Ny-1);
 
-  auto frame=vtkfig::Frame();
-  frame.SetInteractorStyle(vtkfig::Frame::InteractorStyle::Volumetric);
+  auto frame=vtkfig::Frame::New();
+  frame->SetInteractorStyle(vtkfig::Frame::InteractorStyle::Volumetric);
 
   
 
@@ -43,22 +43,23 @@ int main(void)
   int ii=0;
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
+  auto surf=vtkfig::Surf2D::New();
+  surf->SetGrid(x,y);
+  frame->AddFigure(surf);
+
   while (1)
   {
-  auto surf=vtkfig::Surf2D();
-
-  for (int i=0; i<Nx; i++)
-    for (int j=0; j<Ny; j++)
-      z[j*Nx+i] = G(x[i],y[j],t);
-  
-
-    surf.Add(x,y,z);
-    frame.Clear();
-    frame.Add(surf);
-    frame.Show();
-
+    
+    for (int i=0; i<Nx; i++)
+      for (int j=0; j<Ny; j++)
+        z[j*Nx+i] = G(x[i],y[j],t);
+    
+    surf->UpdateValues(z);
+    
+    frame->Show();
+    
     if (ii==3) 
-      frame.Dump("example-surf2d.png");
+      frame->Dump("example-surf2d.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

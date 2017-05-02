@@ -23,7 +23,8 @@ namespace vtkfig
         Volumetric
         };
     
-
+    static std::shared_ptr<Frame> New() { return std::make_shared<Frame>(); }
+    
     Frame();
 
     ~Frame();
@@ -32,7 +33,7 @@ namespace vtkfig
     
     void Clear(void);
     
-    void Add(Figure & figure);
+    void AddFigure(std::shared_ptr<Figure> figure);
 
     void Show();
 

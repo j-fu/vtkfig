@@ -3,6 +3,7 @@
 
 #include "vtkFloatArray.h"
 #include "vtkXYPlotActor.h"
+#include "vtkRectilinearGrid.h"
 
 #include "vtkfigFigure.h"
 
@@ -14,33 +15,38 @@ namespace vtkfig
     
   public:
     XYPlot();
+    static std::shared_ptr<XYPlot> New() { return std::make_shared<XYPlot>(); }
     
+    void Build();
+
     void Title(const char *title);
     
     template<typename V> 
-      void Add(const V &x, 
+      void AddPlot(const V &x, 
                const V &y, 
                const double col[3],
                const std::string linespec);
     
-    
+    void Clear();
   private:
-    void Add(const vtkSmartPointer<vtkFloatArray> xVal,
+    void AddPlot(const vtkSmartPointer<vtkFloatArray> xVal,
              const vtkSmartPointer<vtkFloatArray> yVal, 
              const double col[3],
              const std::string linespec);
     
     vtkSmartPointer<vtkXYPlotActor> xyplot;
     int iplot=0;
+    void Init();
+
   };
   
-
+  
   template<typename V>
     inline
-    void XYPlot::Add(const V &x, 
-                     const V &y, 
-                     const double col[3],
-                     const std::string linespec)
+    void XYPlot::AddPlot(const V &x, 
+                         const V &y, 
+                         const double col[3],
+                         const std::string linespec)
   {
     vtkSmartPointer<vtkFloatArray> xVal= vtkSmartPointer<vtkFloatArray>::New();
     vtkSmartPointer<vtkFloatArray> yVal= vtkSmartPointer<vtkFloatArray>::New();
@@ -50,9 +56,9 @@ namespace vtkfig
       xVal->InsertNextTuple1(x[i]);
       yVal->InsertNextTuple1(y[i]);
     }
-    Add(xVal,yVal,col, linespec);
+    AddPlot(xVal,yVal,col, linespec);
   }
-
+  
 
 }
 

@@ -138,13 +138,23 @@ namespace vtkfig
         case Communicator::Command::Show:
           // Add actors to renderer
         {
-          renderer->RemoveAllViewProps();
-          int nactors=communicator->actors->size();
-          for (int i=0;i<nactors;i++)
-            renderer->AddActor(communicator->actors->at(i));
-          renderer->SetBackground(communicator->bgcolor[0],
-                                  communicator->bgcolor[1],
-                                  communicator->bgcolor[2]);
+
+          for (auto figure: *communicator->figures)
+          {
+            if (figure->IsEmpty())
+            {
+              // This allows clear figure to work
+              renderer->RemoveAllViewProps();
+              figure->Build();
+              for (auto actor: figure->actors) renderer->AddActor(actor);
+              for (auto actor: figure->actors2d) renderer->AddActor(actor);
+              figure->SetInteractor(interactor);
+            }
+            figure->UpdateActors();
+            renderer->SetBackground(figure->bgcolor[0],
+                                    figure->bgcolor[1],
+                                    figure->bgcolor[2]);
+          }
           interactor->Render();
         }
         break;
@@ -180,6 +190,14 @@ namespace vtkfig
           default:
             break;
           }
+        }
+        break;
+
+
+        case Communicator::Command::Clear:
+          // Close window and terminate
+        {
+          renderer->RemoveAllViewProps();
         }
         break;
 
@@ -293,14 +311,9 @@ namespace vtkfig
     communicator->cv.wait(lock);
   }
 
-  void Frame::Add(Figure &plot)
+  void Frame::AddFigure(std::shared_ptr<Figure> fig)
   {
-
-    for (int i=0;i<plot.actors->size(); i++)
-      communicator->actors->push_back(plot.actors->at(i));
-    communicator->bgcolor[0]=plot.bgcolor[0];
-    communicator->bgcolor[1]=plot.bgcolor[1];
-    communicator->bgcolor[2]=plot.bgcolor[2];
+    communicator->figures->push_back(fig);
   }
 
   void Frame::Interact()
@@ -339,14 +352,10 @@ namespace vtkfig
   
   void Frame::Clear(void)
   {
-
-    // if (!communicator->render_thread_alive)
-    //   throw std::runtime_error("Clear: render thread is dead");
-    
-    // communicator->cmd=Communicator::Command::CLEAR;
-    // std::unique_lock<std::mutex> lock(communicator->mtx);
-    // communicator->cv.wait(lock);
-    communicator->actors=std::make_shared<std::vector<vtkSmartPointer<vtkProp>>>();
+    communicator->figures=std::make_shared<std::vector<std::shared_ptr<Figure>>>();
+    communicator->cmd=Communicator::Command::Clear;
+    std::unique_lock<std::mutex> lock(communicator->mtx);
+    communicator->cv.wait(lock);
   }
   
   void Frame::SetInteractorStyle(Frame::InteractorStyle istyle)

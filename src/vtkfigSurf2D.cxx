@@ -3,7 +3,6 @@
 #include "vtkTextProperty.h"
 #include "vtkOutlineFilter.h"
 #include "vtkStructuredGridGeometryFilter.h"
-#include "vtkWarpScalar.h"
 #include "vtkAxesActor.h"
 #include "vtkCaptionActor2D.h"
 
@@ -16,10 +15,11 @@ namespace vtkfig
   {
     RGBTable surface_rgb={{0,0,0,1},{1,1,0,0}};
     lut=BuildLookupTable(surface_rgb,255);
+    warp = vtkSmartPointer<vtkWarpScalar>::New();
   }
 
 
-  void Surf2D::Add(vtkSmartPointer<vtkStructuredGrid> gridfunc, double Lxy, double Lz)
+  void Surf2D::Build()
   {
 
     bool do_warp=true;
@@ -33,13 +33,9 @@ namespace vtkfig
     geometry->SetInputDataObject(gridfunc);
 
     // warp to fit in box
-    vtkSmartPointer<vtkWarpScalar> warp = vtkSmartPointer<vtkWarpScalar>::New();
     if (do_warp)
     {
-	double scale = Lxy/Lz;
 	warp->SetInputConnection(geometry->GetOutputPort());
-	warp->XYPlaneOn();
-	warp->SetScaleFactor(scale);
     }
 
     // map gridfunction
@@ -49,14 +45,13 @@ namespace vtkfig
     else
 	mapper->SetInputConnection(geometry->GetOutputPort());
 
-    double vrange[2];
-    gridfunc->GetScalarRange(vrange);
-    mapper->SetScalarRange(vrange[0], vrange[1]);
 
     // create plot surface actor
     vtkSmartPointer<vtkActor> surfplot = vtkSmartPointer<vtkActor>::New();
     surfplot->SetMapper(mapper);
     mapper->SetLookupTable(lut);
+    mapper->UseLookupTableScalarRangeOn();
+    
 
     // create outline
     vtkSmartPointer<vtkOutlineFilter> outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
@@ -93,10 +88,9 @@ namespace vtkfig
     Figure::AddActor(surfplot);
     if (draw_box)
 	Figure::AddActor(outline);
-    if (draw_axes)
-	Figure::AddActor(axes);
+//    if (draw_axes)	Figure::AddActor(axes);
     if (show_colorbar)
-      Figure::AddActor(BuildColorBar(mapper));
+      Figure::AddActor2D(BuildColorBar(mapper));
     
   }
 

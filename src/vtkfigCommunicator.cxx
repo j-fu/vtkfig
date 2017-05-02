@@ -4,7 +4,7 @@ namespace vtkfig
 {
   Communicator::Communicator():vtkObjectBase() 
   {
-    actors=std::make_shared<std::vector<vtkSmartPointer<vtkProp>>>();
+    figures=std::make_shared<std::vector<std::shared_ptr<Figure>>>();
   };
   
   

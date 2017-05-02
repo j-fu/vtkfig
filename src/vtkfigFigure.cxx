@@ -8,9 +8,10 @@ namespace vtkfig
 
   
   ////////////////////////////////////////////////
-  Figure::Figure(): actors(std::make_shared<std::vector<vtkSmartPointer<vtkProp>>>()) {};
-  void Figure::AddActor(vtkSmartPointer<vtkProp> prop) {actors->push_back(prop);}
-  bool Figure::IsEmpty(void) {return (actors->size()==0);}
+  Figure::Figure() {};
+  void Figure::AddActor(vtkSmartPointer<vtkActor> prop) {actors.push_back(prop);}
+  void Figure::AddActor2D(vtkSmartPointer<vtkActor2D> prop) {actors2d.push_back(prop);}
+  bool Figure::IsEmpty(void) {return (actors.size()==0 && actors2d.size()==0);}
 
 
 

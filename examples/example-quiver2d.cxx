@@ -29,7 +29,7 @@ int main(void)
   const double dx = (x_upp-x_low)/(Nx-1);
   const double dy = (y_upp-y_low)/(Ny-1);
 
-  auto frame=vtkfig::Frame();
+  auto frame=vtkfig::Frame::New();
   auto colors=vtkfig::RGBTable
     { 
       {0.0, 0.3, 0.3, 1.0},
@@ -54,16 +54,23 @@ int main(void)
   int ii=0;
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
+  auto contour=vtkfig::Contour2D::New();
+  contour->SetSurfaceRGBTable(colors,255);
+  contour->ShowContour(false);
+  
+  auto quiver=vtkfig::Quiver2D::New();
+  quiver->ShowColorbar(false);
+  quiver->SetRGBTable(qcolors, 2);
+  quiver->SetArrowScale(0.5);
+
+  contour->SetGrid(x,y);
+  frame->AddFigure(contour);
+
+  quiver->SetGrid(x,y);
+  frame->AddFigure(quiver);
+
   while (1)
   {
-    auto contour=vtkfig::Contour2D();
-    contour.SetSurfaceRGBTable(colors,255);
-    contour.ShowContour(false);
-
-    auto quiver=vtkfig::Quiver2D();
-    quiver.ShowColorbar(false);
-    quiver.SetRGBTable(qcolors, 2);
-    quiver.SetArrowScale(0.5);
 
     for (int i=0; i<Nx; i++)
       for (int j=0; j<Ny; j++)
@@ -92,16 +99,13 @@ int main(void)
 
       }
 
-    contour.Add(x,y,z);
-    quiver.Add(x,y,u,v);
+    contour->UpdateValues(z);
+    quiver->UpdateValues(u,v);
 
-    frame.Clear();
-    frame.Add(contour);
-    frame.Add(quiver);
-    frame.Show();
+    frame->Show();
 
     if (ii==3) 
-      frame.Dump("example-quiver2d.png");
+      frame->Dump("example-quiver2d.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;
