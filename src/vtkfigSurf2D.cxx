@@ -96,7 +96,7 @@ namespace vtkfig
     if (draw_axes)
 	Figure::AddActor(axes);
     if (show_colorbar)
-      Figure::AddActor(Figure::BuildColorBar(mapper));
+      Figure::AddActor(BuildColorBar(mapper));
     
   }
 

@@ -1,50 +1,24 @@
-#include "vtkRectilinearGridGeometryFilter.h"
-#include "vtkContourFilter.h"
-#include "vtkOutlineFilter.h"
-#include "vtkPointData.h"
+#include <vtkGeometryFilter.h>
+#include <vtkContourFilter.h>
+#include <vtkUnstructuredGridGeometryFilter.h>
 #include "vtkActor.h"
-
-
-#include "vtkfigContour2D.h"
-
+#include "vtkfigTriContour2D.h"
 
 namespace vtkfig
 {
-
-////////////////////////////////////////////////////////////
-  Contour2D::Contour2D(): Figure()
-  {
-    RGBTable surface_rgb={{0,0,0,1},{1,1,0,0}};
-    RGBTable contour_rgb={{0,0,0,0},{1,0,0,0}};
-    surface_lut=BuildLookupTable(surface_rgb,255);
-    contour_lut=BuildLookupTable(contour_rgb,2);
-  }
   
-  
-  void Contour2D::Add(vtkSmartPointer<vtkFloatArray> xcoord ,vtkSmartPointer<vtkFloatArray> ycoord ,vtkSmartPointer<vtkFloatArray> values )
+  void TriContour2D::Add(vtkSmartPointer<vtkUnstructuredGrid> gridfunc)
   {
-    
-    if (!Figure::IsEmpty())
-      throw std::runtime_error("Contor2D already has data");
-
-
-    vtkSmartPointer<vtkRectilinearGrid> gridfunc=vtkSmartPointer<vtkRectilinearGrid>::New();
-    int Nx = xcoord->GetNumberOfTuples();
-    int Ny = ycoord->GetNumberOfTuples();
-    int lines=10;
-
-    // Create rectilinear grid
-    gridfunc->SetDimensions(Nx, Ny, 1);
-    gridfunc->SetXCoordinates(xcoord);
-    gridfunc->SetYCoordinates(ycoord);
-    gridfunc->GetPointData()->SetScalars(values);
-
     // filter to geometry primitive
-    vtkSmartPointer<vtkRectilinearGridGeometryFilter> geometry =  vtkSmartPointer<vtkRectilinearGridGeometryFilter>::New();
+    
+    // see http://www.vtk.org/Wiki/VTK/Examples/Cxx/PolyData/GeometryFilter
+
+    vtkSmartPointer<vtkGeometryFilter> geometry =  vtkSmartPointer<vtkGeometryFilter>::New();
     geometry->SetInputDataObject(gridfunc);
     double vrange[2];
     gridfunc->GetScalarRange(vrange);
-
+    cout << vrange[0] << " " << vrange[1] << endl;
+    int lines=10;
 
     if (show_surface)
     {
@@ -52,7 +26,8 @@ namespace vtkfig
       mapper->SetInputConnection(geometry->GetOutputPort());
       mapper->SetScalarRange(vrange[0], vrange[1]);
       mapper->SetLookupTable(surface_lut);
-      
+      mapper->Update();
+
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
       plot->SetMapper(mapper);
       Figure::AddActor(plot);
@@ -85,4 +60,12 @@ namespace vtkfig
 
   }
 
+  TriContour2D::TriContour2D(): vtkfig::Figure()
+  {
+    RGBTable surface_rgb={{0,0,0,1},{1,1,0,0}};
+    RGBTable contour_rgb={{0,0,0,0},{1,0,0,0}};
+    surface_lut=BuildLookupTable(surface_rgb,255);
+    contour_lut=BuildLookupTable(contour_rgb,2);
+  }
 }
+

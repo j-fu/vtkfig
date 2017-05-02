@@ -3,6 +3,7 @@
 
 #include "vtkFloatArray.h"
 #include "vtkfigFigure.h"
+#include "vtkfigTools.h"
 
 namespace vtkfig
 {

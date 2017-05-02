@@ -30,13 +30,13 @@ int main(void)
   const double dy = (y_upp-y_low)/(Ny-1);
 
   auto frame=vtkfig::Frame();
-  auto colors=vtkfig::Figure::RGBTable
+  auto colors=vtkfig::RGBTable
     { 
       {0.0, 0.3, 0.3, 1.0},
       {0.5, 0.3, 1.0, 0.3},
       {1.0, 1.0, 0.3, 0.3}
     };
-  auto qcolors=vtkfig::Figure::RGBTable
+  auto qcolors=vtkfig::RGBTable
     { 
       {0.0, 0.0, 0.0, 0.0},
       {1.0, 0.0, 0.0, 0.0}

@@ -38,7 +38,7 @@ int main(void)
 
   auto frame=vtkfig::Frame();
   frame.SetInteractorStyle(vtkfig::Frame::InteractorStyle::Volumetric);
-  auto colors=vtkfig::Figure::RGBTable
+  auto colors=vtkfig::RGBTable
     { 
       {0.0, 0.0, 0.0, 1.0},
       {0.5, 0.0, 1.0, 0.0},

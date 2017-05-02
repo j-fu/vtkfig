@@ -8,6 +8,7 @@
 
 
 #include "vtkfigFigure.h"
+#include "vtkfigTools.h"
 
 namespace vtkfig
 {

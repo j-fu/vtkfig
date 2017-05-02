@@ -84,7 +84,7 @@ namespace vtkfig
     // add actors to renderer
     Figure::AddActor(quiver_actor);
     if (show_colorbar)
-      Figure::AddActor(Figure::BuildColorBar(mapper));
+      Figure::AddActor(BuildColorBar(mapper));
   }
 
 }

@@ -78,7 +78,7 @@ namespace vtkfig
       Figure::AddActor(plot);
     
       if (show_slice_colorbar)
-        Figure::AddActor(Figure::BuildColorBar(mapper));
+        Figure::AddActor(BuildColorBar(mapper));
 
     }
 
@@ -102,7 +102,7 @@ namespace vtkfig
       plot->SetMapper(mapper);
       Figure::AddActor(plot);
       if (show_contour_colorbar)
-        Figure::AddActor(Figure::BuildColorBar(mapper));
+        Figure::AddActor(BuildColorBar(mapper));
 
     }
 
