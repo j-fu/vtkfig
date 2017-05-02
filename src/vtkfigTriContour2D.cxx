@@ -17,7 +17,7 @@ namespace vtkfig
     geometry->SetInputDataObject(gridfunc);
     double vrange[2];
     gridfunc->GetScalarRange(vrange);
-    cout << vrange[0] << " " << vrange[1] << endl;
+
     int lines=10;
 
     if (show_surface)
