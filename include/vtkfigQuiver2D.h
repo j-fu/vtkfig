@@ -33,8 +33,9 @@ namespace vtkfig
 
       void SetArrowScale(double scale) {arrow_scale=scale;}
 
-      void Build();
     private:
+
+      void RTBuild();
       double vmax=0;
       double vmin=0;
 

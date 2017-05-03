@@ -52,8 +52,8 @@ class Contour3D: public Figure
 
 
 
+      virtual void RTBuild();
 
-      virtual void Build();
       vtkSmartPointer<vtkFloatArray> xcoord;
       vtkSmartPointer<vtkFloatArray> ycoord;
       vtkSmartPointer<vtkFloatArray> zcoord;

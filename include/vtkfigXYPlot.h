@@ -17,7 +17,6 @@ namespace vtkfig
     XYPlot();
     static std::shared_ptr<XYPlot> New() { return std::make_shared<XYPlot>(); }
     
-    void Build();
 
     void Title(const char *title);
     
@@ -29,15 +28,17 @@ namespace vtkfig
     
     void Clear();
   private:
+
     void AddPlot(const vtkSmartPointer<vtkFloatArray> xVal,
-             const vtkSmartPointer<vtkFloatArray> yVal, 
-             const double col[3],
-             const std::string linespec);
+                 const vtkSmartPointer<vtkFloatArray> yVal, 
+                 const double col[3],
+                 const std::string linespec);
+    
+    void RTBuild();
+    void Init();
     
     vtkSmartPointer<vtkXYPlotActor> xyplot;
     int iplot=0;
-    void Init();
-
   };
   
   

@@ -25,7 +25,7 @@ namespace vtkfig
     lut=BuildLookupTable(quiver_rgb,255);
   }
   
-  void  Quiver2D::Build()
+  void  Quiver2D::RTBuild()
   {
     vtkSmartPointer<vtkRectilinearGrid> gridfunc= vtkSmartPointer<vtkRectilinearGrid>::New();
     int Nx = xcoord->GetNumberOfTuples();
@@ -77,9 +77,9 @@ namespace vtkfig
     // Figure::AddActor(outline);
 
     // add actors to renderer
-    Figure::AddActor(quiver_actor);
+    Figure::RTAddActor(quiver_actor);
     if (show_colorbar)
-      Figure::AddActor2D(BuildColorBar(mapper));
+      Figure::RTAddActor2D(BuildColorBar(mapper));
   }
 
 }

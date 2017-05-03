@@ -19,7 +19,7 @@ namespace vtkfig
   }
 
 
-  void Surf2D::Build()
+  void Surf2D::RTBuild()
   {
 
     bool do_warp=true;
@@ -85,12 +85,12 @@ namespace vtkfig
 
 
     // renderer
-    Figure::AddActor(surfplot);
+    Figure::RTAddActor(surfplot);
     if (draw_box)
-	Figure::AddActor(outline);
+	Figure::RTAddActor(outline);
 //    if (draw_axes)	Figure::AddActor(axes);
     if (show_colorbar)
-      Figure::AddActor2D(BuildColorBar(mapper));
+      Figure::RTAddActor2D(BuildColorBar(mapper));
     
   }
 

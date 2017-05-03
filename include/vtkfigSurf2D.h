@@ -36,9 +36,9 @@ namespace vtkfig
       }
       void ShowColorbar(bool b) {show_colorbar=b;}
 
-      void Build(void);
 
     private:
+      void RTBuild(void);
       vtkSmartPointer<vtkStructuredGrid> 	    gridfunc;
       vtkSmartPointer<vtkPoints> points;
       vtkSmartPointer<vtkFloatArray> colors;

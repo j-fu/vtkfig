@@ -46,7 +46,7 @@ public:
     sliderWidget = vtkSmartPointer<vtkSliderWidget>::New();
   }
   
-  void Contour2D::SetInteractor(vtkSmartPointer<vtkRenderWindowInteractor> interactor) 
+  void Contour2D::RTSetInteractor(vtkSmartPointer<vtkRenderWindowInteractor> interactor) 
   {
     if (show_slider && show_contour)
     {
@@ -55,7 +55,7 @@ public:
     }
   };
   
-  void Contour2D::Build()
+  void Contour2D::RTBuild()
   {
 
     vtkSmartPointer<vtkRectilinearGrid> gridfunc=vtkSmartPointer<vtkRectilinearGrid>::New();
@@ -85,10 +85,10 @@ public:
 
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
       plot->SetMapper(mapper);
-      Figure::AddActor(plot);
+      Figure::RTAddActor(plot);
       
       if (show_surface_colorbar)
-        Figure::AddActor2D(BuildColorBar(mapper));
+        Figure::RTAddActor2D(BuildColorBar(mapper));
     }
 
 
@@ -104,9 +104,9 @@ public:
 
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
       plot->SetMapper(mapper);
-      Figure::AddActor(plot);
+      Figure::RTAddActor(plot);
       if (show_contour_colorbar)
-        Figure::AddActor2D(BuildColorBar(mapper));
+        Figure::RTAddActor2D(BuildColorBar(mapper));
       
       
       if (show_slider)

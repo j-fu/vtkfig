@@ -34,14 +34,14 @@ namespace vtkfig
     void SetBackground(double r, double g, double b) { bgcolor[0]=r; bgcolor[1]=g; bgcolor[2]=b;}
     bool IsEmpty();
 
-    virtual void Build()=0;
-    virtual void SetInteractor(vtkSmartPointer<vtkRenderWindowInteractor> interactor) {};
-
-
   protected:
-    void AddActor(vtkSmartPointer<vtkActor> prop);
-    void AddActor2D(vtkSmartPointer<vtkActor2D> prop);
-    void UpdateActors()
+
+    /// All functions here are to be called from render thread.
+    virtual void RTBuild()=0;
+    virtual void RTSetInteractor(vtkSmartPointer<vtkRenderWindowInteractor> interactor) {};
+    void RTAddActor(vtkSmartPointer<vtkActor> prop);
+    void RTAddActor2D(vtkSmartPointer<vtkActor2D> prop);
+    void RTUpdateActors()
     {
       for (auto actor: actors) {auto m=actor->GetMapper(); if (m) m->Update();}
       for (auto actor: actors2d){auto m=actor->GetMapper(); if (m) m->Update();}

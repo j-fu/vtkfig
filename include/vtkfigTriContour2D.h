@@ -47,12 +47,12 @@ namespace vtkfig
     template <class V>
     void UpdateValues(const V&values);
     
-    void Build();
     
     
     
     
   private:
+    void RTBuild();
     double vmin,vmax;
     
     vtkSmartPointer<vtkUnstructuredGrid> gridfunc;

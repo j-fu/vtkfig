@@ -53,12 +53,14 @@ namespace vtkfig
 
   }
 
-  void XYPlot::Build()
+  void XYPlot::RTBuild()
   {
-    Figure::AddActor2D(xyplot);
+    Figure::RTAddActor2D(xyplot);
   }
   void XYPlot::Clear()
   {
+    /// This is not nice, but I found no way 
+    /// to remove data from xyplot without leaking...
     Figure::ClearActors2D();
     Init();
   }

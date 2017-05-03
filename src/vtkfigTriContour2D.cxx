@@ -15,7 +15,7 @@ namespace vtkfig
     isocontours = vtkSmartPointer<vtkContourFilter>::New();
   }
   
-  void TriContour2D::Build()
+  void TriContour2D::RTBuild()
   {
     // filter to geometry primitive
     
@@ -37,10 +37,10 @@ namespace vtkfig
 
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
       plot->SetMapper(mapper);
-      Figure::AddActor(plot);
+      Figure::RTAddActor(plot);
       
       if (show_surface_colorbar)
-        Figure::AddActor2D(BuildColorBar(mapper));
+        Figure::RTAddActor2D(BuildColorBar(mapper));
     }
 
 
@@ -56,9 +56,9 @@ namespace vtkfig
       
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
       plot->SetMapper(mapper);
-      Figure::AddActor(plot);
+      Figure::RTAddActor(plot);
       if (show_contour_colorbar)
-        Figure::AddActor2D(BuildColorBar(mapper));
+        Figure::RTAddActor2D(BuildColorBar(mapper));
 
     }
 

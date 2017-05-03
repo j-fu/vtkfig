@@ -25,7 +25,7 @@ namespace vtkfig
   }
   
   
-  void Contour3D::Build()
+  void Contour3D::RTBuild()
   {
     
 
@@ -64,10 +64,10 @@ namespace vtkfig
     
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
       plot->SetMapper(mapper);
-      Figure::AddActor(plot);
+      Figure::RTAddActor(plot);
     
       if (show_slice_colorbar)
-        Figure::AddActor2D(BuildColorBar(mapper));
+        Figure::RTAddActor2D(BuildColorBar(mapper));
 
     }
 
@@ -85,9 +85,9 @@ namespace vtkfig
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
       plot->GetProperty()->SetOpacity(0.5);
       plot->SetMapper(mapper);
-      Figure::AddActor(plot);
+      Figure::RTAddActor(plot);
       if (show_contour_colorbar)
-        Figure::AddActor2D(BuildColorBar(mapper));
+        Figure::RTAddActor2D(BuildColorBar(mapper));
 
     }
 
@@ -99,7 +99,7 @@ namespace vtkfig
     vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
     outline->SetMapper(outlineMapper);
     outline->GetProperty()->SetColor(0, 0, 0);
-    Figure::AddActor(outline);
+    Figure::RTAddActor(outline);
 
   }
 

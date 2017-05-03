@@ -203,12 +203,12 @@ namespace vtkfig
               // This allows clear figure to work
               renderer->RemoveAllViewProps();
 
-              figure->Build();
+              figure->RTBuild();
               for (auto actor: figure->actors) renderer->AddActor(actor);
               for (auto actor: figure->actors2d) renderer->AddActor(actor);
-              figure->SetInteractor(interactor);
+              figure->RTSetInteractor(interactor);
             }
-            figure->UpdateActors();
+            figure->RTUpdateActors();
             renderer->SetBackground(figure->bgcolor[0],
                                     figure->bgcolor[1],
                                     figure->bgcolor[2]);

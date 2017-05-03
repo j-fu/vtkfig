@@ -13,65 +13,65 @@
 namespace vtkfig
 {
 
-
+  
   ///////////////////////////////////////////
   class Contour2D: public Figure
   {
-friend class mySliderCallback;
+    friend class mySliderCallback;
   public:
-  
-  Contour2D();
-
-  static std::shared_ptr<Contour2D> New() { return std::make_shared<Contour2D>(); }
-  
-  template<typename V>
+    
+    Contour2D();
+    
+    static std::shared_ptr<Contour2D> New() { return std::make_shared<Contour2D>(); }
+    
+    template<typename V>
       void SetGrid(const V &xcoord, 
                    const V &ycoord);
+    
+    template<typename V>
+      void UpdateValues(const V &values);
+    
+    
+    void ShowSurface(bool b) {show_surface=b;}
+    void ShowContour(bool b) {show_contour=b;}
+    void ShowSurfaceColorbar(bool b) {show_surface_colorbar=b;}
+    void ShowContourColorbar(bool b) {show_contour_colorbar=b;}
+    
+    void SetSurfaceRGBTable(RGBTable & tab, int tabsize)
+    {
+      surface_lut=BuildLookupTable(tab,tabsize);
+    }
+    void SetContourRGBTable(RGBTable & tab, int tabsize)
+    {
+      contour_lut=BuildLookupTable(tab,tabsize);
+    }
+    
+    
+    double vmax=0;
+    double vmin=0;
+    int ncont=10;
+    vtkSmartPointer<vtkContourFilter> isocontours;
+    
+  private:
+    void RTSetInteractor(vtkSmartPointer<vtkRenderWindowInteractor>);
+    virtual void RTBuild();
 
-  template<typename V>
-    void UpdateValues(const V &values);
-
-      
-      void ShowSurface(bool b) {show_surface=b;}
-      void ShowContour(bool b) {show_contour=b;}
-      void ShowSurfaceColorbar(bool b) {show_surface_colorbar=b;}
-      void ShowContourColorbar(bool b) {show_contour_colorbar=b;}
-
-      void SetSurfaceRGBTable(RGBTable & tab, int tabsize)
-      {
-        surface_lut=BuildLookupTable(tab,tabsize);
-      }
-      void SetContourRGBTable(RGBTable & tab, int tabsize)
-      {
-        contour_lut=BuildLookupTable(tab,tabsize);
-      }
-
-      void SetInteractor(vtkSmartPointer<vtkRenderWindowInteractor>);
-      virtual void Build();
-//      virtual void Update();
-      
-      double vmax=0;
-      double vmin=0;
-      int ncont=10;
-      vtkSmartPointer<vtkContourFilter> isocontours;
-      
-    private:
-      vtkSmartPointer<vtkFloatArray> xcoord;
-      vtkSmartPointer<vtkFloatArray> ycoord;
-      vtkSmartPointer<vtkFloatArray> values;
-      vtkSmartPointer<vtkSliderWidget> sliderWidget;
-
-      vtkSmartPointer<vtkLookupTable> surface_lut;
-      vtkSmartPointer<vtkLookupTable> contour_lut;
-
-      unsigned int Nx;
-      unsigned int Ny;
-
-      bool show_surface=true;
-      bool show_contour=true;
-      bool show_slider=true;
-      bool show_surface_colorbar=true;
-      bool show_contour_colorbar=false;
+    vtkSmartPointer<vtkFloatArray> xcoord;
+    vtkSmartPointer<vtkFloatArray> ycoord;
+    vtkSmartPointer<vtkFloatArray> values;
+    vtkSmartPointer<vtkSliderWidget> sliderWidget;
+    
+    vtkSmartPointer<vtkLookupTable> surface_lut;
+    vtkSmartPointer<vtkLookupTable> contour_lut;
+    
+    unsigned int Nx;
+    unsigned int Ny;
+    
+    bool show_surface=true;
+    bool show_contour=true;
+    bool show_slider=true;
+    bool show_surface_colorbar=true;
+    bool show_contour_colorbar=false;
   };
 
 
