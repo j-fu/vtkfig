@@ -1,4 +1,4 @@
-vtkfig V0.2
+vtkfig V0.3
 ============
 
 The intention of  vtkfig is to provide a C++  graphics library with an API similar to that of matplotlib and which uses [vtk](http://vtk.org) for rendering.
