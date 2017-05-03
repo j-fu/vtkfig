@@ -10,6 +10,20 @@ The intention of  vtkfig is to provide a C++  graphics library with an API simil
 - Easy extension by implementing derived classes from vtkfig::Figure containing standard vtk rendering pipelines
 
 
+## Build
+
+Build uses the standard CMake way. E.g. to configure with clang, use
+
+```` 
+$ mkdir build
+$ cd build
+$ CXX=clang++ cmake ..
+$ make
+
+````
+
+You will find the compiled examples in build/examples.
+
 
 
 ## Contributors
