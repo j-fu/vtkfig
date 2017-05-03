@@ -11,7 +11,7 @@ inline double G(double x,double y, double t)
 
 int main(void)
 {
-  
+
   const int Nx = 200;
   const int Ny = 250;
   

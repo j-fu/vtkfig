@@ -17,3 +17,8 @@ target_link_libraries(example-contour3d vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_L
 
 add_executable(example-tricontour2d MACOSX_BUNDLE example-tricontour2d.cxx )
 target_link_libraries(example-tricontour2d vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+
+add_executable(example-comm-client-server MACOSX_BUNDLE example-comm-client-server.cxx )
+target_link_libraries(example-comm-client-server vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+
+
