@@ -2,16 +2,13 @@
 #define VTKFIG_FRAME_H
 
 #include <memory>
-#include <thread>
-
 #include "vtkSmartPointer.h"
-
 
 namespace vtkfig
 {
 
   class Figure;
-  class Communicator;
+  class FrameContent;
   
   class Frame
   {
@@ -45,8 +42,7 @@ namespace vtkfig
     void Restart(void);
     void Start(void);
     void Terminate(void);
-    vtkSmartPointer<Communicator> communicator;
-    std::shared_ptr<std::thread> render_thread;
+    vtkSmartPointer<FrameContent> framecontent;
   };
 }
 

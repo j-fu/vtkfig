@@ -1,3 +1,7 @@
+#include <mutex>
+#include <thread>
+#include <condition_variable>
+
 #include "vtkRenderer.h"
 #include "vtkRenderWindow.h"
 #include "vtkRenderWindowInteractor.h"
@@ -7,21 +11,74 @@
 #include "vtkCommand.h"
 #include "vtkWindowToImageFilter.h"
 #include "vtkPNGWriter.h"
+#include "vtkObjectBase.h"
 
 
 
 #include "vtkfigFrame.h"
-#include "vtkfigCommunicator.h"
 #include "vtkfigFigure.h"
 
 namespace vtkfig
 {
+  ////////////////////////////////////////////////
+  class FrameContent: public vtkObjectBase
+  {
+  public:
+    FrameContent():vtkObjectBase() 
+    {
+      figures=std::make_shared<std::vector<std::shared_ptr<Figure>>>();
+    };
+    static FrameContent *New()   {      return new FrameContent;    }
+
+    FrameContent(const FrameContent& A)=delete;
+
+
+    enum class Command
+    {
+      None=0,
+        Show,
+        Dump,            
+        Clear,            
+        Terminate,
+        SetInteractorStyle,
+        SetBackgroundColor          
+    };
+
+    /// Communication command
+    Command cmd; 
+
+    /// mutex to organize communication
+    std::mutex mtx; 
+
+    /// condition variable signalizing finished command
+    std::condition_variable cv; 
+    
+    /// File name to be passed 
+    std::string fname; 
+
+    std::shared_ptr<std::vector<std::shared_ptr<Figure>>> figures;
+    
+    /// Thread state
+    bool render_thread_alive=false;
+    
+    /// space down state ?
+    bool communication_blocked=false;
+    
+    /// interactor style
+    Frame::InteractorStyle interactor_style= Frame::InteractorStyle::Planar;
+
+
+    std::shared_ptr<std::thread> render_thread;
+
+  };
+
+
 
   ////////////////////////////////////////////////////////////////
   class myInteractorStyleImage : public vtkInteractorStyleImage
   {
   public:
-    vtkSmartPointer<Communicator> communicator=0;
+    vtkSmartPointer<FrameContent> framecontent=0;
     
     static myInteractorStyleImage* New()
     {
@@ -42,18 +99,18 @@ namespace vtkfig
       }
       else if (key=="space")
       {
-        communicator->communication_blocked=!communicator->communication_blocked;
+        framecontent->communication_blocked=!framecontent->communication_blocked;
       }
       else
         vtkInteractorStyleImage::OnChar();
     }
     
     static void SetStyle(vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-                         vtkSmartPointer<Communicator> communicator)
+                         vtkSmartPointer<FrameContent> framecontent)
     {
       vtkSmartPointer<myInteractorStyleImage> imageStyle = 
         vtkSmartPointer<myInteractorStyleImage>::New();
-      imageStyle->communicator=communicator;
+      imageStyle->framecontent=framecontent;
       interactor->SetInteractorStyle(imageStyle);
     }
     
@@ -63,7 +120,7 @@ namespace vtkfig
   class myInteractorStyleTrackballCamera : public vtkInteractorStyleTrackballCamera
   {
   public:
-    vtkSmartPointer<Communicator> communicator=0;
+    vtkSmartPointer<FrameContent> framecontent=0;
     
     static myInteractorStyleTrackballCamera* New()
     {
@@ -84,18 +141,18 @@ namespace vtkfig
       }
       else if (key=="space")
       {
-        communicator->communication_blocked=!communicator->communication_blocked;
+        framecontent->communication_blocked=!framecontent->communication_blocked;
       }
       else
         vtkInteractorStyleTrackballCamera::OnChar();
     }
     
     static void SetStyle(vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-                         vtkSmartPointer<Communicator> communicator)
+                         vtkSmartPointer<FrameContent> framecontent)
     {
       vtkSmartPointer<myInteractorStyleTrackballCamera> imageStyle = 
         vtkSmartPointer<myInteractorStyleTrackballCamera>::New();
-      imageStyle->communicator=communicator;
+      imageStyle->framecontent=framecontent;
       interactor->SetInteractorStyle(imageStyle);
     }
     
@@ -107,7 +164,7 @@ namespace vtkfig
   {
   public:
 
-    vtkSmartPointer<Communicator> communicator=0;
+    vtkSmartPointer<FrameContent> framecontent=0;
     vtkSmartPointer<vtkRenderer> renderer=0;
     vtkSmartPointer<vtkRenderWindow> window=0;
     vtkSmartPointer<vtkRenderWindowInteractor> interactor=0;
@@ -119,32 +176,33 @@ namespace vtkfig
                          void *vtkNotUsed(callData))
     {
 
-      if (communicator->communication_blocked) return;
+      if (framecontent->communication_blocked) return;
 
       if (
         vtkCommand::TimerEvent == eventId  // Check if timer event
-        && communicator->cmd!=Communicator::Command::None  // Check if command has been given
+        && framecontent->cmd!=FrameContent::Command::None  // Check if command has been given
         )
       {
 
         // Lock mutex
-        std::unique_lock<std::mutex> lock(communicator->mtx);
+        std::unique_lock<std::mutex> lock(framecontent->mtx);
 
         // Command dispatch
-        switch(communicator->cmd)
+        switch(framecontent->cmd)
         {
 
           
-        case Communicator::Command::Show:
+        case FrameContent::Command::Show:
           // Add actors to renderer
         {
 
-          for (auto figure: *communicator->figures)
+          for (auto figure: *framecontent->figures)
           {
             if (figure->IsEmpty())
             {
               // This allows clear figure to work
               renderer->RemoveAllViewProps();
+
               figure->Build();
               for (auto actor: figure->actors) renderer->AddActor(actor);
               for (auto actor: figure->actors2d) renderer->AddActor(actor);
@@ -159,14 +217,14 @@ namespace vtkfig
         }
         break;
 
-        case Communicator::Command::Dump:
+        case FrameContent::Command::Dump:
           // Write picture to file
         {
           vtkSmartPointer<vtkWindowToImageFilter> imgfilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
           vtkSmartPointer<vtkPNGWriter> pngwriter = vtkSmartPointer<vtkPNGWriter>::New();
           
           pngwriter->SetInputConnection(imgfilter->GetOutputPort());
-          pngwriter->SetFileName(communicator->fname.c_str());
+          pngwriter->SetFileName(framecontent->fname.c_str());
           
           imgfilter->SetInput(window);
           imgfilter->Update();
@@ -176,16 +234,16 @@ namespace vtkfig
         }
         break;
 
-        case Communicator::Command::SetInteractorStyle:
+        case FrameContent::Command::SetInteractorStyle:
           // Switch interactor style
         {
-          switch(communicator->interactor_style)
+          switch(framecontent->interactor_style)
           {
           case Frame::InteractorStyle::Planar:
-            myInteractorStyleImage::SetStyle(interactor,communicator);
+            myInteractorStyleImage::SetStyle(interactor,framecontent);
             break;
           case  Frame::InteractorStyle::Volumetric:
-            myInteractorStyleTrackballCamera::SetStyle(interactor,communicator);
+            myInteractorStyleTrackballCamera::SetStyle(interactor,framecontent);
             break;
           default:
             break;
@@ -194,14 +252,14 @@ namespace vtkfig
         break;
 
 
-        case Communicator::Command::Clear:
+        case FrameContent::Command::Clear:
           // Close window and terminate
         {
           renderer->RemoveAllViewProps();
         }
         break;
 
-        case Communicator::Command::Terminate:
+        case FrameContent::Command::Terminate:
           // Close window and terminate
         {
           window->Finalize();
@@ -213,10 +271,10 @@ namespace vtkfig
         }
         
         // Clear command
-        communicator->cmd=Communicator::Command::None;
+        framecontent->cmd=FrameContent::Command::None;
 
         // Notify that command was exeuted
-        communicator->cv.notify_all();
+        framecontent->cv.notify_all();
       }
     }
   };
@@ -226,8 +284,7 @@ namespace vtkfig
 
    */
   ////////////////////////////////////////////////
-
-  void RenderThread(vtkSmartPointer<Communicator> communicator)
+  void RenderThread(vtkSmartPointer<FrameContent> framecontent)
   {
     
 
@@ -245,10 +302,10 @@ namespace vtkfig
 
     callback->renderer=renderer;
     callback->interactor=interactor;
-    callback->communicator=communicator;
+    callback->framecontent=framecontent;
     callback->window=window;
 
-    myInteractorStyleImage::SetStyle(interactor,communicator);
+    myInteractorStyleImage::SetStyle(interactor,framecontent);
     renderer->GetActiveCamera()->SetPosition(0,0,20);
     renderer->GetActiveCamera()->SetFocalPoint(0,0,0);
     renderer->GetActiveCamera()->OrthogonalizeViewUp();
@@ -259,10 +316,10 @@ namespace vtkfig
     interactor->Initialize();
     int timerId = interactor->CreateRepeatingTimer(10);
   
-    communicator->render_thread_alive=true;
+    framecontent->render_thread_alive=true;
     interactor->Start();
-    communicator->render_thread_alive=false;
-    communicator->cv.notify_all();
+    framecontent->render_thread_alive=false;
+    framecontent->cv.notify_all();
     
     interactor->SetRenderWindow(0);
     interactor->TerminateApp();
@@ -271,26 +328,28 @@ namespace vtkfig
 
 
 
+
+
   ////////////////////////////////////////////////
   Frame::Frame():
-    communicator(Communicator::New())
+    framecontent(FrameContent::New())
   {
     Start();
   }
 
   void Frame::Start(void)
   {
-    render_thread=std::make_shared<std::thread>(RenderThread,communicator);
+    framecontent->render_thread=std::make_shared<std::thread>(RenderThread,framecontent);
     do
     {
       std::this_thread::sleep_for (std::chrono::milliseconds(10));
     }
-    while (!communicator->render_thread_alive);
+    while (!framecontent->render_thread_alive);
 
   }
   void Frame::Restart(void)
   {
-    render_thread->join();
+    framecontent->render_thread->join();
     Start();
   }
 
@@ -298,34 +357,34 @@ namespace vtkfig
   Frame::~Frame()
   {
     Terminate();
-    render_thread->join();
+    framecontent->render_thread->join();
   }
   
   void Frame::Show()
   {
-    if (!communicator->render_thread_alive)
+    if (!framecontent->render_thread_alive)
       throw std::runtime_error("Show: render thread is dead");
 
-    communicator->cmd=Communicator::Command::Show;
-    std::unique_lock<std::mutex> lock(communicator->mtx);
-    communicator->cv.wait(lock);
+    framecontent->cmd=FrameContent::Command::Show;
+    std::unique_lock<std::mutex> lock(framecontent->mtx);
+    framecontent->cv.wait(lock);
   }
 
   void Frame::AddFigure(std::shared_ptr<Figure> fig)
   {
-    communicator->figures->push_back(fig);
+    framecontent->figures->push_back(fig);
   }
 
   void Frame::Interact()
   {
-    if (!communicator->render_thread_alive)
+    if (!framecontent->render_thread_alive)
       throw std::runtime_error("Show: render thread is dead");
-    communicator->communication_blocked=true;
+    framecontent->communication_blocked=true;
     do
     {
       std::this_thread::sleep_for (std::chrono::milliseconds(10));
     }
-    while (communicator->communication_blocked);
+    while (framecontent->communication_blocked);
 
   }
 
@@ -334,40 +393,40 @@ namespace vtkfig
 
   void Frame::Dump(std::string fname)
   {
-    if (!communicator->render_thread_alive)
+    if (!framecontent->render_thread_alive)
       throw std::runtime_error("Dump: render thread is dead");
 
-    communicator->cmd=Communicator::Command::Dump;
-    communicator->fname=fname;
-    std::unique_lock<std::mutex> lock(communicator->mtx);
-    communicator->cv.wait(lock);
+    framecontent->cmd=FrameContent::Command::Dump;
+    framecontent->fname=fname;
+    std::unique_lock<std::mutex> lock(framecontent->mtx);
+    framecontent->cv.wait(lock);
   }
   
   void Frame::Terminate(void)
   {
-    communicator->cmd=Communicator::Command::Terminate;
-    std::unique_lock<std::mutex> lock(communicator->mtx);
-    communicator->cv.wait(lock);
+    framecontent->cmd=FrameContent::Command::Terminate;
+    std::unique_lock<std::mutex> lock(framecontent->mtx);
+    framecontent->cv.wait(lock);
   }
   
   void Frame::Clear(void)
   {
-    communicator->figures=std::make_shared<std::vector<std::shared_ptr<Figure>>>();
-    communicator->cmd=Communicator::Command::Clear;
-    std::unique_lock<std::mutex> lock(communicator->mtx);
-    communicator->cv.wait(lock);
+    framecontent->figures=std::make_shared<std::vector<std::shared_ptr<Figure>>>();
+    framecontent->cmd=FrameContent::Command::Clear;
+    std::unique_lock<std::mutex> lock(framecontent->mtx);
+    framecontent->cv.wait(lock);
   }
   
   void Frame::SetInteractorStyle(Frame::InteractorStyle istyle)
   {
-    if (!communicator->render_thread_alive)
+    if (!framecontent->render_thread_alive)
       //Restart();
       throw std::runtime_error("InteractorStyle: render thread is dead");
 
-    communicator->interactor_style=istyle;
-    communicator->cmd=Communicator::Command::SetInteractorStyle;
-    std::unique_lock<std::mutex> lock(communicator->mtx);
-    communicator->cv.wait(lock);
+    framecontent->interactor_style=istyle;
+    framecontent->cmd=FrameContent::Command::SetInteractorStyle;
+    std::unique_lock<std::mutex> lock(framecontent->mtx);
+    framecontent->cv.wait(lock);
   }
 
 }
