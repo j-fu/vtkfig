@@ -1,6 +1,11 @@
+//
+// Learning example for server-client communication via sockets
+// using vtk infrastructure
+//
 #include <cstdio>
 #include <thread>
 #include <cassert>
+#include <cstdio>
 
 #include "vtkSocketController.h"
 #include "vtkServerSocket.h"
@@ -10,7 +15,7 @@
 int main(int argc, const char * argv[])
 {
   int rc;
-  const int port=11102;
+  const int port=9805;
   
   char xname[10];
   bool server=true;
@@ -47,7 +52,7 @@ int main(int argc, const char * argv[])
 
   controller->SetCommunicator(comm);
   controller->Initialize();
-  comm->SetReportErrors(0);
+//  comm->SetReportErrors(0);
   
   
   int nwait=10;
@@ -61,7 +66,7 @@ int main(int argc, const char * argv[])
       ssocket=vtkSmartPointer<vtkServerSocket>::New();
       rc=ssocket->CreateServer(port);
       printf("%s vtkServerSocket::CreateServer: rc=%d\n",xname, rc);
-      assert(rc==0);
+     assert(rc==0);
     }
     
     rc=0;
