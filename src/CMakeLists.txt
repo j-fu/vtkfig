@@ -1,6 +1,7 @@
 add_library(vtkfig 
   vtkfigFrame.cxx
   vtkfigFigure.cxx
+  vtkfigCommunicator.cxx
   vtkfigTools.cxx
   vtkfigXYPlot.cxx
   vtkfigContour2D.cxx  

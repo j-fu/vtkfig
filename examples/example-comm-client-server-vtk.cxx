@@ -143,6 +143,7 @@ int main(int argc, const char * argv[])
   }
   else
   {
+    zahl=0;
     rc=comm->Receive(&zahl,1,remoteHandle,tag);
     printf("%s receive %d: %d\n",xname,zahl, rc);
   }
@@ -157,6 +158,7 @@ int main(int argc, const char * argv[])
   }
   else
   {
+    zahl=0;
     rc=comm->Receive(&zahl,1,remoteHandle,tag);
     printf("%s receive %d: %d\n",xname,zahl, rc);
   }
