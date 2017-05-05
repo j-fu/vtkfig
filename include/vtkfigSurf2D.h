@@ -10,6 +10,7 @@
 
 #include "vtkfigFigure.h"
 #include "vtkfigTools.h"
+#include "vtkfigCommunicator.h"
 
 namespace vtkfig
 {
@@ -21,6 +22,7 @@ namespace vtkfig
       
       Surf2D();
       static std::shared_ptr<Surf2D> New() { return std::make_shared<Surf2D>(); }
+      virtual std::string SubClassName() {return std::string("Surf2D");}
       
 
       template<typename V>
@@ -35,6 +37,23 @@ namespace vtkfig
         lut=BuildLookupTable(tab,tabsize);
       }
       void ShowColorbar(bool b) {show_colorbar=b;}
+
+      virtual void RTSend(vtkSmartPointer<Communicator> communicator) 
+      {
+//        communicator->Send(lut->GetData();,1,1);
+//        communicator->Send(warp,1,1);
+
+        communicator->Send(gridfunc,1,1);
+      };
+
+      virtual void MTReceive(vtkSmartPointer<Communicator> communicator) 
+      {
+//        communicator->Receive(lut,1,1);
+//        communicator->Receive(warp,1,1);
+        
+        communicator->Receive(gridfunc,1,1);
+        gridfunc->Modified();
+      };
 
 
     private:
@@ -74,7 +93,6 @@ namespace vtkfig
     double z_low = 10000, z_upp = -10000;
     
     
-    gridfunc= vtkSmartPointer<vtkStructuredGrid>::New();
     gridfunc->SetDimensions(Nx, Ny, 1);
     
     points = vtkSmartPointer<vtkPoints>::New();

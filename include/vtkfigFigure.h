@@ -11,6 +11,8 @@
 #include "vtkMapper.h"
 #include "vtkMapper2D.h"
 
+#include "vtkfigCommunicator.h"
+
 
 namespace vtkfig
 {
@@ -33,9 +35,13 @@ namespace vtkfig
     Figure();
     void SetBackground(double r, double g, double b) { bgcolor[0]=r; bgcolor[1]=g; bgcolor[2]=b;}
     bool IsEmpty();
-
+    virtual std::string SubClassName() {return std::string("unknown");}
+    virtual void RTSend(vtkSmartPointer<Communicator> communicator) {};
+    virtual void MTReceive(vtkSmartPointer<Communicator> communicator) {};
+    
+    
   protected:
-
+    
     /// All functions here are to be called from render thread.
     virtual void RTBuild()=0;
     virtual void RTSetInteractor(vtkSmartPointer<vtkRenderWindowInteractor> interactor) {};

@@ -70,6 +70,8 @@ namespace vtkfig
 
     std::shared_ptr<std::thread> render_thread;
 
+    vtkSmartPointer<vtkfig::Communicator> communicator=0;
+
   };
 
 
@@ -334,8 +336,98 @@ namespace vtkfig
   Frame::Frame():
     framecontent(FrameContent::New())
   {
+    server_mode=false;
     Start();
   }
+
+
+
+  void CommunicatorThread(vtkSmartPointer<FrameContent> framecontent)
+  {
+    framecontent->render_thread_alive=true;
+    while(1)
+    {
+      std::this_thread::sleep_for (std::chrono::milliseconds(5));
+
+      if (framecontent->cmd!=FrameContent::Command::None)
+      {      
+        // Lock mutex
+        std::unique_lock<std::mutex> lock(framecontent->mtx);
+        // Command dispatch
+        switch(framecontent->cmd)
+        {
+                    
+        case FrameContent::Command::Show:
+        {
+          for (auto figure: *framecontent->figures)
+          {
+
+            framecontent->communicator->SendCommand(vtkfig::Command::FrameShow);
+            figure->RTSend(framecontent->communicator);
+          }
+        }
+        break;
+        
+        case FrameContent::Command::Dump:
+          // Write picture to file
+        {
+        }
+        break;
+      
+        case FrameContent::Command::SetInteractorStyle:
+          // Switch interactor style
+        {
+          framecontent->communicator->SendCommand(vtkfig::Command::SetInteractorStyle);
+          int istyle=static_cast<int>(framecontent->interactor_style);
+          framecontent->communicator->SendInt(istyle);
+        }
+        break;
+      
+      
+        case FrameContent::Command::Clear:
+          // Close window and terminate
+        {
+          
+        }
+        break;
+        
+        case FrameContent::Command::Terminate:
+          // Close window and terminate
+        {
+        }
+        break;
+        
+        default:
+          break;
+        }
+      
+        // Clear command
+        framecontent->cmd=FrameContent::Command::None;
+      
+        // Notify that command was exeuted
+        framecontent->cv.notify_all();
+      }
+    }
+  }
+  
+
+  Frame::Frame(vtkSmartPointer<vtkfig::Communicator> communicator):
+    framecontent(FrameContent::New())
+  {
+    server_mode=true;
+    framecontent->communicator=communicator;
+    framecontent->communicator->SendCommand(Command::NewFrame);
+    framecontent->render_thread=std::make_shared<std::thread>(CommunicatorThread,framecontent);
+    do
+    {
+      std::this_thread::sleep_for (std::chrono::milliseconds(10));
+    }
+    while (!framecontent->render_thread_alive);
+  }
+
+
+  
+
 
   void Frame::Start(void)
   {
@@ -373,7 +465,13 @@ namespace vtkfig
   void Frame::AddFigure(std::shared_ptr<Figure> fig)
   {
     framecontent->figures->push_back(fig);
+    if (server_mode)
+    {
+      framecontent->communicator->SendCommand(Command::AddFigure);
+      framecontent->communicator->SendString(fig->SubClassName());
+    }
   }
+
 
   void Frame::Interact()
   {

@@ -14,7 +14,7 @@
 int main(int argc, const char * argv[])
 {
   bool server=true;
-  int port=9805;
+  int port=35000;
   
   int iarg=1;
   while (iarg<argc)

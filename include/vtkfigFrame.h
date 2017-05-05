@@ -3,6 +3,8 @@
 
 #include <memory>
 #include "vtkSmartPointer.h"
+#include "vtkfigCommunicator.h"
+#include "vtkfigServerConnection.h"
 
 namespace vtkfig
 {
@@ -10,6 +12,8 @@ namespace vtkfig
   class Figure;
   class FrameContent;
   
+
+
   class Frame
   {
   public:
@@ -21,8 +25,18 @@ namespace vtkfig
         };
     
     static std::shared_ptr<Frame> New() { return std::make_shared<Frame>(); }
+    static std::shared_ptr<Frame> New(vtkSmartPointer<Communicator>comm) { return std::make_shared<Frame>(comm); }
+    static std::shared_ptr<Frame> New(ServerConnection& sconn) 
+    {
+      if (sconn.IsOpen())
+        return New(sconn.GetCommunicator()); 
+      else
+        return New(); 
+    }
+    static std::shared_ptr<Frame> New(std::shared_ptr<ServerConnection> sconn) { return New(*sconn);}
     
     Frame();
+    Frame(vtkSmartPointer<Communicator>);
 
     ~Frame();
     
@@ -39,6 +53,7 @@ namespace vtkfig
     void SetInteractorStyle(InteractorStyle style);
     
   private:
+    bool server_mode=false;
     void Restart(void);
     void Start(void);
     void Terminate(void);

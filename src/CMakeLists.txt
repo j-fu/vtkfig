@@ -2,6 +2,7 @@ add_library(vtkfig
   vtkfigFrame.cxx
   vtkfigFigure.cxx
   vtkfigCommunicator.cxx
+  vtkfigServerConnection.cxx
   vtkfigTools.cxx
   vtkfigXYPlot.cxx
   vtkfigContour2D.cxx  
@@ -16,5 +17,6 @@ target_link_libraries(vtkfig-client vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_
 
 
 
+set_property(TARGET vtkfig-client PROPERTY CXX_STANDARD 11)
 set_property(TARGET vtkfig PROPERTY CXX_STANDARD 11)
 

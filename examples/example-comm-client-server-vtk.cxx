@@ -11,11 +11,12 @@
 #include "vtkServerSocket.h"
 #include "vtkSocketCommunicator.h"
 #include "vtkSmartPointer.h"
+#include "vtkPoints.h"
 
 int main(int argc, const char * argv[])
 {
   int rc;
-  const int port=9805;
+  const int port=35000;
   
   char xname[10];
   bool server=true;
@@ -140,6 +141,7 @@ int main(int argc, const char * argv[])
     zahl=42;
     rc=comm->Send(&zahl,1,remoteHandle,tag);
     printf("%s send %d: %d\n",xname,zahl, rc);
+    std::this_thread::sleep_for (std::chrono::milliseconds(100));
   }
   else
   {
@@ -162,7 +164,42 @@ int main(int argc, const char * argv[])
     rc=comm->Receive(&zahl,1,remoteHandle,tag);
     printf("%s receive %d: %d\n",xname,zahl, rc);
   }
+
+  
   std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  vtkSmartPointer<vtkPoints>  points = vtkSmartPointer<vtkPoints>::New();
+  
+  tag=123;
+  if (server)
+  {
+    int Nx=10;
+    int Ny=10;
+    
+    for (int j = 0; j < Ny; j++)
+      for (int i = 0; i < Nx; i++)
+      {
+        points->InsertNextPoint(i, j, 100*i+j);
+      }
+    rc=comm->Send(points->GetData(),remoteHandle,tag);
+    printf("%s send %d points: %d\n",xname,points->GetNumberOfPoints(), rc);
+  }
+  else
+  {
+    rc=comm->Receive(points->GetData(),remoteHandle,tag);
+    printf("%s received %d points: %d\n",xname,points->GetNumberOfPoints(), rc);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+  
+  for (int i=0;i<points->GetNumberOfPoints();i++)
+  {
+    double x[3];
+    points->GetPoint(i,x);
+    printf("%s: point %03.1f %03.1f %03.1f\n",xname,x[0],x[1],x[2]);
+  }
+  printf("\n");
+
+  comm->Barrier();
+
 
   rc=comm->GetIsConnected();
   printf("%s connected %d\n",xname,rc);

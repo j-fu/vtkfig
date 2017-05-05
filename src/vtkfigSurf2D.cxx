@@ -16,13 +16,14 @@ namespace vtkfig
     RGBTable surface_rgb={{0,0,0,1},{1,1,0,0}};
     lut=BuildLookupTable(surface_rgb,255);
     warp = vtkSmartPointer<vtkWarpScalar>::New();
+    gridfunc= vtkSmartPointer<vtkStructuredGrid>::New();
   }
 
 
   void Surf2D::RTBuild()
   {
 
-    bool do_warp=true;
+    bool do_warp=false;
     bool draw_box=true;
     bool draw_axes=true;
     bool draw_colorbar=true;

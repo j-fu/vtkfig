@@ -1,3 +1,4 @@
+#include <chrono>
 #include "vtkfigFrame.h"
 #include "vtkfigSurf2D.h"
 
@@ -9,8 +10,9 @@ inline double G(double x,double y, double t)
 }
 
 
-int main(void)
+int main(const int argc, const char *argv[])
 {
+  vtkfig::ServerConnection connection(argc, argv);
   
   const int Nx = 200;
   const int Ny = 250;
@@ -26,7 +28,7 @@ int main(void)
   const double dx = (x_upp-x_low)/(Nx-1);
   const double dy = (y_upp-y_low)/(Ny-1);
 
-  auto frame=vtkfig::Frame::New();
+  auto frame=vtkfig::Frame::New(connection);
   frame->SetInteractorStyle(vtkfig::Frame::InteractorStyle::Volumetric);
 
   
@@ -41,8 +43,9 @@ int main(void)
   double t=0;
   double dt=0.1;
   int ii=0;
-  double t0=(double)clock()/(double)CLOCKS_PER_SEC;
+  auto t0=std::chrono::system_clock::now();
   double i0=ii;
+
   auto surf=vtkfig::Surf2D::New();
   surf->SetGrid(x,y);
   frame->AddFigure(surf);
@@ -58,16 +61,17 @@ int main(void)
     
     frame->Show();
     
-    if (ii==3) 
-      frame->Dump("example-surf2d.png");
+    // if (ii==3) 
+    //   frame->Dump("example-surf2d.png");
 
     t+=dt;
-    double t1=(double)clock()/(double)CLOCKS_PER_SEC;
+    auto t1=std::chrono::system_clock::now();
+    double dt=std::chrono::duration_cast<std::chrono::duration<double>>(t1-t0).count();
     double i1=ii;
-    if (t1-t0>4.0)
+    if (dt>4.0)
     {
       printf("Frame rate: %.2f fps\n",(double)(i1-i0)/4.0);
-      t0=(double)clock()/(double)CLOCKS_PER_SEC;
+      t0=std::chrono::system_clock::now();
       i0=ii;
     }
     ii++;
