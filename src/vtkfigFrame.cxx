@@ -204,7 +204,6 @@ namespace vtkfig
             {
               // This allows clear figure to work
               renderer->RemoveAllViewProps();
-
               figure->RTBuild();
               for (auto actor: figure->actors) renderer->AddActor(actor);
               for (auto actor: figure->actors2d) renderer->AddActor(actor);
@@ -361,7 +360,6 @@ namespace vtkfig
         {
           for (auto figure: *framecontent->figures)
           {
-
             framecontent->communicator->SendCommand(vtkfig::Command::FrameShow);
             figure->RTSend(framecontent->communicator);
           }
@@ -385,8 +383,12 @@ namespace vtkfig
       
       
         case FrameContent::Command::Clear:
-          // Close window and terminate
         {
+          for (auto figure: *framecontent->figures)
+          {
+
+            //framecontent->communicator->SendCommand(vtkfig::Command::FrameShow);
+          }
           
         }
         break;

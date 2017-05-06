@@ -40,17 +40,13 @@ namespace vtkfig
 
       virtual void RTSend(vtkSmartPointer<Communicator> communicator) 
       {
-//        communicator->Send(lut->GetData();,1,1);
-//        communicator->Send(warp,1,1);
-
-        communicator->Send(gridfunc,1,1);
+          communicator->Send(gridfunc,1,1);
       };
 
       virtual void MTReceive(vtkSmartPointer<Communicator> communicator) 
       {
 //        communicator->Receive(lut,1,1);
 //        communicator->Receive(warp,1,1);
-        
         communicator->Receive(gridfunc,1,1);
         gridfunc->Modified();
       };

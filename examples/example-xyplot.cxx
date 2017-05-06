@@ -3,11 +3,10 @@
 #include <cstdio>
 
 
-int main(void)
+int main(const int argc, const char *argv[])
 {
-
-
-  auto frame=vtkfig::Frame::New();
+  vtkfig::ServerConnection connection(argc, argv);
+  auto frame=vtkfig::Frame::New(connection);
   
   const int NN = 40;
   const double t_low = 0;

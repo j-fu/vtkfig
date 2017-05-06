@@ -10,6 +10,7 @@
 #include "vtkfigFrame.h"
 #include "vtkfigCommunicator.h"
 #include "vtkfigSurf2D.h"
+#include "vtkfigXYPlot.h"
 
 
 
@@ -107,28 +108,29 @@ int main(int argc, const char * argv[])
         remotecmd.append(" ");
         cout << "Connecting via ssh" << endl;
       }
+    }
+    {
       remoteswitch=true;
       remotecmd.append(argv[iarg]);
       remotecmd.append(" ");
       iarg++;
     }
   }
-  if (!have_hostname)
-    hostname.append("localhost");
 
 
   if (remoteswitch)
   { 
-
     remotecmd.append("-p ");
     remotecmd.append(std::to_string(port));
+
+    remotecmd.append(" -s ");
+
 
     remotecmd.append(" &");
     cout << remotecmd << endl;
     system(remotecmd.c_str());
     std::this_thread::sleep_for (std::chrono::milliseconds(wtime));
   }   
-
   vtkSmartPointer<vtkfig::Communicator> communicator=vtkSmartPointer<vtkfig::Communicator>::New();
   communicator->SetReportErrors(0);
   communicator->client_connect_num_retry=2;
@@ -210,6 +212,13 @@ int main(int argc, const char * argv[])
         frame->AddFigure(figure);
         if (debug)
           cout << "Add Surf2d" << endl;
+      }
+      else if (figtype=="XYPlot")
+      {
+        figure=vtkfig::XYPlot::New();
+        frame->AddFigure(figure);
+        if (debug)
+          cout << "Add XYPlot" << endl;
       }
       else
       {

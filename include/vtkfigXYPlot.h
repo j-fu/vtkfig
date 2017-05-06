@@ -16,6 +16,7 @@ namespace vtkfig
   public:
     XYPlot();
     static std::shared_ptr<XYPlot> New() { return std::make_shared<XYPlot>(); }
+    virtual std::string SubClassName() {return std::string("XYPlot");}
     
 
     void Title(const char *title);
@@ -27,6 +28,35 @@ namespace vtkfig
                const std::string linespec);
     
     void Clear();
+
+    virtual void RTSend(vtkSmartPointer<Communicator> communicator) 
+      {
+        
+        communicator->SendInt(num_plots);
+        for (int i=0;i<num_plots;i++)
+        {
+          communicator->Send(xVal[i],1,1);
+          communicator->Send(yVal[i],1,1);
+        }
+      };
+
+      virtual void MTReceive(vtkSmartPointer<Communicator> communicator) 
+      {
+        Clear();
+        int np;
+        communicator->ReceiveInt(np);
+        for (int i=0;i<np;i++)
+        {
+          vtkSmartPointer<vtkFloatArray> xVal= vtkSmartPointer<vtkFloatArray>::New();
+          vtkSmartPointer<vtkFloatArray> yVal= vtkSmartPointer<vtkFloatArray>::New();
+          communicator->Receive(xVal,1,1);
+          communicator->Receive(yVal,1,1);
+          double color[3]={0,1,0};
+          AddPlot(xVal,yVal,color,"-");
+        }
+        
+      };
+
   private:
 
     void AddPlot(const vtkSmartPointer<vtkFloatArray> xVal,
@@ -38,7 +68,10 @@ namespace vtkfig
     void Init();
     
     vtkSmartPointer<vtkXYPlotActor> xyplot;
-    int iplot=0;
+    std::vector<vtkSmartPointer<vtkFloatArray>> xVal;
+    std::vector<vtkSmartPointer<vtkFloatArray>> yVal;
+    int num_plots=0;
+    bool modified=false;
   };
   
   

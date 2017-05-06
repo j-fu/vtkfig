@@ -17,9 +17,12 @@ namespace vtkfig
 
   void XYPlot::Init()
   {
-
+    xVal.clear();
+    yVal.clear();
     xyplot = vtkSmartPointer<vtkXYPlotActor>::New();
-    iplot=0;
+    num_plots=0;
+
+
     xyplot->GetProperty()->SetColor(0.0, 0.0, 0.0);
     xyplot->SetBorder(10);
     xyplot->GetPositionCoordinate()->SetValue(0.0, 0.0, 0);
@@ -57,6 +60,7 @@ namespace vtkfig
   {
     Figure::RTAddActor2D(xyplot);
   }
+
   void XYPlot::Clear()
   {
     /// This is not nice, but I found no way 
@@ -101,11 +105,14 @@ namespace vtkfig
     curve->GetPointData()->SetScalars(Y);
 
 
-    xyplot->SetPlotColor(iplot, col[0], col[1], col[2]);
-    xyplot->SetPlotLines(iplot, plot_lines);
-    xyplot->SetPlotPoints(iplot, plot_points);
+    xyplot->SetPlotColor(num_plots, col[0], col[1], col[2]);
+    xyplot->SetPlotLines(num_plots, plot_lines);
+    xyplot->SetPlotPoints(num_plots, plot_points);
     xyplot->AddDataSetInput(curve);
-    iplot++;
+    xVal.push_back(X);
+    yVal.push_back(Y);
+    num_plots++;
+    modified=true;
     xyplot->Modified();
   }
 
