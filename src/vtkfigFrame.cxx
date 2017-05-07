@@ -361,7 +361,7 @@ namespace vtkfig
           for (auto figure: *framecontent->figures)
           {
             framecontent->communicator->SendCommand(vtkfig::Command::FrameShow);
-            figure->RTSend(framecontent->communicator);
+            figure->ServerRTSend(framecontent->communicator);
           }
         }
         break;

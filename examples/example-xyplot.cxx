@@ -3,9 +3,9 @@
 #include <cstdio>
 
 
-int main(const int argc, const char *argv[])
+int main()
 {
-  vtkfig::ServerConnection connection(argc, argv);
+  vtkfig::ServerConnection connection;
   auto frame=vtkfig::Frame::New(connection);
   
   const int NN = 40;
@@ -21,10 +21,6 @@ int main(const int argc, const char *argv[])
   
   
   
-  double color1[3] =
-    { 0.0, 0.0, 1.0 };
-  double color2[3] =
-    { 1.0, 0.0, 0.0 };
   
   std::string title;
   
@@ -54,8 +50,12 @@ int main(const int argc, const char *argv[])
     snprintf(titlebuf,20,"frame %d",ii++);
     xyplot->Clear();
     xyplot->Title(titlebuf);
-    xyplot->AddPlot(x1, y1, color1, "-");
-    xyplot->AddPlot(x2, y2, color2, ".-");
+    xyplot->LineColorRGB(0,0,1);
+    xyplot->LineType("-");
+    xyplot->AddPlot(x1, y1);
+    xyplot->LineColorRGB(1,0,0);
+    xyplot->LineType(".-");
+    xyplot->AddPlot(x2, y2);
     frame->Show();
     
     if (ii==3) 

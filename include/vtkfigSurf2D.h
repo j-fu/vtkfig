@@ -38,12 +38,12 @@ namespace vtkfig
       }
       void ShowColorbar(bool b) {show_colorbar=b;}
 
-      virtual void RTSend(vtkSmartPointer<Communicator> communicator) 
+      void ServerRTSend(vtkSmartPointer<Communicator> communicator) 
       {
           communicator->Send(gridfunc,1,1);
       };
 
-      virtual void MTReceive(vtkSmartPointer<Communicator> communicator) 
+      void ClientMTReceive(vtkSmartPointer<Communicator> communicator) 
       {
 //        communicator->Receive(lut,1,1);
 //        communicator->Receive(warp,1,1);

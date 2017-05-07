@@ -9,12 +9,23 @@ namespace vtkfig
   {
     bool is_open=false;
     vtkSmartPointer<Communicator> communicator;
+
+
   public:
     bool IsOpen() { return is_open;}
 
     vtkSmartPointer<Communicator> GetCommunicator() {return communicator;}
 
-    ServerConnection(const int argc, const char *argv[]);
+    /// Connection is opened automatically 
+    /// if VTKFIG_PORT_NUMBER is found in the
+    /// environment. Otherwise it is constructed as an object, bur
+    /// remains closed.
+    ServerConnection();
+
+
+    void Open(int port, int wtime);
+
+
 
     ~ServerConnection();
   };

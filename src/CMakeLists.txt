@@ -12,11 +12,11 @@ add_library(vtkfig
   vtkfigTriContour2D.cxx  
 )
 
-add_executable(vtkfig-client MACOSX_BUNDLE vtkfig-client.cxx)
-target_link_libraries(vtkfig-client vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+add_executable(vtkfig-exec MACOSX_BUNDLE vtkfig-exec.cxx)
+target_link_libraries(vtkfig-exec vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
 
 
-set_property(TARGET vtkfig-client PROPERTY CXX_STANDARD 11)
+set_property(TARGET vtkfig-exec PROPERTY CXX_STANDARD 11)
 set_property(TARGET vtkfig PROPERTY CXX_STANDARD 11)
 

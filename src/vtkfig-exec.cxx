@@ -60,6 +60,8 @@ int main(int argc, const char * argv[])
   bool use_ssh=false;
   int iarg=1;
   bool remoteswitch=false;
+  bool via;
+  std::string via_hostname;
   while (iarg<argc)
   {
     if (strcmp(argv[iarg],"-p")==0 && (iarg+1<argc)) 
@@ -72,6 +74,14 @@ int main(int argc, const char * argv[])
     if (strcmp(argv[iarg],"-t")==0 && (iarg+1<argc)) 
     {
       wtime=atoi(argv[iarg+1]); 
+      iarg+=2; 
+      continue;
+    }
+
+    if (strcmp(argv[iarg],"-via")==0 && (iarg+1<argc)) 
+    {
+      via=true;
+      via_hostname.append(argv[iarg+1]);
       iarg+=2; 
       continue;
     }
@@ -89,7 +99,8 @@ int main(int argc, const char * argv[])
       iarg++;
       continue;
     }
-
+    
+    /// first "non-switch" is hostname
     {
       if (!have_hostname)
       {
@@ -100,15 +111,8 @@ int main(int argc, const char * argv[])
       }
     }
 
-    {
-      if (use_ssh && !remoteswitch)
-      {
-        remotecmd.append("ssh ");
-        remotecmd.append(hostname);
-        remotecmd.append(" ");
-        cout << "Connecting via ssh" << endl;
-      }
-    }
+    
+    /// all the unrecognized rest ist the command on hostname.
     {
       remoteswitch=true;
       remotecmd.append(argv[iarg]);
@@ -119,18 +123,55 @@ int main(int argc, const char * argv[])
 
 
   if (remoteswitch)
-  { 
-    remotecmd.append("-p ");
-    remotecmd.append(std::to_string(port));
+  {
+    std::string systemcmd;
+    if (use_ssh)
+    {
+      cout << "Connecting via ssh" << endl;
+      systemcmd.append("ssh -q ");
+      
+      if (via)
+      {
+        cout << "Connecting via " << via_hostname <<  endl;
 
-    remotecmd.append(" -s ");
+        systemcmd.append("-L ");
+        systemcmd.append(std::to_string(port));
+        systemcmd.append(":");
+        systemcmd.append(hostname);
+        systemcmd.append(":");
+        systemcmd.append(std::to_string(port));
+        systemcmd.append(" ");
+        systemcmd.append(via_hostname);
+        systemcmd.append(" \"ssh ");
+      }
+      systemcmd.append(hostname);
+      if (via)
+        systemcmd.append(" ");
+      else
+        systemcmd.append("  \" ");
+    }
+    
+    systemcmd.append("VTKFIG_PORT_NUMBER=");
+    systemcmd.append(std::to_string(port));
+    systemcmd.append(" ");
+    systemcmd.append(remotecmd);
+    systemcmd.append(" ");
+    if (use_ssh)
+      systemcmd.append("\" ");
+    systemcmd.append("&");
 
+    if (via)
+    {
+      hostname.clear();
+      hostname.append("localhost");
+    }
+    cout << systemcmd << endl;
 
-    remotecmd.append(" &");
-    cout << remotecmd << endl;
-    system(remotecmd.c_str());
+//    exit(1);
+    system(systemcmd.c_str());
     std::this_thread::sleep_for (std::chrono::milliseconds(wtime));
   }   
+  
   vtkSmartPointer<vtkfig::Communicator> communicator=vtkSmartPointer<vtkfig::Communicator>::New();
   communicator->SetReportErrors(0);
   communicator->client_connect_num_retry=2;
@@ -238,7 +279,7 @@ int main(int argc, const char * argv[])
 
     case vtkfig::Command::FrameShow:
     {
-      figure->MTReceive(communicator);
+      figure->ClientMTReceive(communicator);
       frame->Show();
     }
 

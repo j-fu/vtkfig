@@ -76,16 +76,42 @@ namespace vtkfig
   }
   
 
+  void  XYPlot::ServerRTSend(vtkSmartPointer<Communicator> communicator) 
+  {
+    
+    communicator->SendInt(num_plots);
+    for (int i=0;i<num_plots;i++)
+    {
+      communicator->Send(xVal[i],1,1);
+      communicator->Send(yVal[i],1,1);
+    }
+  };
+  
+  void  XYPlot::ClientMTReceive(vtkSmartPointer<Communicator> communicator) 
+  {
+    Clear();
+    int np;
+    communicator->ReceiveInt(np);
+    for (int i=0;i<np;i++)
+    {
+      vtkSmartPointer<vtkFloatArray> xVal= vtkSmartPointer<vtkFloatArray>::New();
+      vtkSmartPointer<vtkFloatArray> yVal= vtkSmartPointer<vtkFloatArray>::New();
+      communicator->Receive(xVal,1,1);
+      communicator->Receive(yVal,1,1);
+      AddPlot(xVal,yVal);
+    }
+  };
+
+
 
   void XYPlot::AddPlot(vtkSmartPointer<vtkFloatArray> X,
-                       vtkSmartPointer<vtkFloatArray> Y, 
-                       const double col[3],
-                       const std::string linespec)
+                       vtkSmartPointer<vtkFloatArray> Y)
   {
     int N = X->GetNumberOfTuples();
     int plot_points = 0;
     int plot_lines = 0;
     
+    std::string linespec(line_type);
     // determine line style
     if (linespec == "-")
       plot_lines = 1;
@@ -105,14 +131,13 @@ namespace vtkfig
     curve->GetPointData()->SetScalars(Y);
 
 
-    xyplot->SetPlotColor(num_plots, col[0], col[1], col[2]);
+    xyplot->SetPlotColor(num_plots, line_rgb[0], line_rgb[1], line_rgb[2]);
     xyplot->SetPlotLines(num_plots, plot_lines);
     xyplot->SetPlotPoints(num_plots, plot_points);
     xyplot->AddDataSetInput(curve);
     xVal.push_back(X);
     yVal.push_back(Y);
     num_plots++;
-    modified=true;
     xyplot->Modified();
   }
 

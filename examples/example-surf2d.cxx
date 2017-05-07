@@ -12,7 +12,7 @@ inline double G(double x,double y, double t)
 
 int main(const int argc, const char *argv[])
 {
-  vtkfig::ServerConnection connection(argc, argv);
+  vtkfig::ServerConnection connection;
   
   const int Nx = 200;
   const int Ny = 250;
