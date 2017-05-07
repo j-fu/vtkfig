@@ -34,6 +34,10 @@ namespace vtkfig
       
       void SetRGBTable(RGBTable & tab, int tabsize)
       {
+        state.rgbtab_size=tabsize;
+        state.rgbtab_modified=true;
+        state.rgbtab_npoints=tab.size();;
+        rgbtab=tab;
         lut=BuildLookupTable(tab,tabsize);
       }
       void ShowColorbar(bool b) {show_colorbar=b;}
@@ -41,14 +45,21 @@ namespace vtkfig
       void ServerRTSend(vtkSmartPointer<Communicator> communicator) 
       {
         communicator->SendBuffer((char*)&state,sizeof(state));
+        if (state.rgbtab_modified)
+          communicator->SendBuffer((char*)rgbtab.data(),state.rgbtab_npoints*sizeof(RGBPoint));
         communicator->Send(gridfunc,1,1);
+        state.rgbtab_modified=false;
       };
 
       void ClientMTReceive(vtkSmartPointer<Communicator> communicator) 
       {
-//        communicator->Receive(lut,1,1);
-//        communicator->Receive(warp,1,1);
         communicator->ReceiveBuffer((char*)&state,sizeof(state));
+        if (state.rgbtab_modified)
+        {
+          RGBTable new_rgbtab(state.rgbtab_npoints);
+          communicator->ReceiveBuffer((char*)new_rgbtab.data(),state.rgbtab_npoints*sizeof(RGBPoint));
+          SetRGBTable(new_rgbtab,state.rgbtab_size);
+        }
         communicator->Receive(gridfunc,1,1);
         update_warp_and_lut();
         gridfunc->Modified();
@@ -66,12 +77,16 @@ namespace vtkfig
       int Nx;
       int Ny;
 
+      RGBTable rgbtab{{0,0,1},{1,0,0}};
       struct 
       {
         double Lxy;
         double Lz;
         double vmax=0;
         double vmin=0;
+        int rgbtab_size=255;
+        int rgbtab_npoints=2;
+        bool rgbtab_modified=false;
       } state;
 
       vtkSmartPointer<vtkLookupTable> lut;
