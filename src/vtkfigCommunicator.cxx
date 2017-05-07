@@ -121,6 +121,17 @@ namespace vtkfig
     return rc;
   }
   
+  int Communicator::SendBuffer(char *buf, int ndata, int tag)
+  {
+    return Send(buf,ndata,remoteHandle,tag);
+  }
+
+  int Communicator::ReceiveBuffer(char *buf, int ndata, int tag)
+  {
+    return Receive(buf,ndata,remoteHandle,tag);
+  }
+
+
   
 }
   

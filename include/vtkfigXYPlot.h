@@ -16,21 +16,29 @@ namespace vtkfig
   public:
     XYPlot();
     static std::shared_ptr<XYPlot> New() { return std::make_shared<XYPlot>(); }
+
     virtual std::string SubClassName() {return std::string("XYPlot");}
+
     void Title(const char *title);
-    void LineType(const char *type) { strncpy(line_type,type,16);}
-    void LineColorRGB(float r, float g, float b) { line_rgb[0]=r; line_rgb[1]=g; line_rgb[2]=b;}
+
+    void LineType(const char *type) { strncpy(next_plot_info.line_type,type,desclen);}
+
+    void LineColorRGB(float r, float g, float b) { next_plot_info.line_rgb[0]=r; next_plot_info.line_rgb[1]=g; next_plot_info.line_rgb[2]=b;}
+
+    void LineColorRGB(float rgb[3]) { next_plot_info.line_rgb[0]=rgb[0]; next_plot_info.line_rgb[1]=rgb[1]; next_plot_info.line_rgb[2]=rgb[2];}
     
-    template<typename V> 
-    void AddPlot(const V &x,  const V &y);
+    template<typename V>  void AddPlot(const V &x,  const V &y);
     
     void Clear();
 
-    void ServerRTSend(vtkSmartPointer<Communicator> communicator);
-    void ClientMTReceive(vtkSmartPointer<Communicator> communicator); 
 
 
   private:
+
+    void ServerRTSend(vtkSmartPointer<Communicator> communicator);
+
+    void ClientMTReceive(vtkSmartPointer<Communicator> communicator); 
+
 
     void AddPlot(const vtkSmartPointer<vtkFloatArray> xVal,
                  const vtkSmartPointer<vtkFloatArray> yVal);
@@ -41,9 +49,18 @@ namespace vtkfig
     vtkSmartPointer<vtkXYPlotActor> xyplot;
     std::vector<vtkSmartPointer<vtkFloatArray>> xVal;
     std::vector<vtkSmartPointer<vtkFloatArray>> yVal;
-    int num_plots=0;
-    float line_rgb[3]={0,0,0};
-    char line_type[16]={'-','\0'};
+
+    static const int desclen=4;
+    std::string title="test";
+    struct plot_info
+    {
+      char line_type[desclen]={'-',0,0,0};
+      float line_rgb[3]={0,0,0};
+      plot_info(){};
+    };
+    
+    plot_info next_plot_info;
+    std::vector<plot_info> all_plot_info;
   };
   
   

@@ -23,7 +23,7 @@ namespace vtkfig
   void Surf2D::RTBuild()
   {
 
-    bool do_warp=false;
+    bool do_warp=true;
     bool draw_box=true;
     bool draw_axes=true;
     bool draw_colorbar=true;

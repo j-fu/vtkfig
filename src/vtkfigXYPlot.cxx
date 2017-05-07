@@ -19,9 +19,9 @@ namespace vtkfig
   {
     xVal.clear();
     yVal.clear();
-    xyplot = vtkSmartPointer<vtkXYPlotActor>::New();
-    num_plots=0;
+    all_plot_info.clear();
 
+    xyplot = vtkSmartPointer<vtkXYPlotActor>::New();
 
     xyplot->GetProperty()->SetColor(0.0, 0.0, 0.0);
     xyplot->SetBorder(10);
@@ -39,7 +39,7 @@ namespace vtkfig
     xyplot->SetXValuesToArcLength();
     
     xyplot->SetLabelFormat("%2.1f");
-    xyplot->SetTitle("test");
+    xyplot->SetTitle(title.c_str());
     xyplot->SetXTitle("x");
     xyplot->SetYTitle("y");
     
@@ -69,17 +69,23 @@ namespace vtkfig
     Init();
   }
 
-  void XYPlot::Title(const char * title)
+  void XYPlot::Title(const char * xtitle)
   {
-    xyplot->SetTitle(title);
+    xyplot->SetTitle(xtitle);
+    title=xtitle;
     xyplot->Modified();
   }
   
 
   void  XYPlot::ServerRTSend(vtkSmartPointer<Communicator> communicator) 
   {
-    
+    int num_plots=all_plot_info.size();
+
+    communicator->SendString(title);
     communicator->SendInt(num_plots);
+    char *data=(char*)all_plot_info.data();
+    int ndata=num_plots*sizeof(plot_info);
+    communicator->SendBuffer(data,ndata);
     for (int i=0;i<num_plots;i++)
     {
       communicator->Send(xVal[i],1,1);
@@ -90,14 +96,21 @@ namespace vtkfig
   void  XYPlot::ClientMTReceive(vtkSmartPointer<Communicator> communicator) 
   {
     Clear();
+    communicator->ReceiveString(title);
     int np;
     communicator->ReceiveInt(np);
+    std::vector<plot_info> new_plot_info(np);
+    char *data=(char*)new_plot_info.data();
+    int ndata=np*sizeof(plot_info);
+    communicator->ReceiveBuffer(data,ndata);
     for (int i=0;i<np;i++)
     {
       vtkSmartPointer<vtkFloatArray> xVal= vtkSmartPointer<vtkFloatArray>::New();
       vtkSmartPointer<vtkFloatArray> yVal= vtkSmartPointer<vtkFloatArray>::New();
       communicator->Receive(xVal,1,1);
       communicator->Receive(yVal,1,1);
+      LineColorRGB(new_plot_info[i].line_rgb);
+      LineType(new_plot_info[i].line_type);
       AddPlot(xVal,yVal);
     }
   };
@@ -111,7 +124,7 @@ namespace vtkfig
     int plot_points = 0;
     int plot_lines = 0;
     
-    std::string linespec(line_type);
+    std::string linespec(next_plot_info.line_type);
     // determine line style
     if (linespec == "-")
       plot_lines = 1;
@@ -123,6 +136,8 @@ namespace vtkfig
       plot_lines = 1;
     }
 
+    int num_plots=all_plot_info.size();
+
 
     // Make a VTK Rectlinear grid from arrays
     vtkSmartPointer<vtkRectilinearGrid> curve = vtkSmartPointer<vtkRectilinearGrid>::New();
@@ -131,13 +146,14 @@ namespace vtkfig
     curve->GetPointData()->SetScalars(Y);
 
 
-    xyplot->SetPlotColor(num_plots, line_rgb[0], line_rgb[1], line_rgb[2]);
+    xyplot->SetPlotColor(num_plots, next_plot_info.line_rgb[0], next_plot_info.line_rgb[1], next_plot_info.line_rgb[2]);
     xyplot->SetPlotLines(num_plots, plot_lines);
     xyplot->SetPlotPoints(num_plots, plot_points);
     xyplot->AddDataSetInput(curve);
     xVal.push_back(X);
     yVal.push_back(Y);
-    num_plots++;
+    all_plot_info.push_back(plot_info(next_plot_info));
+    
     xyplot->Modified();
   }
 

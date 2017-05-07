@@ -48,6 +48,15 @@ int main(const int argc, const char *argv[])
 
   auto surf=vtkfig::Surf2D::New();
   surf->SetGrid(x,y);
+
+  auto colors=vtkfig::RGBTable
+    { 
+      {0.0, 0.0, 0.0, 1.0},
+      {0.5, 0.0, 1.0, 0.0},
+      {1.0, 1.0, 0.0, 0.0}
+    };
+  surf->SetRGBTable(colors,255);
+
   frame->AddFigure(surf);
 
   while (1)

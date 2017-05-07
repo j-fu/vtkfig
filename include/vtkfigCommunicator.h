@@ -59,6 +59,10 @@ namespace vtkfig
 
     int ReceiveString(std::string &s, int tag= static_cast<int>(Tag::String));
 
+    int SendBuffer(char *buf, int ndata, int tag=static_cast<int>(Tag::Buffer) );
+
+    int ReceiveBuffer(char *buf, int ndata, int tag= static_cast<int>(Tag::Buffer));
+
 
   private:
     const int remoteHandle=1;
@@ -67,7 +71,8 @@ namespace vtkfig
       Command=100,
         Int,
         Double,
-        String
+        String,
+        Buffer
         };
     
 
