@@ -8,7 +8,7 @@ The intention of  vtkfig is to provide a C++  graphics library with an API simil
 - Mainly C++11
 - Separate rendering thread allowing for easy handling of changing data  handeled by the vtkfig::Frame class
 - Easy extension by implementing derived classes from vtkfig::Figure containing standard vtk rendering pipelines
-
+- Client-Server communication for remote execution
 
 ## Build
 

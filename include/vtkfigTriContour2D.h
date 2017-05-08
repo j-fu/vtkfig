@@ -4,9 +4,8 @@
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
 #include "vtkCellArray.h"
-#include "vtkContourFilter.h"
 
-#include "vtkfigFigure.h"
+#include "vtkfigContour2DBase.h"
 #include "vtkfigTools.h"
 
 
@@ -18,27 +17,12 @@ namespace vtkfig
 {
 
   
-  class TriContour2D: public vtkfig::Figure
+  class TriContour2D: public Contour2DBase
   {
   public:
     
     TriContour2D();
     static std::shared_ptr<TriContour2D> New() { return std::make_shared<TriContour2D>(); }
-    
-    
-    void ShowSurface(bool b) {show_surface=b;}
-    void ShowContour(bool b) {show_contour=b;}
-    void ShowSurfaceColorbar(bool b) {show_surface_colorbar=b;}
-    void ShowContourColorbar(bool b) {show_contour_colorbar=b;}
-    
-    void SetSurfaceRGBTable(RGBTable & tab, int tabsize)
-    {
-      surface_lut=BuildLookupTable(tab,tabsize);
-    }
-    void SetContourRGBTable(RGBTable & tab, int tabsize)
-    {
-      contour_lut=BuildLookupTable(tab,tabsize);
-    }
     
     template <class V, class IV>
     void SetGrid(const V& points, 
@@ -48,25 +32,12 @@ namespace vtkfig
     void UpdateValues(const V&values);
     
     
-    
-    
-    
   private:
     void RTBuild();
-    double vmin,vmax;
     
     vtkSmartPointer<vtkUnstructuredGrid> gridfunc;
     vtkSmartPointer<vtkFloatArray> gridvalues;
 
-    vtkSmartPointer<vtkLookupTable> surface_lut;
-    vtkSmartPointer<vtkLookupTable> contour_lut;
-    vtkSmartPointer<vtkContourFilter> isocontours;
-    
-    bool show_surface=true;
-    bool show_contour=true;
-    bool show_surface_colorbar=true;
-    bool show_contour_colorbar=false;
-    int ncont=10;
   };
   
 

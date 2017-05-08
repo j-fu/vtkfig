@@ -4,9 +4,9 @@
 #include "vtkRectilinearGrid.h"
 #include "vtkFloatArray.h"
 #include "vtkContourFilter.h"
-#include "vtkSliderWidget.h"
 
 #include "vtkfigFigure.h"
+#include "vtkfigContour2DBase.h"
 #include "vtkfigTools.h"
 
 
@@ -15,9 +15,8 @@ namespace vtkfig
 
   
   ///////////////////////////////////////////
-  class Contour2D: public Figure
+  class Contour2D: public Contour2DBase
   {
-    friend class mySliderCallback;
   public:
     
     Contour2D();
@@ -32,46 +31,17 @@ namespace vtkfig
       void UpdateValues(const V &values);
     
     
-    void ShowSurface(bool b) {show_surface=b;}
-    void ShowContour(bool b) {show_contour=b;}
-    void ShowSurfaceColorbar(bool b) {show_surface_colorbar=b;}
-    void ShowContourColorbar(bool b) {show_contour_colorbar=b;}
-    
-    void SetSurfaceRGBTable(RGBTable & tab, int tabsize)
-    {
-      surface_lut=BuildLookupTable(tab,tabsize);
-    }
-    void SetContourRGBTable(RGBTable & tab, int tabsize)
-    {
-      contour_lut=BuildLookupTable(tab,tabsize);
-    }
-    
-    
-    double vmax=0;
-    double vmin=0;
-    int ncont=10;
-    vtkSmartPointer<vtkContourFilter> isocontours;
     
   private:
-    void RTSetInteractor(vtkSmartPointer<vtkRenderWindowInteractor>);
     virtual void RTBuild();
 
     vtkSmartPointer<vtkFloatArray> xcoord;
     vtkSmartPointer<vtkFloatArray> ycoord;
     vtkSmartPointer<vtkFloatArray> values;
-    vtkSmartPointer<vtkSliderWidget> sliderWidget;
-    
-    vtkSmartPointer<vtkLookupTable> surface_lut;
-    vtkSmartPointer<vtkLookupTable> contour_lut;
     
     unsigned int Nx;
     unsigned int Ny;
     
-    bool show_surface=true;
-    bool show_contour=true;
-    bool show_slider=true;
-    bool show_surface_colorbar=true;
-    bool show_contour_colorbar=false;
   };
 
 

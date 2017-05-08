@@ -5,6 +5,7 @@ add_library(vtkfig
   vtkfigServerConnection.cxx
   vtkfigTools.cxx
   vtkfigXYPlot.cxx
+  vtkfigContour2DBase.cxx  
   vtkfigContour2D.cxx  
   vtkfigSurf2D.cxx
   vtkfigQuiver2D.cxx

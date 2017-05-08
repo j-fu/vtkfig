@@ -19,9 +19,9 @@ int main(void)
   
   std::vector<double> inpoints;
 
-  for(double x = 0; x < 1; x+=0.01)
+  for(double x = -2; x < 2; x+=0.02)
   {
-    for(double y = 0; y < 1; y+=0.01)
+    for(double y = -2; y < 2; y+=0.02)
     {
       inpoints.push_back(x + vtkMath::Random(-.025, .025));
       inpoints.push_back(y + vtkMath::Random(-.025, .025));

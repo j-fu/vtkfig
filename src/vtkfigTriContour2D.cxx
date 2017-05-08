@@ -6,13 +6,8 @@
 
 namespace vtkfig
 {
-  TriContour2D::TriContour2D(): vtkfig::Figure()
+  TriContour2D::TriContour2D(): Contour2DBase()
   {
-    RGBTable surface_rgb={{0,0,0,1},{1,1,0,0}};
-    RGBTable contour_rgb={{0,0,0,0},{1,0,0,0}};
-    surface_lut=BuildLookupTable(surface_rgb,255);
-    contour_lut=BuildLookupTable(contour_rgb,2);
-    isocontours = vtkSmartPointer<vtkContourFilter>::New();
   }
   
   void TriContour2D::RTBuild()
@@ -60,6 +55,7 @@ namespace vtkfig
       if (show_contour_colorbar)
         Figure::RTAddActor2D(BuildColorBar(mapper));
 
+      AddSlider();
     }
 
   }
