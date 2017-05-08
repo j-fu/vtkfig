@@ -11,6 +11,7 @@ namespace vtkfig
   ////////////////////////////////////////////////
   XYPlot::XYPlot():Figure()
   {
+    LineType("-");
     Init();
   }
 
@@ -83,9 +84,9 @@ namespace vtkfig
 
     communicator->SendString(title);
     communicator->SendInt(num_plots);
-    char *data=(char*)all_plot_info.data();
-    int ndata=num_plots*sizeof(plot_info);
-    communicator->SendBuffer(data,ndata);
+    float *data=(float*)all_plot_info.data();
+    int ndata=num_plots*sizeof(plot_info)/sizeof(float);
+    communicator->SendFloatBuffer(data,ndata);
     for (int i=0;i<num_plots;i++)
     {
       communicator->Send(xVal[i],1,1);
@@ -100,9 +101,9 @@ namespace vtkfig
     int np;
     communicator->ReceiveInt(np);
     std::vector<plot_info> new_plot_info(np);
-    char *data=(char*)new_plot_info.data();
-    int ndata=np*sizeof(plot_info);
-    communicator->ReceiveBuffer(data,ndata);
+    float *data=(float*)new_plot_info.data();
+    int ndata=np*sizeof(plot_info)/sizeof(float);
+    communicator->ReceiveFloatBuffer(data,ndata);
     for (int i=0;i<np;i++)
     {
       vtkSmartPointer<vtkFloatArray> xVal= vtkSmartPointer<vtkFloatArray>::New();
@@ -123,8 +124,9 @@ namespace vtkfig
     int N = X->GetNumberOfTuples();
     int plot_points = 0;
     int plot_lines = 0;
-    
-    std::string linespec(next_plot_info.line_type);
+    char s[desclen];
+    for (int i=0;i<desclen;i++) s[i]=static_cast<char>(next_plot_info.line_type[i]);
+    std::string linespec(s);
     // determine line style
     if (linespec == "-")
       plot_lines = 1;

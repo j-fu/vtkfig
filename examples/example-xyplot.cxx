@@ -66,6 +66,7 @@ int main()
     if (t1-t0>4.0)
     {
       printf("Frame rate: %.2f fps\n",(double)(i1-i0)/4.0);
+      fflush(stdout);
       t0=(double)clock()/(double)CLOCKS_PER_SEC;
       i0=ii;
     }

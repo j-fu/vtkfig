@@ -60,7 +60,7 @@ int main(int argc, const char * argv[])
   bool use_ssh=false;
   int iarg=1;
   bool remoteswitch=false;
-  bool via;
+  bool via=false;
   std::string via_hostname;
   while (iarg<argc)
   {
@@ -184,7 +184,7 @@ int main(int argc, const char * argv[])
 
   while (iretry<nretry)
   {
-    cout << "Connecting to "<< hostname << ":" << port << "..." << endl;
+    cout << "Client connecting to "<< hostname << ":" << port << "..." << endl;
     rc=communicator->ClientConnect(hostname.c_str(),port);
     if (rc) break;
     std::this_thread::sleep_for (std::chrono::milliseconds(twait));
@@ -193,10 +193,10 @@ int main(int argc, const char * argv[])
   }
 
   if (rc)
-    cout << "Connected to "<< hostname << ":" << port << endl;
+    cout << "Client connected to "<< hostname << ":" << port << endl;
   else
   {
-    cout << "Failed to connect to "<< hostname << ":" << port << endl;
+    cout << "Client failed to connect to "<< hostname << ":" << port << endl;
     return 1;
   }
 

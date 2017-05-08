@@ -94,12 +94,12 @@ namespace vtkfig
     return Receive(&i,1,remoteHandle,tag);
   }
   
-  int Communicator::SendDouble(double d, int tag)
+  int Communicator::SendFloat(float d, int tag)
   {
     return Send(&d,1,remoteHandle,tag);
   }
   
-  int Communicator::ReceiveDouble(double &d, int tag)
+  int Communicator::ReceiveFloat(float &d, int tag)
   {
     return Receive(&d,1,remoteHandle,tag);
   }
@@ -121,12 +121,22 @@ namespace vtkfig
     return rc;
   }
   
-  int Communicator::SendBuffer(char *buf, int ndata, int tag)
+  int Communicator::SendCharBuffer(char *buf, int ndata, int tag)
   {
     return Send(buf,ndata,remoteHandle,tag);
   }
 
-  int Communicator::ReceiveBuffer(char *buf, int ndata, int tag)
+  int Communicator::ReceiveCharBuffer(char *buf, int ndata, int tag)
+  {
+    return Receive(buf,ndata,remoteHandle,tag);
+  }
+
+  int Communicator::SendFloatBuffer(float *buf, int ndata, int tag)
+  {
+    return Send(buf,ndata,remoteHandle,tag);
+  }
+
+  int Communicator::ReceiveFloatBuffer(float *buf, int ndata, int tag)
   {
     return Receive(buf,ndata,remoteHandle,tag);
   }

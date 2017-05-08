@@ -13,6 +13,7 @@ inline double G(double x,double y, double t)
 int main(const int argc, const char *argv[])
 {
   vtkfig::ServerConnection connection;
+  cout.sync_with_stdio(true);
   
   const int Nx = 200;
   const int Ny = 250;
@@ -82,6 +83,7 @@ int main(const int argc, const char *argv[])
       printf("Frame rate: %.2f fps\n",(double)(i1-i0)/4.0);
       t0=std::chrono::system_clock::now();
       i0=ii;
+      fflush(stdout);
     }
     ii++;
   }

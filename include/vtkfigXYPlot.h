@@ -21,8 +21,14 @@ namespace vtkfig
 
     void Title(const char *title);
 
-    void LineType(const char *type) { strncpy(next_plot_info.line_type,type,desclen);}
-
+    template <typename T> 
+    void LineType(const T *type) 
+    { for (int i=0;i<desclen;i++) 
+      {
+        next_plot_info.line_type[i]=static_cast<float>(type[i]);
+        if (type[i]=='\0') break;
+      }
+    }
     void LineColorRGB(float r, float g, float b) { next_plot_info.line_rgb[0]=r; next_plot_info.line_rgb[1]=g; next_plot_info.line_rgb[2]=b;}
 
     void LineColorRGB(float rgb[3]) { next_plot_info.line_rgb[0]=rgb[0]; next_plot_info.line_rgb[1]=rgb[1]; next_plot_info.line_rgb[2]=rgb[2];}
@@ -52,9 +58,10 @@ namespace vtkfig
 
     static const int desclen=4;
     std::string title="test";
+    // has to consist of floats only because of endianness
     struct plot_info
     {
-      char line_type[desclen]={'-',0,0,0};
+      float line_type[desclen]={'-',0,0,0};
       float line_rgb[3]={0,0,0};
       plot_info(){};
     };

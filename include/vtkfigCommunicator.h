@@ -51,17 +51,21 @@ namespace vtkfig
 
     int ReceiveInt(int &i, int tag= static_cast<int>(Tag::Int));
 
-    int SendDouble(double d, int tag= static_cast<int>(Tag::Double));
+    int SendFloat(float d, int tag= static_cast<int>(Tag::Float));
 
-    int ReceiveDouble(double &d, int tag= static_cast<int>(Tag::Double));
+    int ReceiveFloat(float &d, int tag= static_cast<int>(Tag::Float));
 
     int SendString(const std::string  s, int tag=static_cast<int>(Tag::String) );
 
     int ReceiveString(std::string &s, int tag= static_cast<int>(Tag::String));
 
-    int SendBuffer(char *buf, int ndata, int tag=static_cast<int>(Tag::Buffer) );
+    int SendCharBuffer(char *buf, int ndata, int tag=static_cast<int>(Tag::CharBuffer) );
 
-    int ReceiveBuffer(char *buf, int ndata, int tag= static_cast<int>(Tag::Buffer));
+    int ReceiveCharBuffer(char *buf, int ndata, int tag= static_cast<int>(Tag::CharBuffer));
+
+    int SendFloatBuffer(float *buf, int ndata, int tag=static_cast<int>(Tag::FloatBuffer) );
+
+    int ReceiveFloatBuffer(float *buf, int ndata, int tag= static_cast<int>(Tag::FloatBuffer));
 
 
   private:
@@ -70,9 +74,10 @@ namespace vtkfig
     {
       Command=100,
         Int,
-        Double,
+        Float,
         String,
-        Buffer
+        CharBuffer,
+        FloatBuffer
         };
     
 

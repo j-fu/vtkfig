@@ -44,20 +44,20 @@ namespace vtkfig
 
       void ServerRTSend(vtkSmartPointer<Communicator> communicator) 
       {
-        communicator->SendBuffer((char*)&state,sizeof(state));
+        communicator->SendCharBuffer((char*)&state,sizeof(state));
         if (state.rgbtab_modified)
-          communicator->SendBuffer((char*)rgbtab.data(),state.rgbtab_npoints*sizeof(RGBPoint));
+          communicator->SendFloatBuffer((float*)rgbtab.data(),state.rgbtab_npoints*sizeof(RGBPoint)/sizeof(float));
         communicator->Send(gridfunc,1,1);
         state.rgbtab_modified=false;
       };
 
       void ClientMTReceive(vtkSmartPointer<Communicator> communicator) 
       {
-        communicator->ReceiveBuffer((char*)&state,sizeof(state));
+        communicator->ReceiveCharBuffer((char*)&state,sizeof(state));
         if (state.rgbtab_modified)
         {
           RGBTable new_rgbtab(state.rgbtab_npoints);
-          communicator->ReceiveBuffer((char*)new_rgbtab.data(),state.rgbtab_npoints*sizeof(RGBPoint));
+          communicator->ReceiveFloatBuffer((float*)new_rgbtab.data(),state.rgbtab_npoints*sizeof(RGBPoint)/sizeof(float));
           SetRGBTable(new_rgbtab,state.rgbtab_size);
         }
         communicator->Receive(gridfunc,1,1);
@@ -78,15 +78,16 @@ namespace vtkfig
       int Ny;
 
       RGBTable rgbtab{{0,0,1},{1,0,0}};
+      // all float in order to be endianness-aware
       struct 
       {
-        double Lxy;
-        double Lz;
-        double vmax=0;
-        double vmin=0;
-        int rgbtab_size=255;
-        int rgbtab_npoints=2;
-        bool rgbtab_modified=false;
+        float Lxy;
+        float Lz;
+        float vmax=0;
+        float vmin=0;
+        float rgbtab_size=255;
+        float rgbtab_npoints=2;
+        float rgbtab_modified=0.0;
       } state;
 
       vtkSmartPointer<vtkLookupTable> lut;
@@ -158,7 +159,7 @@ namespace vtkfig
       for (int i = 0; i < Nx; i++)
       {
         int k=j*Nx+i;
-        double v=z[k];
+        float v=z[k];
         state.vmin=std::min(v,state.vmin);
         state.vmax=std::max(v,state.vmax);
         double  p[3];
