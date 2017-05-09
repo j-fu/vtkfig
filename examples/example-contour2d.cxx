@@ -1,6 +1,6 @@
+#include <chrono>
 #include "vtkfigFrame.h"
 #include "vtkfigContour2D.h"
-
 
 inline double G(double x,double y, double t) 
 {
@@ -40,12 +40,13 @@ int main(void)
   for (int i=0; i<Ny; i++)
     y[i] = y_low + i*dy;
 
-
   double t=0;
   double dt=0.1;
   int ii=0;
-  double t0=(double)clock()/(double)CLOCKS_PER_SEC;
+  auto t0=std::chrono::system_clock::now();
   double i0=ii;
+
+
   auto contour=vtkfig::Contour2D::New();
   contour->SetSurfaceRGBTable(colors,255);
   contour->SetGrid(x,y);
@@ -67,13 +68,15 @@ int main(void)
       frame->Dump("example-contour2d.png");
 
     t+=dt;
-    double t1=(double)clock()/(double)CLOCKS_PER_SEC;
+    auto t1=std::chrono::system_clock::now();
+    double dt=std::chrono::duration_cast<std::chrono::duration<double>>(t1-t0).count();
     double i1=ii;
-    if (t1-t0>4.0)
+    if (dt>4.0)
     {
       printf("Frame rate: %.2f fps\n",(double)(i1-i0)/4.0);
-      t0=(double)clock()/(double)CLOCKS_PER_SEC;
+      t0=std::chrono::system_clock::now();
       i0=ii;
+      fflush(stdout);
     }
     ii++;
   }

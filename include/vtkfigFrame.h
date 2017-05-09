@@ -37,6 +37,7 @@ namespace vtkfig
     
     Frame();
     Frame(vtkSmartPointer<Communicator>);
+    Frame(int nrow, int ncol);
 
     ~Frame();
     

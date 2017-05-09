@@ -8,6 +8,8 @@
 #include "vtkInteractorStyleImage.h"
 #include "vtkInteractorStyleTrackballCamera.h"
 #include "vtkCamera.h"
+#include "vtkProperty.h"
+#include "vtkProperty2D.h"
 #include "vtkCommand.h"
 #include "vtkWindowToImageFilter.h"
 #include "vtkPNGWriter.h"
@@ -65,12 +67,19 @@ namespace vtkfig
     bool communication_blocked=false;
     
     /// interactor style
-    Frame::InteractorStyle interactor_style= Frame::InteractorStyle::Planar;
+    Frame::InteractorStyle interactor_style= Frame::InteractorStyle::Volumetric;
 
+    /// 
+    bool wireframe;
 
+    /// 
+    double default_camera_focal_point[3]={0,0,0};
+    double default_camera_position[3]={0,0,20};
+    
     std::shared_ptr<std::thread> render_thread;
 
     vtkSmartPointer<vtkfig::Communicator> communicator=0;
+    vtkSmartPointer<vtkRenderer> renderer=0;
 
   };
 
@@ -136,14 +145,50 @@ namespace vtkfig
       // Get the keypress
       vtkRenderWindowInteractor *interactor = this->Interactor;
       std::string key = interactor->GetKeySym();
-      
-      if(key == "e" || key== "q")
+      if(key == "e" || key== "q" || key== "f")
       {
-        std::cout << "Exit keys are disabled" << std::endl;
+      }
+      else if(key == "r")
+      {
+        framecontent->renderer->GetActiveCamera()->SetPosition(framecontent->default_camera_position);
+        framecontent->renderer->GetActiveCamera()->SetFocalPoint(framecontent->default_camera_focal_point);
+        framecontent->renderer->GetActiveCamera()->OrthogonalizeViewUp();
+        framecontent->renderer->GetActiveCamera()->SetRoll(0);
+      }
+      else if(key == "w")
+      {
+        framecontent->wireframe=!framecontent->wireframe;
+        if (framecontent->wireframe)
+        {
+          for (auto figure: *framecontent->figures)
+          {
+            for (auto actor: figure->actors)  actor->GetProperty()->SetRepresentationToWireframe();
+//            for (auto actor: figure->actors2d) actor->GetProperty()->SetRepresentationToWireframe();
+          }
+        }
+        else
+        {
+          for (auto figure: *framecontent->figures)
+          {
+            for (auto actor: figure->actors)  actor->GetProperty()->SetRepresentationToSurface();
+//            for (auto actor: figure->actors2d) actor->GetProperty()->SetRepresentationToSurface();
+          }
+        }
       }
       else if (key=="space")
       {
         framecontent->communication_blocked=!framecontent->communication_blocked;
+      }
+      else if(key == "h" or key == "?")
+      {
+        cout << 
+R"(
+Key     Action
+
+space  Interrupt/continue calculation
+r      Reset camera
+w      Wireframe modus
+)";
       }
       else
         vtkInteractorStyleTrackballCamera::OnChar();
@@ -306,9 +351,11 @@ namespace vtkfig
     callback->framecontent=framecontent;
     callback->window=window;
 
-    myInteractorStyleImage::SetStyle(interactor,framecontent);
-    renderer->GetActiveCamera()->SetPosition(0,0,20);
-    renderer->GetActiveCamera()->SetFocalPoint(0,0,0);
+    myInteractorStyleTrackballCamera::SetStyle(interactor,framecontent);
+
+    framecontent->renderer=renderer; 
+    renderer->GetActiveCamera()->SetPosition(framecontent->default_camera_position);
+    renderer->GetActiveCamera()->SetFocalPoint(framecontent->default_camera_focal_point);
     renderer->GetActiveCamera()->OrthogonalizeViewUp();
     
 

@@ -7,6 +7,28 @@
 namespace vtkfig
 {
 
+  class mySliderCallback : public vtkCommand
+  {
+  public:
+    static mySliderCallback *New() 
+    {
+      return new mySliderCallback;
+    }
+    virtual void Execute(vtkObject *caller, unsigned long, void*)
+    {
+      vtkSliderWidget *sliderWidget = 
+        reinterpret_cast<vtkSliderWidget*>(caller);
+      this->contour2d->ncont=static_cast<vtkSliderRepresentation *>(sliderWidget->GetRepresentation())->GetValue();
+      double tempdiff = (this->contour2d->vmax-this->contour2d->vmin)/(10*this->contour2d->ncont);
+      this->contour2d->isocontours->GenerateValues(this->contour2d->ncont, this->contour2d->vmin+tempdiff, this->contour2d->vmax-tempdiff);
+      this->contour2d->isocontours->Modified();
+    }
+  mySliderCallback():contour2d(0) {}
+    Contour2DBase *contour2d;
+  };
+
+
+
   void Contour2DBase::RTSetInteractor(vtkSmartPointer<vtkRenderWindowInteractor> interactor) 
   {
     if (show_slider && show_contour)
