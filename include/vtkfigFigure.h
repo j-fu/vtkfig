@@ -35,6 +35,7 @@ namespace vtkfig
 
   public:
     Figure();
+    static std::shared_ptr<Figure> New() { return std::make_shared<Figure>(); }
 
     void SetBackground(double r, double g, double b) { bgcolor[0]=r; bgcolor[1]=g; bgcolor[2]=b;}
 
@@ -45,18 +46,19 @@ namespace vtkfig
     virtual void ServerRTSend(vtkSmartPointer<Communicator> communicator) {};
 
     virtual void ClientMTReceive(vtkSmartPointer<Communicator> communicator) {};
+
+    void RTAddActor(vtkSmartPointer<vtkActor> prop);
+
+    void RTAddActor2D(vtkSmartPointer<vtkActor2D> prop);
     
   protected:
 
     
     /// All functions here are to be called from render thread.
-    virtual void RTBuild()=0;
+    virtual void RTBuild() {};
 
     virtual void RTSetInteractor(vtkSmartPointer<vtkRenderWindowInteractor> interactor) {};
 
-    void RTAddActor(vtkSmartPointer<vtkActor> prop);
-
-    void RTAddActor2D(vtkSmartPointer<vtkActor2D> prop);
 
     void RTUpdateActors()
     {

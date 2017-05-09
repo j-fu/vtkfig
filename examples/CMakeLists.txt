@@ -15,6 +15,9 @@ target_link_libraries(example-quiver2d vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LI
 add_executable(example-contour3d MACOSX_BUNDLE example-contour3d.cxx )
 target_link_libraries(example-contour3d vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
+add_executable(example-custom MACOSX_BUNDLE example-custom.cxx )
+target_link_libraries(example-custom vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+
 add_executable(example-tricontour2d MACOSX_BUNDLE example-tricontour2d.cxx )
 target_link_libraries(example-tricontour2d vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 

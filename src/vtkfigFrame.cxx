@@ -245,7 +245,7 @@ w      Wireframe modus
 
           for (auto figure: *framecontent->figures)
           {
-            if (figure->IsEmpty())
+            if (figure->IsEmpty()  || renderer->GetActors()->GetNumberOfItems()==0)
             {
               // This allows clear figure to work
               renderer->RemoveAllViewProps();
