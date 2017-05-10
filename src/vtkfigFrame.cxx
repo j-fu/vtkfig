@@ -1,8 +1,4 @@
-#include <mutex>
-#include <thread>
-#include <condition_variable>
 
-#include "vtkRenderer.h"
 #include "vtkRenderWindow.h"
 #include "vtkRenderWindowInteractor.h"
 #include "vtkInteractorStyleImage.h"
@@ -22,119 +18,148 @@
 
 namespace vtkfig
 {
-  ///
-  class FrameContent: public vtkObjectBase
+
+  /////////////////////////////////////
+  /// Public API 
+
+  Frame::Frame(const int nrow, const int ncol):
+  nrow(nrow),
+    ncol(ncol)
   {
-  public:
-    const int nrow;
-
-    const int ncol;
-
-    FrameContent(const int nrow, const int ncol):
-      nrow(nrow),
-      ncol(ncol),
-      vtkObjectBase() 
+    figures.clear();
+    double dx= 1.0/(double)ncol;
+    double dy= 1.0/(double)nrow;
+    subframes.resize(nrow*ncol);
+    
+    double y=1.0;
+    for (int irow=0 ;irow<nrow;irow++, y-=dy)
     {
-      figures.clear();
-      double dx= 1.0/(double)ncol;
-      double dy= 1.0/(double)nrow;
-      subframes.resize(nrow*ncol);
-
-      double y=1.0;
-      for (int irow=0 ;irow<nrow;irow++, y-=dy)
+      double x=0.0;
+      for (int icol=0;icol<ncol;icol++, x+=dx)
       {
-        double x=0.0;
-        for (int icol=0;icol<ncol;icol++, x+=dx)
-        {
-          int ipos=pos(irow,icol);
-          cout << irow << " " << icol << " pos: " << ipos << endl;
-          cout << row(ipos) << " " << col(ipos) << " pos: " << ipos << endl << endl;
-
-          assert(row(ipos)==irow);
-          assert(col(ipos)==icol);
-          
-
-          auto & subframe=subframes[ipos];
-          subframe.viewport[0]=x;
-          subframe.viewport[1]=y-dy;
-          subframe.viewport[2]=x+dx;
-          subframe.viewport[3]=y;
-        }
+        int ipos=pos(irow,icol);
+        
+        assert(row(ipos)==irow);
+        assert(col(ipos)==icol);
+        
+        
+        auto & subframe=subframes[ipos];
+        subframe.viewport[0]=x;
+        subframe.viewport[1]=y-dy;
+        subframe.viewport[2]=x+dx;
+        subframe.viewport[3]=y;
       }
-    };
-    static FrameContent *New(int nrow, int ncol)   {      return new FrameContent(nrow, ncol);    }
+    }
+    StartRenderThread();
+  }
 
-    FrameContent(const FrameContent& A)=delete;
+  Frame::Frame(vtkSmartPointer<vtkfig::Communicator> communicator,const int nrow, const int ncol):
+    nrow(nrow),
+    ncol(ncol)
+  {
+    this->communicator=communicator;
+    this->communicator->SendCommand(vtkfig::Command::NewFrame);
+    this->communicator->SendInt(nrow);
+    this->communicator->SendInt(ncol);
+    StartCommunicatorThread();
+  }
+
+  void Frame::AddFigure(std::shared_ptr<Figure> fig, int irow, int icol)
+  {
+    assert(irow<this->nrow);
+    assert(icol<this->ncol);
+
+    this->figures.push_back(fig);
+    int pos=this->pos(irow,icol);
+    fig->framepos=pos;
+
+    SendCommand(Frame::Command::AddFigure);
+  }
 
 
-    enum class Command
+
+  void Frame::Show()
+  {
+    if (!this->thread_alive)
+      throw std::runtime_error("Show: render thread is dead");
+
+    SendCommand(Frame::Command::Show);
+  }
+
+
+  void Frame::Interact()
+  {
+    if (!this->thread_alive)
+      throw std::runtime_error("Show: render thread is dead");
+    this->communication_blocked=true;
+    do
     {
-      None=0,
-        Show,
-        Dump,            
-        Resize,            
-        Clear,            
-        Terminate,
-        SetInteractorStyle,
-        SetBackgroundColor          
-    };
+      std::this_thread::sleep_for (std::chrono::milliseconds(10));
+    }
+    while (this->communication_blocked);
 
-    /// Communication command
-    Command cmd; 
+  }
 
-    /// mutex to organize communication
-    std::mutex mtx; 
+  void Frame::Dump(std::string fname)
+  {
+    if (!this->thread_alive)
+      throw std::runtime_error("Dump: render thread is dead");
 
-    /// condition variable signalizing finished command
-    std::condition_variable cv; 
-    
-    /// File name to be passed 
-    std::string fname; 
+    this->fname=fname;
+    SendCommand(Frame::Command::Dump);
 
-    /// window sizes
-    int win_x=400;
-    int win_y=400;
-    
-    /// Thread state
-    bool render_thread_alive=false;
-    
-    /// space down state ?
-    bool communication_blocked=false;
-    
-    /// 
-    bool wireframe;
+  }
 
-    /// 
-    struct SubFrame
-    {
-      SubFrame(){};
-      SubFrame(const double vp[4]):viewport{vp[0],vp[1],vp[2],vp[3]}{};
-      double default_camera_focal_point[3]={0,0,0};
-      double default_camera_position[3]={0,0,20};
-      vtkSmartPointer<vtkRenderer>    renderer;
-      double viewport[4]={0,0,1,1};
-    };
+  void Frame::Resize(int x, int y)
+  {
+    if (!this->thread_alive)
+      throw std::runtime_error("Resize: render thread is dead");
 
-    vtkSmartPointer<vtkfig::Communicator> communicator=0;
-    std::shared_ptr<std::thread> render_thread;
+    this->win_x=x;
+    this->win_y=y;
 
-    /// Each subframe can hold several figures
+    SendCommand(Frame::Command::Resize);
+  }
 
-    std::vector<std::shared_ptr<Figure>> figures;
-    std::vector<SubFrame> subframes;
 
-    
-    int pos(const int irow, const int icol) { return irow*ncol+icol;}
-    int row(const int pos) { return pos/ncol;}
-    int col(const int pos) { return pos%ncol;}
-  };
+  Frame::~Frame()
+  {
+    Terminate();
+    this->thread->join();
+  }
+  
+  
+  // void Frame::Clear(void)
+  // {
+  //   this->figures.clear();
+  //   SendCommand(Frame::Command::Clear;
+  //   std::unique_lock<std::mutex> lock(this->mtx);
+  //   this->cv.wait(lock);
+  // }
+
+
+  ////////////////////////////////////////////////////////////////
+  /// Communication with render thread
+  void Frame::SendCommand(Frame::Command cmd)
+  {
+    this->cmd=cmd;
+    std::unique_lock<std::mutex> lock(this->mtx);
+    this->cv.wait(lock);
+  }
+
+  void Frame::Terminate(void)
+  {
+    SendCommand(Frame::Command::Terminate);
+  }
 
   
   ////////////////////////////////////////////////////////////////
+  /// Rendering 
+  
   class InteractorStyleTrackballCamera : public vtkInteractorStyleTrackballCamera
   {
   public:
-    vtkSmartPointer<FrameContent> framecontent=0;
+    Frame* frame=0;
     
     static InteractorStyleTrackballCamera* New()
     {
@@ -147,13 +172,14 @@ namespace vtkfig
     {
       // Get the keypress
       vtkRenderWindowInteractor *interactor = this->Interactor;
+
       std::string key = interactor->GetKeySym();
-      if(key == "e" || key== "q" || key== "f")
-      {
-      }
+      
+      if(key == "e" || key== "q" || key== "f")  {}
+
       else if(key == "r")
       {
-        for (auto & sf: framecontent->subframes)
+        for (auto & sf: frame->subframes)
         {
           sf.renderer->GetActiveCamera()->SetPosition(sf.default_camera_position);
           sf.renderer->GetActiveCamera()->SetFocalPoint(sf.default_camera_focal_point);
@@ -161,30 +187,33 @@ namespace vtkfig
           sf.renderer->GetActiveCamera()->SetRoll(0);
         }
       }
+
       else if(key == "w")
       {
-        framecontent->wireframe=!framecontent->wireframe;
-        if (framecontent->wireframe)
+
+        frame->wireframe=!frame->wireframe;
+
+        if (frame->wireframe)
         {
-          for (auto &figure: framecontent->figures)
+          for (auto &figure: frame->figures)
           {
             for (auto & actor: figure->actors)  actor->GetProperty()->SetRepresentationToWireframe();
-//            for (auto actor: figure->actors2d) actor->GetProperty()->SetRepresentationToWireframe();
           }
         }
         else
         {
-          for (auto & figure: framecontent->figures)
+          for (auto & figure: frame->figures)
           {
             for (auto&  actor: figure->actors)  actor->GetProperty()->SetRepresentationToSurface();
-//            for (auto actor: figure->actors2d) actor->GetProperty()->SetRepresentationToSurface();
           }
         }
       }
+
       else if (key=="space")
       {
-        framecontent->communication_blocked=!framecontent->communication_blocked;
+        frame->communication_blocked=!frame->communication_blocked;
       }
+
       else if(key == "h" or key == "?")
       {
         cout << 
@@ -196,61 +225,55 @@ r      Reset camera
 w      Wireframe modus
 )";
       }
+
       else
+      {
         vtkInteractorStyleTrackballCamera::OnChar();
+      }
     }
-    
-    static void SetStyle(vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-                         vtkSmartPointer<FrameContent> framecontent)
-    {
-      vtkSmartPointer<InteractorStyleTrackballCamera> imageStyle = 
-        vtkSmartPointer<InteractorStyleTrackballCamera>::New();
-      imageStyle->framecontent=framecontent;
-      interactor->SetInteractorStyle(imageStyle);
-    }
-    
   };
   
 
-  ////////////////////////////////////////////////
+ 
   class TimerCallback : public vtkCommand
   {
   public:
 
-    vtkSmartPointer<FrameContent> framecontent=0;
+    Frame *frame=0;
     vtkSmartPointer<vtkRenderWindow> window=0;
     vtkSmartPointer<vtkRenderWindowInteractor> interactor=0;
 
-    static TimerCallback *New()    {      return new TimerCallback;    }
+    static TimerCallback *New()    {return new TimerCallback;}
     
-    virtual void Execute(vtkObject *vtkNotUsed(caller),
-                         unsigned long eventId,
-                         void *vtkNotUsed(callData))
+    virtual void Execute(
+      vtkObject *vtkNotUsed(caller),
+      unsigned long eventId,
+      void *vtkNotUsed(callData)
+      )
     {
-
-      if (framecontent->communication_blocked) return;
-
+      
+      if (frame->communication_blocked) return;
+      
       if (
         vtkCommand::TimerEvent == eventId  // Check if timer event
-        && framecontent->cmd!=FrameContent::Command::None  // Check if command has been given
+        && frame->cmd!=Frame::Command::None  // Check if command has been given
         )
       {
-
+        
         // Lock mutex
-        std::unique_lock<std::mutex> lock(framecontent->mtx);
-
+        std::unique_lock<std::mutex> lock(frame->mtx);
+        
         // Command dispatch
-        switch(framecontent->cmd)
+        switch(frame->cmd)
         {
-
           
-        case FrameContent::Command::Show:
           // Add actors to renderer
+        case Frame::Command::Show:
         {
-
-          for (auto & figure: framecontent->figures)
+          
+          for (auto & figure: frame->figures)
           {
-            auto &renderer=framecontent->subframes[figure->framepos].renderer;
+            auto &renderer=frame->subframes[figure->framepos].renderer;
             if (figure->IsEmpty()  || renderer->GetActors()->GetNumberOfItems()==0)
             {
               // This allows clear figure to work
@@ -268,15 +291,15 @@ w      Wireframe modus
           interactor->Render();
         }
         break;
-
-        case FrameContent::Command::Dump:
+        
           // Write picture to file
+        case Frame::Command::Dump:
         {
-          vtkSmartPointer<vtkWindowToImageFilter> imgfilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
-          vtkSmartPointer<vtkPNGWriter> pngwriter = vtkSmartPointer<vtkPNGWriter>::New();
+          auto imgfilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
+          auto pngwriter = vtkSmartPointer<vtkPNGWriter>::New();
           
           pngwriter->SetInputConnection(imgfilter->GetOutputPort());
-          pngwriter->SetFileName(framecontent->fname.c_str());
+          pngwriter->SetFileName(frame->fname.c_str());
           
           imgfilter->SetInput(window);
           imgfilter->Update();
@@ -285,16 +308,16 @@ w      Wireframe modus
           pngwriter->Write();
         }
         break;
-
-        case FrameContent::Command::Resize:
+        
           // Close window and terminate
+        case Frame::Command::Resize:
         {
-          window->SetSize(framecontent->win_x, framecontent->win_y);
+          window->SetSize(frame->win_x, frame->win_y);
         }
         break;
-
-        case FrameContent::Command::Terminate:
+        
           // Close window and terminate
+        case Frame::Command::Terminate:
         {
           window->Finalize();
           interactor->TerminateApp();
@@ -305,31 +328,32 @@ w      Wireframe modus
         }
         
         // Clear command
-        framecontent->cmd=FrameContent::Command::None;
-
+        frame->cmd=Frame::Command::None;
+        
         // Notify that command was exeuted
-        framecontent->cv.notify_all();
+        frame->cv.notify_all();
       }
     }
   };
 
-  /*
-    For Subplots see http://public.kitware.com/pipermail/vtkusers/2009-October/054195.html
 
-   */
-  ////////////////////////////////////////////////
-  void RenderThread(vtkSmartPointer<FrameContent> framecontent)
+  
+  void Frame::RenderThread(Frame* frame)
   {
-    
-
-    vtkSmartPointer<vtkRenderWindow> window = vtkSmartPointer<vtkRenderWindow>::New();
-    vtkSmartPointer<vtkRenderWindowInteractor>  interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    auto window = vtkSmartPointer<vtkRenderWindow>::New();
+    auto interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
     interactor->SetRenderWindow(window);
-    window->SetSize(framecontent->win_x, framecontent->win_y);
+    window->SetSize(frame->win_x, frame->win_y);
 
-    for (auto & subframe : framecontent->subframes)
+    for (auto & subframe : frame->subframes)
     {
-      vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
+      /*
+        For Subplots see http://public.kitware.com/pipermail/vtkusers/2009-October/054195.html
+        renderer2->SetActiveCamera( renderer1->GetActiveCamera() );
+        
+      */
+
+      auto renderer = vtkSmartPointer<vtkRenderer>::New();
       subframe.renderer=renderer;
       renderer->SetViewport(subframe.viewport);
       renderer->SetBackground(1., 1., 1.);
@@ -339,93 +363,114 @@ w      Wireframe modus
       renderer->GetActiveCamera()->OrthogonalizeViewUp();
       window->AddRenderer(renderer);
     }
-
+    
     interactor->Initialize();
-    vtkSmartPointer<TimerCallback> callback =  vtkSmartPointer<TimerCallback>::New();
 
-
+    auto callback =  vtkSmartPointer<TimerCallback>::New();
     callback->interactor=interactor;
-    callback->framecontent=framecontent;
+    callback->frame=frame;
     callback->window=window;
 
-    InteractorStyleTrackballCamera::SetStyle(interactor,framecontent);
 
-
-    
-
+    auto style =  vtkSmartPointer<InteractorStyleTrackballCamera>::New();
+    style->frame=frame;
+    interactor->SetInteractorStyle(style);
 
     interactor->AddObserver(vtkCommand::TimerEvent,callback);
     interactor->Initialize();
     int timerId = interactor->CreateRepeatingTimer(10);
   
-    framecontent->render_thread_alive=true;
+    frame->thread_alive=true;
     interactor->Start();
-    framecontent->render_thread_alive=false;
-    framecontent->cv.notify_all();
+    frame->thread_alive=false;
+    frame->cv.notify_all();
     
     interactor->SetRenderWindow(0);
     interactor->TerminateApp();
     window->Finalize();
   }
 
-
-
-
-
-  ////////////////////////////////////////////////
-  Frame::Frame(const int nrow, const int ncol):
-    framecontent(FrameContent::New(nrow, ncol))
+  void Frame::StartRenderThread(void)
   {
-    server_mode=false;
-    Start();
+    this->thread=std::make_shared<std::thread>(RenderThread,this);
+    do
+    {
+      std::this_thread::sleep_for (std::chrono::milliseconds(10));
+    }
+    while (!this->thread_alive);
+  }
+
+  void Frame::RestartRenderThread(void)
+  {
+    this->thread->join();
+    StartRenderThread();
   }
 
 
+  ////////////////////////////////////////////////////////////////
+  /// Server communication 
 
-  void CommunicatorThread(vtkSmartPointer<FrameContent> framecontent)
+  void Frame::CommunicatorThread(Frame *frame)
   {
-    framecontent->render_thread_alive=true;
+    frame->thread_alive=true;
     while(1)
     {
       std::this_thread::sleep_for (std::chrono::milliseconds(5));
 
-      if (framecontent->cmd!=FrameContent::Command::None)
+      if (frame->cmd!=Frame::Command::None)
       {      
         // Lock mutex
-        std::unique_lock<std::mutex> lock(framecontent->mtx);
+        std::unique_lock<std::mutex> lock(frame->mtx);
         // Command dispatch
-        switch(framecontent->cmd)
+        switch(frame->cmd)
         {
-                    
-        case FrameContent::Command::Show:
+          
+        case Frame::Command::Show:
         {
-          for (auto figure: framecontent->figures)
+          for (auto figure: frame->figures)
           {
-            framecontent->communicator->SendCommand(vtkfig::Command::FrameShow);
-            figure->ServerRTSend(framecontent->communicator);
+            frame->communicator->SendCommand(vtkfig::Command::FrameShow);
+            figure->ServerRTSend(frame->communicator);
           }
         }
         break;
         
-        case FrameContent::Command::Dump:
+        case Frame::Command::Dump:
           // Write picture to file
         {
         }
         break;
-      
-
-        case FrameContent::Command::Clear:
+        
+        case Frame::Command::Resize:
         {
-          for (auto figure: framecontent->figures)
-          {
+          frame->communicator->SendCommand(vtkfig::Command::FrameResize);
+          frame->communicator->SendInt(frame->win_x);
+          frame->communicator->SendInt(frame->win_y);
+        }
+        break;
 
-            //framecontent->communicator->SendCommand(vtkfig::Command::FrameShow);
+        case Frame::Command::AddFigure:
+        {
+          frame->communicator->SendCommand(vtkfig::Command::AddFigure);
+          auto figure=frame->figures.back();
+          frame->communicator->SendString(figure->SubClassName());
+          frame->communicator->SendInt(frame->row(figure->framepos));
+          frame->communicator->SendInt(frame->col(figure->framepos));
+        }
+
+
+        case Frame::Command::Clear:
+        {
+          for (auto figure: frame->figures)
+          {
+            
+            //frame->communicator->SendCommand(vtkfig::Command::FrameShow);
           }
           
         }
         break;
         
-        case FrameContent::Command::Terminate:
+        case Frame::Command::Terminate:
           // Close window and terminate
         {
         }
@@ -434,150 +479,28 @@ w      Wireframe modus
         default:
           break;
         }
-      
+        
         // Clear command
-        framecontent->cmd=FrameContent::Command::None;
-      
+        frame->cmd=Frame::Command::None;
+        
         // Notify that command was exeuted
-        framecontent->cv.notify_all();
+        frame->cv.notify_all();
       }
     }
   }
   
 
-  Frame::Frame(vtkSmartPointer<vtkfig::Communicator> communicator,const int nrow, const int ncol):
-    framecontent(FrameContent::New(nrow,ncol))
+
+
+  void Frame::StartCommunicatorThread(void)
   {
-    server_mode=true;
-    framecontent->communicator=communicator;
-    framecontent->communicator->SendCommand(Command::NewFrame);
-    framecontent->communicator->SendInt(nrow);
-    framecontent->communicator->SendInt(ncol);
-    framecontent->render_thread=std::make_shared<std::thread>(CommunicatorThread,framecontent);
+    this->thread=std::make_shared<std::thread>(CommunicatorThread,this);
     do
     {
       std::this_thread::sleep_for (std::chrono::milliseconds(10));
     }
-    while (!framecontent->render_thread_alive);
+    while (!this->thread_alive);
   }
-
-
-  
-
-
-  void Frame::Start(void)
-  {
-    framecontent->render_thread=std::make_shared<std::thread>(RenderThread,framecontent);
-    do
-    {
-      std::this_thread::sleep_for (std::chrono::milliseconds(10));
-    }
-    while (!framecontent->render_thread_alive);
-
-  }
-  void Frame::Restart(void)
-  {
-    framecontent->render_thread->join();
-    Start();
-  }
-
-  
-  Frame::~Frame()
-  {
-    Terminate();
-    framecontent->render_thread->join();
-  }
-  
-  void Frame::Show()
-  {
-    if (!framecontent->render_thread_alive)
-      throw std::runtime_error("Show: render thread is dead");
-
-    framecontent->cmd=FrameContent::Command::Show;
-    std::unique_lock<std::mutex> lock(framecontent->mtx);
-    framecontent->cv.wait(lock);
-  }
-
-  void Frame::AddFigure(std::shared_ptr<Figure> fig, int irow, int icol)
-  {
-    assert(irow<framecontent->nrow);
-    assert(icol<framecontent->ncol);
-
-    framecontent->figures.push_back(fig);
-    int pos=framecontent->pos(irow,icol);
-    fig->framepos=pos;
-    if (server_mode)
-    {
-      framecontent->communicator->SendCommand(Command::AddFigure);
-      framecontent->communicator->SendString(fig->SubClassName());
-      framecontent->communicator->SendInt(irow);
-      framecontent->communicator->SendInt(icol);
-      
-    }
-  }
-
-
-  void Frame::Interact()
-  {
-    if (!framecontent->render_thread_alive)
-      throw std::runtime_error("Show: render thread is dead");
-    framecontent->communication_blocked=true;
-    do
-    {
-      std::this_thread::sleep_for (std::chrono::milliseconds(10));
-    }
-    while (framecontent->communication_blocked);
-
-  }
-
-
-
-
-  void Frame::Dump(std::string fname)
-  {
-    if (!framecontent->render_thread_alive)
-      throw std::runtime_error("Dump: render thread is dead");
-
-    framecontent->cmd=FrameContent::Command::Dump;
-    framecontent->fname=fname;
-    std::unique_lock<std::mutex> lock(framecontent->mtx);
-    framecontent->cv.wait(lock);
-  }
-
-  void Frame::Resize(int x, int y)
-  {
-    if (!framecontent->render_thread_alive)
-      throw std::runtime_error("Resize: render thread is dead");
-
-    framecontent->cmd=FrameContent::Command::Resize;
-    framecontent->win_x=x;
-    framecontent->win_y=y;
-    if (server_mode)
-    {
-      framecontent->communicator->SendCommand(Command::FrameResize);
-      framecontent->communicator->SendInt(x);
-      framecontent->communicator->SendInt(y);
-    }
-
-    std::unique_lock<std::mutex> lock(framecontent->mtx);
-    framecontent->cv.wait(lock);
-  }
-
-
-  
-  void Frame::Terminate(void)
-  {
-    framecontent->cmd=FrameContent::Command::Terminate;
-    std::unique_lock<std::mutex> lock(framecontent->mtx);
-    framecontent->cv.wait(lock);
-  }
-  
-  // void Frame::Clear(void)
-  // {
-  //   framecontent->figures.clear();
-  //   framecontent->cmd=FrameContent::Command::Clear;
-  //   std::unique_lock<std::mutex> lock(framecontent->mtx);
-  //   framecontent->cv.wait(lock);
-  // }
+ 
   
 }

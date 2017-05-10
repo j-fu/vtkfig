@@ -9,7 +9,15 @@
 #define VTKFIG_FRAME_H
 
 #include <memory>
+#include <mutex>
+#include <thread>
+#include <memory>
+#include <vector>
+#include <condition_variable>
+
 #include "vtkSmartPointer.h"
+#include "vtkRenderer.h"
+
 #include "vtkfigCommunicator.h"
 #include "vtkfigServerConnection.h"
 
@@ -17,8 +25,6 @@ namespace vtkfig
 {
 
   class Figure;
-  class FrameContent;
-
   ///
   /// Frame: provide a thread based rendering
   /// 
@@ -53,15 +59,17 @@ namespace vtkfig
     { return New(*sconn);}
     
     Frame(): Frame(1,1){};
+
     Frame(vtkSmartPointer<Communicator>comm): Frame(comm,1,1){};
+
     Frame(const int nrow, const int ncol);
+
     Frame(vtkSmartPointer<Communicator>, const int nrow, const int ncol);
 
     ~Frame();
     
     void Dump(std::string fname);
-    
-    
+        
     void AddFigure(std::shared_ptr<Figure> figure, int irow, int icol);
 
     void AddFigure(std::shared_ptr<Figure> figure) {AddFigure(figure,0,0);}
@@ -73,11 +81,84 @@ namespace vtkfig
     void Resize(int x, int y);
     
   private:
-    bool server_mode=false;
-    void Restart(void);
-    void Start(void);
+    void RestartRenderThread(void);
+    void StartCommunicatorThread(void);
+    void StartRenderThread(void);
     void Terminate(void);
-    vtkSmartPointer<FrameContent> framecontent;
+
+    const int nrow;
+
+    const int ncol;
+
+    enum class Command
+    {
+      None=0,
+        Show,
+        Dump,            
+        Resize,            
+        AddFigure,            
+        Clear,            
+        Terminate,
+        SetInteractorStyle,
+        SetBackgroundColor          
+    };
+
+    /// Communication command
+    Command cmd; 
+
+    void SendCommand(Command cmd);
+
+
+    /// mutex to organize communication
+    std::mutex mtx; 
+
+    /// condition variable signalizing finished command
+    std::condition_variable cv; 
+    
+    /// File name to be passed 
+    std::string fname; 
+
+    /// window sizes
+    int win_x=400;
+    int win_y=400;
+    
+    /// Thread state
+    bool thread_alive=false;
+    
+    /// space down state ?
+    bool communication_blocked=false;
+    
+    /// 
+    bool wireframe;
+
+    /// 
+    struct SubFrame
+    {
+      SubFrame(){};
+      SubFrame(const double vp[4]):viewport{vp[0],vp[1],vp[2],vp[3]}{};
+      double default_camera_focal_point[3]={0,0,0};
+      double default_camera_position[3]={0,0,20};
+      vtkSmartPointer<vtkRenderer>    renderer;
+      double viewport[4]={0,0,1,1};
+    };
+
+    vtkSmartPointer<vtkfig::Communicator> communicator=0;
+    std::shared_ptr<std::thread> thread;
+
+    /// Each subframe can hold several figures
+
+    std::vector<std::shared_ptr<Figure>> figures;
+    std::vector<SubFrame> subframes;
+
+    
+    int pos(const int irow, const int icol) { return irow*ncol+icol;}
+    int row(const int pos) { return pos/ncol;}
+    int col(const int pos) { return pos%ncol;}
+
+    friend class  InteractorStyleTrackballCamera;
+    friend class  TimerCallback;
+    static void RenderThread(Frame* frame);
+    static void CommunicatorThread(Frame* frame);
   };
 }
 
