@@ -4,7 +4,6 @@
 /// Define Frame class  providing a window for rendering.
 /// 
 
-
 #ifndef VTKFIG_FRAME_H
 #define VTKFIG_FRAME_H
 

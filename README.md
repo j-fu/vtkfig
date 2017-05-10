@@ -1,4 +1,4 @@
-vtkfig V0.4
+vtkfig V0.5
 ============
 
 The intention of  vtkfig is to provide a C++  graphics library with an API similar to that of matplotlib and which uses [vtk](http://vtk.org) for rendering.
@@ -93,7 +93,8 @@ Initial experiments (for example-surf2d) show the following perfomance compariso
 A preliminary conclusion  tells us that the  client-server render path
 strongly depends on  the speed of the physical  connection.  Only with
 ethernet, there  is a significant  advantage over standard  vnc (where
-probably software rendering ist the default).
+software rendering ist the default).  A solution for remote rendering
+seems to be TurboVNC+VirtualGL on servers with GPUs.
 
 
 ## Contributors
