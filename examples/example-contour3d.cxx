@@ -37,7 +37,7 @@ int main(void)
   const double dz = (z_upp-z_low)/(Nz-1);
 
   auto frame=vtkfig::Frame::New();
-  frame->SetInteractorStyle(vtkfig::Frame::InteractorStyle::Volumetric);
+
   auto colors=vtkfig::RGBTable
     { 
       {0.0, 0.0, 0.0, 1.0},

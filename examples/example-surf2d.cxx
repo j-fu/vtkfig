@@ -30,7 +30,7 @@ int main(const int argc, const char *argv[])
   const double dy = (y_upp-y_low)/(Ny-1);
 
   auto frame=vtkfig::Frame::New(connection);
-  frame->SetInteractorStyle(vtkfig::Frame::InteractorStyle::Volumetric);
+
 
   
 

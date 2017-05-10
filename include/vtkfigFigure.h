@@ -31,7 +31,7 @@ namespace vtkfig
   {
     friend class Frame;
     friend class TimerCallback;
-    friend class myInteractorStyleTrackballCamera;
+    friend class InteractorStyleTrackballCamera;
 
   public:
     Figure();

@@ -17,7 +17,6 @@ namespace vtkfig
       String,
       NewFrame,
       AddFigure,
-      SetInteractorStyle,
       FrameShow,
       Exit
       };

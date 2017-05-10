@@ -22,7 +22,7 @@
 
 namespace vtkfig
 {
-  ////////////////////////////////////////////////
+  ///
   class FrameContent: public vtkObjectBase
   {
   public:
@@ -66,9 +66,6 @@ namespace vtkfig
     /// space down state ?
     bool communication_blocked=false;
     
-    /// interactor style
-    Frame::InteractorStyle interactor_style= Frame::InteractorStyle::Volumetric;
-
     /// 
     bool wireframe;
 
@@ -83,61 +80,18 @@ namespace vtkfig
 
   };
 
-
-
-  ////////////////////////////////////////////////////////////////
-  class myInteractorStyleImage : public vtkInteractorStyleImage
-  {
-  public:
-    vtkSmartPointer<FrameContent> framecontent=0;
-    
-    static myInteractorStyleImage* New()
-    {
-      return new myInteractorStyleImage();
-    }
-    myInteractorStyleImage(): vtkInteractorStyleImage() {};
-    
-    
-    virtual void OnChar() 
-    {
-      // Get the keypress
-      vtkRenderWindowInteractor *interactor = this->Interactor;
-      std::string key = interactor->GetKeySym();
-      
-      if(key == "e" || key== "q")
-      {
-        std::cout << "Exit keys are disabled" << std::endl;
-      }
-      else if (key=="space")
-      {
-        framecontent->communication_blocked=!framecontent->communication_blocked;
-      }
-      else
-        vtkInteractorStyleImage::OnChar();
-    }
-    
-    static void SetStyle(vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-                         vtkSmartPointer<FrameContent> framecontent)
-    {
-      vtkSmartPointer<myInteractorStyleImage> imageStyle = 
-        vtkSmartPointer<myInteractorStyleImage>::New();
-      imageStyle->framecontent=framecontent;
-      interactor->SetInteractorStyle(imageStyle);
-    }
-    
-  };
   
   ////////////////////////////////////////////////////////////////
-  class myInteractorStyleTrackballCamera : public vtkInteractorStyleTrackballCamera
+  class InteractorStyleTrackballCamera : public vtkInteractorStyleTrackballCamera
   {
   public:
     vtkSmartPointer<FrameContent> framecontent=0;
     
-    static myInteractorStyleTrackballCamera* New()
+    static InteractorStyleTrackballCamera* New()
     {
-      return new myInteractorStyleTrackballCamera();
+      return new InteractorStyleTrackballCamera();
     }
-    myInteractorStyleTrackballCamera(): vtkInteractorStyleTrackballCamera() {};
+    InteractorStyleTrackballCamera(): vtkInteractorStyleTrackballCamera() {};
     
     
     virtual void OnChar() 
@@ -197,8 +151,8 @@ w      Wireframe modus
     static void SetStyle(vtkSmartPointer<vtkRenderWindowInteractor> interactor,
                          vtkSmartPointer<FrameContent> framecontent)
     {
-      vtkSmartPointer<myInteractorStyleTrackballCamera> imageStyle = 
-        vtkSmartPointer<myInteractorStyleTrackballCamera>::New();
+      vtkSmartPointer<InteractorStyleTrackballCamera> imageStyle = 
+        vtkSmartPointer<InteractorStyleTrackballCamera>::New();
       imageStyle->framecontent=framecontent;
       interactor->SetInteractorStyle(imageStyle);
     }
@@ -280,23 +234,6 @@ w      Wireframe modus
         }
         break;
 
-        case FrameContent::Command::SetInteractorStyle:
-          // Switch interactor style
-        {
-          switch(framecontent->interactor_style)
-          {
-          case Frame::InteractorStyle::Planar:
-            myInteractorStyleImage::SetStyle(interactor,framecontent);
-            break;
-          case  Frame::InteractorStyle::Volumetric:
-            myInteractorStyleTrackballCamera::SetStyle(interactor,framecontent);
-            break;
-          default:
-            break;
-          }
-        }
-        break;
-
 
         case FrameContent::Command::Clear:
           // Close window and terminate
@@ -351,7 +288,7 @@ w      Wireframe modus
     callback->framecontent=framecontent;
     callback->window=window;
 
-    myInteractorStyleTrackballCamera::SetStyle(interactor,framecontent);
+    InteractorStyleTrackballCamera::SetStyle(interactor,framecontent);
 
     framecontent->renderer=renderer; 
     renderer->GetActiveCamera()->SetPosition(framecontent->default_camera_position);
@@ -419,16 +356,7 @@ w      Wireframe modus
         }
         break;
       
-        case FrameContent::Command::SetInteractorStyle:
-          // Switch interactor style
-        {
-          framecontent->communicator->SendCommand(vtkfig::Command::SetInteractorStyle);
-          int istyle=static_cast<int>(framecontent->interactor_style);
-          framecontent->communicator->SendInt(istyle);
-        }
-        break;
-      
-      
+
         case FrameContent::Command::Clear:
         {
           for (auto figure: *framecontent->figures)
@@ -564,16 +492,4 @@ w      Wireframe modus
     framecontent->cv.wait(lock);
   }
   
-  void Frame::SetInteractorStyle(Frame::InteractorStyle istyle)
-  {
-    if (!framecontent->render_thread_alive)
-      //Restart();
-      throw std::runtime_error("InteractorStyle: render thread is dead");
-
-    framecontent->interactor_style=istyle;
-    framecontent->cmd=FrameContent::Command::SetInteractorStyle;
-    std::unique_lock<std::mutex> lock(framecontent->mtx);
-    framecontent->cv.wait(lock);
-  }
-
 }

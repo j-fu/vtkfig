@@ -1,6 +1,6 @@
-//
-// Development examples for server/client
-// 
+///
+/// Client code for server-client interaction
+/// 
 
 #include <thread>
 #include <cassert>
@@ -266,14 +266,6 @@ int main(int argc, const char * argv[])
         cout << "Communication error addfig: type"<< figtype << endl;
         return 0;
       }
-    }
-    break;
-
-    case vtkfig::Command::SetInteractorStyle:
-    {
-      int istyle;
-      communicator->ReceiveInt(istyle);
-      frame->SetInteractorStyle(static_cast<vtkfig::Frame::InteractorStyle>(istyle));
     }
     break;
 

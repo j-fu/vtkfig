@@ -41,7 +41,7 @@ vtkfigFrame and vtkfigFigure base class.
   const double dy = (y_upp-y_low)/(Ny-1);
 
   auto frame=vtkfig::Frame::New();
-  frame->SetInteractorStyle(vtkfig::Frame::InteractorStyle::Volumetric);
+
 
   
 
@@ -69,9 +69,9 @@ vtkfigFrame and vtkfigFigure base class.
   
   double z_low = 10000, z_upp = -10000;
   
-  vtkSmartPointer<vtkStructuredGrid> 	    gridfunc=vtkSmartPointer<vtkStructuredGrid>::New();
-  vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
-  vtkSmartPointer<vtkFloatArray> colors=vtkSmartPointer<vtkFloatArray>::New();
+  auto gridfunc=vtkSmartPointer<vtkStructuredGrid>::New();
+  auto points=vtkSmartPointer<vtkPoints>::New();
+  auto colors=vtkSmartPointer<vtkFloatArray>::New();
   
   gridfunc->SetDimensions(Nx, Ny, 1);
   
@@ -109,30 +109,29 @@ vtkfigFrame and vtkfigFigure base class.
   
   
   // filter to geometry primitive
-  vtkSmartPointer<vtkStructuredGridGeometryFilter>geometry =
-    vtkSmartPointer<vtkStructuredGridGeometryFilter>::New();
+  auto geometry = vtkSmartPointer<vtkStructuredGridGeometryFilter>::New();
   geometry->SetInputDataObject(gridfunc);
   
   
   // map gridfunction
-  vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+  auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   mapper->SetInputConnection(geometry->GetOutputPort());
   
   
   // create plot surface actor
-  vtkSmartPointer<vtkActor> surfplot = vtkSmartPointer<vtkActor>::New();
+  auto surfplot = vtkSmartPointer<vtkActor>::New();
   surfplot->SetMapper(mapper);
   mapper->SetLookupTable(lut);
   mapper->UseLookupTableScalarRangeOn();
   
   
   // create outline
-  vtkSmartPointer<vtkOutlineFilter> outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
+  auto outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
   outlinefilter->SetInputConnection(geometry->GetOutputPort());
   
-  vtkSmartPointer<vtkPolyDataMapper>outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+  auto outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
-  vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
+  auto outline = vtkSmartPointer<vtkActor>::New();
   outline->SetMapper(outlineMapper);
   outline->GetProperty()->SetColor(0, 0, 0);
   
