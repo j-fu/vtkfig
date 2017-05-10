@@ -57,7 +57,7 @@ namespace vtkfig
     /// All functions here are to be called from render thread.
     virtual void RTBuild() {};
 
-    virtual void RTSetInteractor(vtkSmartPointer<vtkRenderWindowInteractor> interactor) {};
+    virtual void RTSetInteractor(vtkSmartPointer<vtkRenderWindowInteractor> interactor,vtkSmartPointer<vtkRenderer> ) {};
 
 
     void RTUpdateActors()
@@ -71,6 +71,7 @@ namespace vtkfig
     std::vector<vtkSmartPointer<vtkActor>> actors;
     std::vector<vtkSmartPointer<vtkActor2D>> actors2d;
     double bgcolor[3]={1,1,1};
+    int framepos=0;
   };
   
 };

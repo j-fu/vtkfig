@@ -30,36 +30,47 @@ namespace vtkfig
     /// Create a empty frame for local rendering
     ///
     static std::shared_ptr<Frame> New() { return std::make_shared<Frame>(); }
+    static std::shared_ptr<Frame> New(int nrow, int ncol) { return std::make_shared<Frame>(nrow,ncol); }
 
     ///
     /// Create an empty frame  for server based rendering
     ///
-    static std::shared_ptr<Frame> New(vtkSmartPointer<Communicator>comm) { return std::make_shared<Frame>(comm); }
+    static std::shared_ptr<Frame> New(vtkSmartPointer<Communicator>comm, int nrow, int ncol) { return std::make_shared<Frame>(comm, nrow,  ncol); }
+
+    static std::shared_ptr<Frame> New(ServerConnection& sconn, int nrow, int ncol) 
+    {
+      if (sconn.IsOpen())
+        return New(sconn.GetCommunicator(),nrow,ncol); 
+      else
+        return New(nrow,ncol); 
+    }
 
     static std::shared_ptr<Frame> New(ServerConnection& sconn) 
     {
-      if (sconn.IsOpen())
-        return New(sconn.GetCommunicator()); 
-      else
-        return New(); 
+      return New(sconn,1,1);
     }
-    static std::shared_ptr<Frame> New(std::shared_ptr<ServerConnection> sconn) { return New(*sconn);}
+    static std::shared_ptr<Frame> New(std::shared_ptr<ServerConnection> sconn) 
+    { return New(*sconn);}
     
-    Frame();
-    Frame(vtkSmartPointer<Communicator>);
-    Frame(int nrow, int ncol);
+    Frame(): Frame(1,1){};
+    Frame(vtkSmartPointer<Communicator>comm): Frame(comm,1,1){};
+    Frame(const int nrow, const int ncol);
+    Frame(vtkSmartPointer<Communicator>, const int nrow, const int ncol);
 
     ~Frame();
     
     void Dump(std::string fname);
     
-    void Clear(void);
     
-    void AddFigure(std::shared_ptr<Figure> figure);
+    void AddFigure(std::shared_ptr<Figure> figure, int irow, int icol);
+
+    void AddFigure(std::shared_ptr<Figure> figure) {AddFigure(figure,0,0);}
 
     void Show();
 
     void Interact();
+
+    void Resize(int x, int y);
     
   private:
     bool server_mode=false;

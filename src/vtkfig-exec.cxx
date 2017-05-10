@@ -167,7 +167,6 @@ int main(int argc, const char * argv[])
     }
     cout << systemcmd << endl;
 
-//    exit(1);
     system(systemcmd.c_str());
     std::this_thread::sleep_for (std::chrono::milliseconds(wtime));
   }   
@@ -237,7 +236,10 @@ int main(int argc, const char * argv[])
 
     case vtkfig::Command::NewFrame:
     {
-      frame=vtkfig::Frame::New();
+      int nrow, ncol;
+      communicator->ReceiveInt(nrow);
+      communicator->ReceiveInt(ncol);
+      frame=vtkfig::Frame::New(nrow,ncol);
       if (debug)
         cout << "New frame" << endl;
     }
@@ -247,17 +249,21 @@ int main(int argc, const char * argv[])
     {
       std::string figtype;
       communicator->ReceiveString(figtype);
+      int irow, icol;
+      communicator->ReceiveInt(irow);
+      communicator->ReceiveInt(icol);
+      
       if (figtype=="Surf2D")
       {
         figure=vtkfig::Surf2D::New();
-        frame->AddFigure(figure);
+        frame->AddFigure(figure,irow,icol);
         if (debug)
           cout << "Add Surf2d" << endl;
       }
       else if (figtype=="XYPlot")
       {
         figure=vtkfig::XYPlot::New();
-        frame->AddFigure(figure);
+        frame->AddFigure(figure,irow,icol);
         if (debug)
           cout << "Add XYPlot" << endl;
       }
@@ -274,7 +280,15 @@ int main(int argc, const char * argv[])
       figure->ClientMTReceive(communicator);
       frame->Show();
     }
+    break;
 
+    case vtkfig::Command::FrameResize:
+    {
+      int x,y;
+      communicator->ReceiveInt(x);
+      communicator->ReceiveInt(y);
+      frame->Resize(x,y);
+    }
     break;
 
     default:

@@ -1,6 +1,7 @@
 #ifndef VTKFIG_CONTOUR2DBASE_H
 #define VTKFIG_CONTOUR2DBASE_H
 #include "vtkSliderWidget.h"
+#include "vtkRenderer.h"
 #include "vtkSliderRepresentation.h"
 #include "vtkCommand.h"
 #include "vtkContourFilter.h"
@@ -50,7 +51,7 @@ namespace vtkfig
     vtkSmartPointer<vtkContourFilter> isocontours;
 
   protected:
-    void RTSetInteractor(vtkSmartPointer<vtkRenderWindowInteractor>);
+    void RTSetInteractor(vtkSmartPointer<vtkRenderWindowInteractor> i,vtkSmartPointer<vtkRenderer> r);
     vtkSmartPointer<vtkSliderWidget> sliderWidget;
     
     vtkSmartPointer<vtkLookupTable> surface_lut;

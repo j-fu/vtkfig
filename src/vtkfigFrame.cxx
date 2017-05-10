@@ -26,11 +26,43 @@ namespace vtkfig
   class FrameContent: public vtkObjectBase
   {
   public:
-    FrameContent():vtkObjectBase() 
+    const int nrow;
+
+    const int ncol;
+
+    FrameContent(const int nrow, const int ncol):
+      nrow(nrow),
+      ncol(ncol),
+      vtkObjectBase() 
     {
-      figures=std::make_shared<std::vector<std::shared_ptr<Figure>>>();
+      figures.clear();
+      double dx= 1.0/(double)ncol;
+      double dy= 1.0/(double)nrow;
+      subframes.resize(nrow*ncol);
+
+      double y=1.0;
+      for (int irow=0 ;irow<nrow;irow++, y-=dy)
+      {
+        double x=0.0;
+        for (int icol=0;icol<ncol;icol++, x+=dx)
+        {
+          int ipos=pos(irow,icol);
+          cout << irow << " " << icol << " pos: " << ipos << endl;
+          cout << row(ipos) << " " << col(ipos) << " pos: " << ipos << endl << endl;
+
+          assert(row(ipos)==irow);
+          assert(col(ipos)==icol);
+          
+
+          auto & subframe=subframes[ipos];
+          subframe.viewport[0]=x;
+          subframe.viewport[1]=y-dy;
+          subframe.viewport[2]=x+dx;
+          subframe.viewport[3]=y;
+        }
+      }
     };
-    static FrameContent *New()   {      return new FrameContent;    }
+    static FrameContent *New(int nrow, int ncol)   {      return new FrameContent(nrow, ncol);    }
 
     FrameContent(const FrameContent& A)=delete;
 
@@ -40,6 +72,7 @@ namespace vtkfig
       None=0,
         Show,
         Dump,            
+        Resize,            
         Clear,            
         Terminate,
         SetInteractorStyle,
@@ -58,7 +91,9 @@ namespace vtkfig
     /// File name to be passed 
     std::string fname; 
 
-    std::shared_ptr<std::vector<std::shared_ptr<Figure>>> figures;
+    /// window sizes
+    int win_x=400;
+    int win_y=400;
     
     /// Thread state
     bool render_thread_alive=false;
@@ -70,14 +105,28 @@ namespace vtkfig
     bool wireframe;
 
     /// 
-    double default_camera_focal_point[3]={0,0,0};
-    double default_camera_position[3]={0,0,20};
-    
-    std::shared_ptr<std::thread> render_thread;
+    struct SubFrame
+    {
+      SubFrame(){};
+      SubFrame(const double vp[4]):viewport{vp[0],vp[1],vp[2],vp[3]}{};
+      double default_camera_focal_point[3]={0,0,0};
+      double default_camera_position[3]={0,0,20};
+      vtkSmartPointer<vtkRenderer>    renderer;
+      double viewport[4]={0,0,1,1};
+    };
 
     vtkSmartPointer<vtkfig::Communicator> communicator=0;
-    vtkSmartPointer<vtkRenderer> renderer=0;
+    std::shared_ptr<std::thread> render_thread;
 
+    /// Each subframe can hold several figures
+
+    std::vector<std::shared_ptr<Figure>> figures;
+    std::vector<SubFrame> subframes;
+
+    
+    int pos(const int irow, const int icol) { return irow*ncol+icol;}
+    int row(const int pos) { return pos/ncol;}
+    int col(const int pos) { return pos%ncol;}
   };
 
   
@@ -104,27 +153,30 @@ namespace vtkfig
       }
       else if(key == "r")
       {
-        framecontent->renderer->GetActiveCamera()->SetPosition(framecontent->default_camera_position);
-        framecontent->renderer->GetActiveCamera()->SetFocalPoint(framecontent->default_camera_focal_point);
-        framecontent->renderer->GetActiveCamera()->OrthogonalizeViewUp();
-        framecontent->renderer->GetActiveCamera()->SetRoll(0);
+        for (auto & sf: framecontent->subframes)
+        {
+          sf.renderer->GetActiveCamera()->SetPosition(sf.default_camera_position);
+          sf.renderer->GetActiveCamera()->SetFocalPoint(sf.default_camera_focal_point);
+          sf.renderer->GetActiveCamera()->OrthogonalizeViewUp();
+          sf.renderer->GetActiveCamera()->SetRoll(0);
+        }
       }
       else if(key == "w")
       {
         framecontent->wireframe=!framecontent->wireframe;
         if (framecontent->wireframe)
         {
-          for (auto figure: *framecontent->figures)
+          for (auto &figure: framecontent->figures)
           {
-            for (auto actor: figure->actors)  actor->GetProperty()->SetRepresentationToWireframe();
+            for (auto & actor: figure->actors)  actor->GetProperty()->SetRepresentationToWireframe();
 //            for (auto actor: figure->actors2d) actor->GetProperty()->SetRepresentationToWireframe();
           }
         }
         else
         {
-          for (auto figure: *framecontent->figures)
+          for (auto & figure: framecontent->figures)
           {
-            for (auto actor: figure->actors)  actor->GetProperty()->SetRepresentationToSurface();
+            for (auto&  actor: figure->actors)  actor->GetProperty()->SetRepresentationToSurface();
 //            for (auto actor: figure->actors2d) actor->GetProperty()->SetRepresentationToSurface();
           }
         }
@@ -166,7 +218,6 @@ w      Wireframe modus
   public:
 
     vtkSmartPointer<FrameContent> framecontent=0;
-    vtkSmartPointer<vtkRenderer> renderer=0;
     vtkSmartPointer<vtkRenderWindow> window=0;
     vtkSmartPointer<vtkRenderWindowInteractor> interactor=0;
 
@@ -197,16 +248,17 @@ w      Wireframe modus
           // Add actors to renderer
         {
 
-          for (auto figure: *framecontent->figures)
+          for (auto & figure: framecontent->figures)
           {
+            auto &renderer=framecontent->subframes[figure->framepos].renderer;
             if (figure->IsEmpty()  || renderer->GetActors()->GetNumberOfItems()==0)
             {
               // This allows clear figure to work
               renderer->RemoveAllViewProps();
               figure->RTBuild();
-              for (auto actor: figure->actors) renderer->AddActor(actor);
-              for (auto actor: figure->actors2d) renderer->AddActor(actor);
-              figure->RTSetInteractor(interactor);
+              for (auto & actor: figure->actors) renderer->AddActor(actor);
+              for (auto & actor: figure->actors2d) renderer->AddActor(actor);
+              figure->RTSetInteractor(interactor,renderer);
             }
             figure->RTUpdateActors();
             renderer->SetBackground(figure->bgcolor[0],
@@ -234,11 +286,10 @@ w      Wireframe modus
         }
         break;
 
-
-        case FrameContent::Command::Clear:
+        case FrameContent::Command::Resize:
           // Close window and terminate
         {
-          renderer->RemoveAllViewProps();
+          window->SetSize(framecontent->win_x, framecontent->win_y);
         }
         break;
 
@@ -271,29 +322,35 @@ w      Wireframe modus
   {
     
 
-    vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
     vtkSmartPointer<vtkRenderWindow> window = vtkSmartPointer<vtkRenderWindow>::New();
     vtkSmartPointer<vtkRenderWindowInteractor>  interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
-    window->AddRenderer(renderer);
     interactor->SetRenderWindow(window);
-//    renderer->SetViewport(0.0,0.0,0.5,0.5);
-    renderer->SetBackground(1., 1., 1.);
+    window->SetSize(framecontent->win_x, framecontent->win_y);
 
-    window->SetSize(400,400);
+    for (auto & subframe : framecontent->subframes)
+    {
+      vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
+      subframe.renderer=renderer;
+      renderer->SetViewport(subframe.viewport);
+      renderer->SetBackground(1., 1., 1.);
+      //      renderer->SetUseHiddenLineRemoval(1);
+      renderer->GetActiveCamera()->SetPosition(subframe.default_camera_position);
+      renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
+      renderer->GetActiveCamera()->OrthogonalizeViewUp();
+      window->AddRenderer(renderer);
+    }
+
     interactor->Initialize();
     vtkSmartPointer<TimerCallback> callback =  vtkSmartPointer<TimerCallback>::New();
 
-    callback->renderer=renderer;
+
     callback->interactor=interactor;
     callback->framecontent=framecontent;
     callback->window=window;
 
     InteractorStyleTrackballCamera::SetStyle(interactor,framecontent);
 
-    framecontent->renderer=renderer; 
-    renderer->GetActiveCamera()->SetPosition(framecontent->default_camera_position);
-    renderer->GetActiveCamera()->SetFocalPoint(framecontent->default_camera_focal_point);
-    renderer->GetActiveCamera()->OrthogonalizeViewUp();
+
     
 
 
@@ -316,8 +373,8 @@ w      Wireframe modus
 
 
   ////////////////////////////////////////////////
-  Frame::Frame():
-    framecontent(FrameContent::New())
+  Frame::Frame(const int nrow, const int ncol):
+    framecontent(FrameContent::New(nrow, ncol))
   {
     server_mode=false;
     Start();
@@ -342,7 +399,7 @@ w      Wireframe modus
                     
         case FrameContent::Command::Show:
         {
-          for (auto figure: *framecontent->figures)
+          for (auto figure: framecontent->figures)
           {
             framecontent->communicator->SendCommand(vtkfig::Command::FrameShow);
             figure->ServerRTSend(framecontent->communicator);
@@ -359,7 +416,7 @@ w      Wireframe modus
 
         case FrameContent::Command::Clear:
         {
-          for (auto figure: *framecontent->figures)
+          for (auto figure: framecontent->figures)
           {
 
             //framecontent->communicator->SendCommand(vtkfig::Command::FrameShow);
@@ -388,12 +445,14 @@ w      Wireframe modus
   }
   
 
-  Frame::Frame(vtkSmartPointer<vtkfig::Communicator> communicator):
-    framecontent(FrameContent::New())
+  Frame::Frame(vtkSmartPointer<vtkfig::Communicator> communicator,const int nrow, const int ncol):
+    framecontent(FrameContent::New(nrow,ncol))
   {
     server_mode=true;
     framecontent->communicator=communicator;
     framecontent->communicator->SendCommand(Command::NewFrame);
+    framecontent->communicator->SendInt(nrow);
+    framecontent->communicator->SendInt(ncol);
     framecontent->render_thread=std::make_shared<std::thread>(CommunicatorThread,framecontent);
     do
     {
@@ -439,13 +498,21 @@ w      Wireframe modus
     framecontent->cv.wait(lock);
   }
 
-  void Frame::AddFigure(std::shared_ptr<Figure> fig)
+  void Frame::AddFigure(std::shared_ptr<Figure> fig, int irow, int icol)
   {
-    framecontent->figures->push_back(fig);
+    assert(irow<framecontent->nrow);
+    assert(icol<framecontent->ncol);
+
+    framecontent->figures.push_back(fig);
+    int pos=framecontent->pos(irow,icol);
+    fig->framepos=pos;
     if (server_mode)
     {
       framecontent->communicator->SendCommand(Command::AddFigure);
       framecontent->communicator->SendString(fig->SubClassName());
+      framecontent->communicator->SendInt(irow);
+      framecontent->communicator->SendInt(icol);
+      
     }
   }
 
@@ -476,6 +543,27 @@ w      Wireframe modus
     std::unique_lock<std::mutex> lock(framecontent->mtx);
     framecontent->cv.wait(lock);
   }
+
+  void Frame::Resize(int x, int y)
+  {
+    if (!framecontent->render_thread_alive)
+      throw std::runtime_error("Resize: render thread is dead");
+
+    framecontent->cmd=FrameContent::Command::Resize;
+    framecontent->win_x=x;
+    framecontent->win_y=y;
+    if (server_mode)
+    {
+      framecontent->communicator->SendCommand(Command::FrameResize);
+      framecontent->communicator->SendInt(x);
+      framecontent->communicator->SendInt(y);
+    }
+
+    std::unique_lock<std::mutex> lock(framecontent->mtx);
+    framecontent->cv.wait(lock);
+  }
+
+
   
   void Frame::Terminate(void)
   {
@@ -484,12 +572,12 @@ w      Wireframe modus
     framecontent->cv.wait(lock);
   }
   
-  void Frame::Clear(void)
-  {
-    framecontent->figures=std::make_shared<std::vector<std::shared_ptr<Figure>>>();
-    framecontent->cmd=FrameContent::Command::Clear;
-    std::unique_lock<std::mutex> lock(framecontent->mtx);
-    framecontent->cv.wait(lock);
-  }
+  // void Frame::Clear(void)
+  // {
+  //   framecontent->figures.clear();
+  //   framecontent->cmd=FrameContent::Command::Clear;
+  //   std::unique_lock<std::mutex> lock(framecontent->mtx);
+  //   framecontent->cv.wait(lock);
+  // }
   
 }
