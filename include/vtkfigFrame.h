@@ -12,6 +12,7 @@
 #include <thread>
 #include <memory>
 #include <vector>
+#include <map>
 #include <condition_variable>
 
 #include "vtkSmartPointer.h"
@@ -79,9 +80,23 @@ namespace vtkfig
 
     void Resize(int x, int y);
 
+    void Reposition(int x, int y);
+
     std::vector<std::shared_ptr<Figure>> figures;
     
+    static Frame* frame(int key) { return frames[key];}
+
   private:
+
+
+    static std::map<int, Frame*> frames;
+
+    static int lastframenum;
+
+    int framenum=0;
+
+
+
     static constexpr const char* keyboard_help=
 R"(
 --------------------------------------
@@ -109,9 +124,9 @@ w      Wireframe modus
         Dump,            
         Resize,            
         AddFigure,            
+        Reposition,
         Clear,            
         Terminate,
-        SetInteractorStyle,
         SetBackgroundColor          
     };
 

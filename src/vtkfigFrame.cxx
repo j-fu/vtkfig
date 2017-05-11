@@ -25,6 +25,9 @@ namespace vtkfig
   nrow(nrow),
     ncol(ncol)
   {
+    framenum=lastframenum;
+    Frame::frames[lastframenum++]=this;
+
     figures.clear();
     double dx= 1.0/(double)ncol;
     double dy= 1.0/(double)nrow;
@@ -52,11 +55,17 @@ namespace vtkfig
     StartRenderThread();
   }
 
+
+
   Frame::Frame(vtkSmartPointer<vtkfig::Communicator> communicator,const int nrow, const int ncol):
     nrow(nrow),
     ncol(ncol)
   {
+    framenum=lastframenum;
+    Frame::frames[lastframenum++]=this;
+
     this->communicator=communicator;
+    this->communicator->SendInt(-1);
     this->communicator->SendCommand(vtkfig::Command::NewFrame);
     this->communicator->SendInt(nrow);
     this->communicator->SendInt(ncol);
@@ -110,11 +119,19 @@ namespace vtkfig
     SendCommand("Resize", Frame::Command::Resize);
   }
 
+  void Frame::Reposition(int x, int y)
+  {
+    this->win_x=x;
+    this->win_y=y;
+    SendCommand("Reposition", Frame::Command::Reposition);
+  }
+
 
   Frame::~Frame()
   {
     Terminate();
     this->thread->join();
+    frames.erase(this->framenum);
   }
   
   
@@ -127,8 +144,16 @@ namespace vtkfig
   // }
 
 
+
+////////////////////////////////////////////////////////////////
+/// List of all frames
+  std::map<int, Frame*> Frame::frames;
+  int Frame::lastframenum;
+
+
   ////////////////////////////////////////////////////////////////
   /// Communication with render thread
+
   void Frame::SendCommand(const std::string from, Frame::Command cmd)
   {
     if (!this->thread_alive)
@@ -306,6 +331,12 @@ namespace vtkfig
         }
         break;
         
+        case Frame::Command::Reposition:
+        {
+          window->SetPosition(frame->win_x, frame->win_y);
+        }
+        break;
+        
           // Close window and terminate
         case Frame::Command::Terminate:
         {
@@ -409,8 +440,11 @@ namespace vtkfig
 
       if (frame->cmd!=Frame::Command::None)
       {      
+
         // Lock mutex
         std::unique_lock<std::mutex> lock(frame->mtx);
+
+        frame->communicator->SendInt(frame->framenum);
         // Command dispatch
         switch(frame->cmd)
         {
@@ -440,6 +474,14 @@ namespace vtkfig
         }
         break;
 
+        case Frame::Command::Reposition:
+        {
+          frame->communicator->SendCommand(vtkfig::Command::FrameReposition);
+          frame->communicator->SendInt(frame->win_x);
+          frame->communicator->SendInt(frame->win_y);
+        }
+        break;
+
         case Frame::Command::AddFigure:
         {
           auto figure=frame->figures.back();
@@ -464,6 +506,7 @@ namespace vtkfig
         case Frame::Command::Terminate:
           // Close window and terminate
         {
+          frame->communicator->SendCommand(vtkfig::Command::FrameDelete);
         }
         break;
         

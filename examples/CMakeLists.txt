@@ -24,6 +24,9 @@ target_link_libraries(example-tricontour2d vtkfig ${VTK_LIBRARIES} ${CMAKE_THREA
 add_executable(example-multifig MACOSX_BUNDLE example-multifig.cxx )
 target_link_libraries(example-multifig vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
+add_executable(example-multiframe MACOSX_BUNDLE example-multiframe.cxx )
+target_link_libraries(example-multiframe vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+
 
 add_executable(example-comm-client-server-vtk MACOSX_BUNDLE example-comm-client-server-vtk.cxx )
 target_link_libraries(example-comm-client-server-vtk vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})

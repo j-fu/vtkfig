@@ -199,13 +199,18 @@ int main(int argc, const char * argv[])
     return 1;
   }
 
-  std::shared_ptr<vtkfig::Frame> frame;
-  std::shared_ptr<vtkfig::Figure> figure;
-  
-  vtkfig::Command cmd;
+
   while (1)
   {
+    vtkfig::Command cmd;
+    std::shared_ptr<vtkfig::Figure> figure;
+    int framenum=-1;
+    vtkfig::Frame *frame=0; /// Sorry, in the moment we cannot do better...
+
+    communicator->ReceiveInt(framenum);
     communicator->ReceiveCommand(cmd);
+    if (framenum>=0)
+      frame=vtkfig::Frame::frame(framenum);
 
     switch(cmd)
     {
@@ -237,9 +242,10 @@ int main(int argc, const char * argv[])
     case vtkfig::Command::NewFrame:
     {
       int nrow, ncol;
+      assert(framenum==-1);
       communicator->ReceiveInt(nrow);
       communicator->ReceiveInt(ncol);
-      frame=vtkfig::Frame::New(nrow,ncol);
+      frame=new vtkfig::Frame(nrow,ncol);
       if (debug)
         cout << "New frame" << endl;
     }
@@ -294,11 +300,26 @@ int main(int argc, const char * argv[])
     }
     break;
 
+    case vtkfig::Command::FrameReposition:
+    {
+      int x,y;
+      communicator->ReceiveInt(x);
+      communicator->ReceiveInt(y);
+      frame->Resize(x,y);
+    }
+    break;
+
     case vtkfig::Command::FrameDump:
     {
       std::string fname;
       communicator->ReceiveString(fname);
       frame->Dump(fname);
+    }
+    break;
+
+    case vtkfig::Command::FrameDelete:
+    {
+      delete frame;
     }
     break;
 
