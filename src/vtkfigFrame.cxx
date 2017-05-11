@@ -171,12 +171,12 @@ namespace vtkfig
 
       else if(key == "r")
       {
-        for (auto & sf: frame->subframes)
+        for (auto & subframe: frame->subframes)
         {
-          sf.renderer->GetActiveCamera()->SetPosition(sf.default_camera_position);
-          sf.renderer->GetActiveCamera()->SetFocalPoint(sf.default_camera_focal_point);
-          sf.renderer->GetActiveCamera()->OrthogonalizeViewUp();
-          sf.renderer->GetActiveCamera()->SetRoll(0);
+          subframe.renderer->GetActiveCamera()->SetPosition(subframe.default_camera_position);
+          subframe.renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
+          subframe.renderer->GetActiveCamera()->OrthogonalizeViewUp();
+          subframe.renderer->GetActiveCamera()->SetRoll(0);
         }
       }
 
@@ -188,19 +188,16 @@ namespace vtkfig
         if (frame->wireframe)
         {
           for (auto &figure: frame->figures)
-          {
             for (auto & actor: figure->actors)  actor->GetProperty()->SetRepresentationToWireframe();
-          }
+          
         }
         else
         {
           for (auto & figure: frame->figures)
-          {
             for (auto&  actor: figure->actors)  actor->GetProperty()->SetRepresentationToSurface();
-          }
         }
       }
-
+      
       else if (key=="space")
       {
         frame->communication_blocked=!frame->communication_blocked;
@@ -259,14 +256,22 @@ namespace vtkfig
           for (auto & figure: frame->figures)
           {
             auto &renderer=frame->subframes[figure->framepos].renderer;
+            
             if (figure->IsEmpty()  || renderer->GetActors()->GetNumberOfItems()==0)
             {
               // This allows clear figure to work
               renderer->RemoveAllViewProps();
+
               figure->RTBuild();
-              for (auto & actor: figure->actors) renderer->AddActor(actor);
-              for (auto & actor: figure->actors2d) renderer->AddActor(actor);
+
+              for (auto & actor: figure->actors) 
+                renderer->AddActor(actor);
+
+              for (auto & actor: figure->actors2d) 
+                renderer->AddActor(actor);
+
               figure->RTSetInteractor(interactor,renderer);
+
             }
             figure->RTUpdateActors();
             renderer->SetBackground(figure->bgcolor[0],
@@ -413,10 +418,10 @@ namespace vtkfig
         case Frame::Command::Show:
         {
           frame->communicator->SendCommand(vtkfig::Command::FrameShow);
-          for (auto figure: frame->figures)
-          {
+
+          for (auto & figure: frame->figures)
             figure->ServerRTSend(frame->communicator);
-          }
+
         }
         break;
         
@@ -447,7 +452,7 @@ namespace vtkfig
 
         case Frame::Command::Clear:
         {
-          for (auto figure: frame->figures)
+          for (auto & figure: frame->figures)
           {
             
             //frame->communicator->SendCommand(vtkfig::Command::FrameShow);
