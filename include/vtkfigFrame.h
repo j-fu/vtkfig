@@ -80,6 +80,17 @@ namespace vtkfig
     void Resize(int x, int y);
     
   private:
+    static constexpr const char* keyboard_help=
+R"(
+--------------------------------------
+Key     Action
+
+space  Interrupt/continue calculation
+r      Reset camera
+w      Wireframe modus
+--------------------------------------
+)";
+
     void RestartRenderThread(void);
     void StartCommunicatorThread(void);
     void StartRenderThread(void);
@@ -105,7 +116,7 @@ namespace vtkfig
     /// Communication command
     Command cmd; 
 
-    void SendCommand(Command cmd);
+    void SendCommand(const std::string from, Command cmd);
 
 
     /// mutex to organize communication

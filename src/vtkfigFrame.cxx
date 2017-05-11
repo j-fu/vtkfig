@@ -73,24 +73,22 @@ namespace vtkfig
     int pos=this->pos(irow,icol);
     fig->framepos=pos;
 
-    SendCommand(Frame::Command::AddFigure);
+    SendCommand("AddFigure", Frame::Command::AddFigure);
   }
 
 
 
   void Frame::Show()
   {
-    if (!this->thread_alive)
-      throw std::runtime_error("Show: render thread is dead");
-
-    SendCommand(Frame::Command::Show);
+    SendCommand("Show", Frame::Command::Show);
   }
 
 
   void Frame::Interact()
   {
     if (!this->thread_alive)
-      throw std::runtime_error("Show: render thread is dead");
+      throw std::runtime_error("Interact: render thread is dead");
+
     this->communication_blocked=true;
     do
     {
@@ -102,23 +100,15 @@ namespace vtkfig
 
   void Frame::Dump(std::string fname)
   {
-    if (!this->thread_alive)
-      throw std::runtime_error("Dump: render thread is dead");
-
     this->fname=fname;
-    SendCommand(Frame::Command::Dump);
-
+    SendCommand("Dump", Frame::Command::Dump);
   }
 
   void Frame::Resize(int x, int y)
   {
-    if (!this->thread_alive)
-      throw std::runtime_error("Resize: render thread is dead");
-
     this->win_x=x;
     this->win_y=y;
-
-    SendCommand(Frame::Command::Resize);
+    SendCommand("Resize", Frame::Command::Resize);
   }
 
 
@@ -140,8 +130,11 @@ namespace vtkfig
 
   ////////////////////////////////////////////////////////////////
   /// Communication with render thread
-  void Frame::SendCommand(Frame::Command cmd)
+  void Frame::SendCommand(const std::string from, Frame::Command cmd)
   {
+    if (!this->thread_alive)
+      throw std::runtime_error(from+" : render thread is dead.");
+
     this->cmd=cmd;
     std::unique_lock<std::mutex> lock(this->mtx);
     this->cv.wait(lock);
@@ -149,7 +142,7 @@ namespace vtkfig
 
   void Frame::Terminate(void)
   {
-    SendCommand(Frame::Command::Terminate);
+    SendCommand("Terminate",Frame::Command::Terminate);
   }
 
   
@@ -216,14 +209,7 @@ namespace vtkfig
 
       else if(key == "h" or key == "?")
       {
-        cout << 
-R"(
-Key     Action
-
-space  Interrupt/continue calculation
-r      Reset camera
-w      Wireframe modus
-)";
+        cout << Frame::keyboard_help;
       }
 
       else
