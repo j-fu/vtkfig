@@ -277,8 +277,11 @@ int main(int argc, const char * argv[])
 
     case vtkfig::Command::FrameShow:
     {
-      figure->ClientMTReceive(communicator);
-      frame->Show();
+          for (auto figure: frame->figures)
+          {
+            figure->ClientMTReceive(communicator);
+            frame->Show();
+          }
     }
     break;
 
@@ -290,6 +293,15 @@ int main(int argc, const char * argv[])
       frame->Resize(x,y);
     }
     break;
+
+    case vtkfig::Command::FrameDump:
+    {
+      std::string fname;
+      communicator->ReceiveString(fname);
+      frame->Dump(fname);
+    }
+    break;
+
 
     default:
     {

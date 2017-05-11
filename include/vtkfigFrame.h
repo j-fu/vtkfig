@@ -78,6 +78,8 @@ namespace vtkfig
     void Interact();
 
     void Resize(int x, int y);
+
+    std::vector<std::shared_ptr<Figure>> figures;
     
   private:
     static constexpr const char* keyboard_help=
@@ -157,7 +159,6 @@ w      Wireframe modus
 
     /// Each subframe can hold several figures
 
-    std::vector<std::shared_ptr<Figure>> figures;
     std::vector<SubFrame> subframes;
 
     

@@ -1,4 +1,3 @@
-
 #include "vtkRenderWindow.h"
 #include "vtkRenderWindowInteractor.h"
 #include "vtkInteractorStyleImage.h"
@@ -413,17 +412,18 @@ namespace vtkfig
           
         case Frame::Command::Show:
         {
+          frame->communicator->SendCommand(vtkfig::Command::FrameShow);
           for (auto figure: frame->figures)
           {
-            frame->communicator->SendCommand(vtkfig::Command::FrameShow);
             figure->ServerRTSend(frame->communicator);
           }
         }
         break;
         
         case Frame::Command::Dump:
-          // Write picture to file
         {
+          frame->communicator->SendCommand(vtkfig::Command::FrameDump);
+          frame->communicator->SendString(frame->fname);
         }
         break;
         
@@ -437,8 +437,8 @@ namespace vtkfig
 
         case Frame::Command::AddFigure:
         {
-          frame->communicator->SendCommand(vtkfig::Command::AddFigure);
           auto figure=frame->figures.back();
+          frame->communicator->SendCommand(vtkfig::Command::AddFigure);
           frame->communicator->SendString(figure->SubClassName());
           frame->communicator->SendInt(frame->row(figure->framepos));
           frame->communicator->SendInt(frame->col(figure->framepos));

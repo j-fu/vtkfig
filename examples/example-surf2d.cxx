@@ -71,8 +71,8 @@ int main(const int argc, const char *argv[])
     
     frame->Show();
     
-    // if (ii==3) 
-    //   frame->Dump("example-surf2d.png");
+    if (ii==3) 
+      frame->Dump("example-surf2d.png");
 
     t+=dt;
     auto t1=std::chrono::system_clock::now();

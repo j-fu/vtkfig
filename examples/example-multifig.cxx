@@ -1,6 +1,6 @@
 #include <chrono>
 #include "vtkfigFrame.h"
-#include "vtkfigContour2D.h"
+#include "vtkfigSurf2D.h"
 #include "vtkfigXYPlot.h"
 
 inline double G(double x,double y, double t) 
@@ -12,11 +12,11 @@ inline double G(double x,double y, double t)
 
 int main(void)
 {
+  vtkfig::ServerConnection connection;
+  cout.sync_with_stdio(true);
 
   const int Nx = 200;
   const int Ny = 250;
-
-
   
   std::vector<double> x(Nx);
   std::vector<double> y(Ny);
@@ -52,12 +52,12 @@ int main(void)
   double i0=ii;
 
 
-  auto frame=vtkfig::Frame::New(1,2);
+  auto frame=vtkfig::Frame::New(connection,1,2);
   frame->Resize(800,400);
-  auto contour=vtkfig::Contour2D::New();
-  contour->SetSurfaceRGBTable(colors,255);
-  contour->SetGrid(x,y);
-  frame->AddFigure(contour,0,0);
+  auto surf=vtkfig::Surf2D::New();
+  surf->SetRGBTable(colors,255);
+  surf->SetGrid(x,y);
+  frame->AddFigure(surf,0,0);
   auto xyplot=vtkfig::XYPlot::New();
   frame->AddFigure(xyplot,0,1);
 
@@ -72,7 +72,7 @@ int main(void)
         if (j==Ny/2) fx[i]=f;
       }
 
-    contour->UpdateValues(z);
+    surf->UpdateValues(z);
     xyplot->Clear();
     xyplot->LineColorRGB(0,0,1);
     xyplot->LineType("-");
@@ -83,7 +83,7 @@ int main(void)
     frame->Show();
 
     if (ii==3) 
-      frame->Dump("example-contour2d.png");
+      frame->Dump("example-multifig.png");
 
     t+=dt;
     auto t1=std::chrono::system_clock::now();

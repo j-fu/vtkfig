@@ -19,6 +19,7 @@ namespace vtkfig
       AddFigure,
       FrameShow,
       FrameResize,
+      FrameDump,
       Exit
       };
 
