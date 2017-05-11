@@ -14,6 +14,7 @@
 
 #include "vtkSmartPointer.h"
 #include "vtkRenderer.h"
+#include "vtkfigCommunicator.h"
 
 namespace vtkfig
 {
@@ -32,7 +33,8 @@ namespace vtkfig
 
 
 
-    Frame(const int nrow, const int ncol);
+    static std::shared_ptr<Frame> New(int nrow, int ncol);
+    static std::shared_ptr<Frame> New() {return  Frame::New(1,1);}
 
     ~Frame();
     
@@ -43,14 +45,13 @@ namespace vtkfig
     void AddFigure(std::shared_ptr<Figure> figure) {AddFigure(figure,0,0);}
 
 
-    void Resize(int x, int y);
+    void Size(int x, int y);
 
-    void Reposition(int x, int y);
+    void Position(int x, int y);
 
     std::vector<std::shared_ptr<Figure>> figures;
     
-
-
+    void Show();
 
 
     int framenum=-1;
@@ -97,8 +98,9 @@ w      Wireframe modus
       double viewport[4]={0,0,1,1};
     };
 
-    std::shared_ptr<MainThread> mainthread;
+    MainThread *mainthread;
     
+    void SendCommand(std::string source, Communicator::Command cmd);
     /// Each subframe can hold several figures
 
     std::vector<SubFrame> subframes;
@@ -111,6 +113,9 @@ w      Wireframe modus
 
     friend class  InteractorStyleTrackballCamera;
     friend class  TimerCallback;
+
+
+    Frame(const int nrow, const int ncol);
   };
 }
 

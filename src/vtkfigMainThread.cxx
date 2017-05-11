@@ -20,12 +20,35 @@
 
 namespace vtkfig
 {
+  MainThread * MainThread::mainthread=0;
+
+  void MainThread::DeleteMainThread()
+  {
+
+    if (mainthread==0)
+      return;
+    delete mainthread;
+    mainthread=0;
+  }
+
+
+  MainThread* MainThread::CreateMainThread()
+  {
+    if (mainthread==0)
+      mainthread=new MainThread();
+    std::atexit(DeleteMainThread);
+    return mainthread;
+  }
+
   MainThread::MainThread()
   {
     int wtime=5;
     char* port_string=getenv("VTKFIG_PORT_NUMBER");
     char* wtime_string=getenv("VTKFIG_WAIT_SECONDS");
-    
+    char *debug_string=getenv("VTKFIG_DEBUG_LEVEL");
+    if (debug_string!=0)
+      debug_level=atoi(debug_string);
+
     if (wtime_string!=0)
       wtime=atoi(wtime_string);
     
@@ -60,12 +83,23 @@ namespace vtkfig
     }
     connection_open=true;
   }
-  
-  std::shared_ptr<Frame>  MainThread::AddFrame(int nrow, int ncol)
+
+  MainThread::~MainThread()
   {
-    auto frame=std::make_shared<Frame>(nrow,ncol);
-    frame->mainthread=shared_from_this();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    if (this->thread_alive)
+      Terminate();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    this->thread->join();
+    framemap.clear();
+  }
+
+  
+  void  MainThread::AddFrame(std::shared_ptr<Frame>frame)
+  {
+    frame->mainthread=this;
     frame->framenum=lastframenum;
+    this->iframe=lastframenum;
     framemap[lastframenum++]=frame;
     if (lastframenum==1)
     {
@@ -73,15 +107,14 @@ namespace vtkfig
     }
     else
     {
-      SendCommand(frame->framenum, "AddFrame", MainThread::Command::AddFrame);
+      SendCommand(frame->framenum, "AddFrame", Communicator::Command::MainThreadAddFrame);
     }
-    return frame;
   }
 
 
   void MainThread::Show()
   {
-    SendCommand(-1, "Show", MainThread::Command::Show);
+    SendCommand(-1, "Show", Communicator::Command::MainThreadShow);
   }
 
 
@@ -102,7 +135,7 @@ namespace vtkfig
   ////////////////////////////////////////////////////////////////
   /// Communication with render thread
 
-  void MainThread::SendCommand(int framenum, const std::string from, MainThread::Command cmd)
+  void MainThread::SendCommand(int framenum, const std::string from, Communicator::Command cmd)
   {
     if (!this->thread_alive)
       throw std::runtime_error(from+" : render thread is dead.");
@@ -115,7 +148,7 @@ namespace vtkfig
 
   void MainThread::Terminate(void)
   {
-    SendCommand(-1,"Terminate",MainThread::Command::Terminate);
+    SendCommand(-1,"Terminate",Communicator::Command::MainThreadTerminate);
   }
 
   
@@ -194,7 +227,7 @@ namespace vtkfig
   {
   public:
     
-    std::shared_ptr<MainThread> mainthread;
+    MainThread* mainthread;
     vtkSmartPointer<vtkRenderWindowInteractor> interactor=0;
     
     static TimerCallback *New()    {return new TimerCallback;}
@@ -210,7 +243,7 @@ namespace vtkfig
       
       if (
         vtkCommand::TimerEvent == eventId  // Check if timer event
-        && mainthread->cmd!=MainThread::Command::None  // Check if command has been given
+        && mainthread->cmd!=Communicator::Command::None  // Check if command has been given
         )
       {
         
@@ -221,7 +254,7 @@ namespace vtkfig
         switch(mainthread->cmd)
         {
           
-        case MainThread::Command::AddFrame:
+        case Communicator::Command::MainThreadAddFrame:
         {
 
           mainthread->RTAddFrame(mainthread, mainthread->iframe);
@@ -231,7 +264,7 @@ namespace vtkfig
 
 
           // Add actors to renderer
-        case MainThread::Command::Show:
+        case Communicator::Command::MainThreadShow:
         {
           for (auto & framepair: mainthread->framemap)
             for (auto & figure: framepair.second->figures)
@@ -264,7 +297,7 @@ namespace vtkfig
         break;
         
           // Write picture to file
-        case MainThread::Command::Dump:
+        case Communicator::Command::FrameDump:
         {
           auto frame=mainthread->framemap[mainthread->iframe];
           auto imgfilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
@@ -284,28 +317,30 @@ namespace vtkfig
         
 
         
-          // Close window and terminate
-        case MainThread::Command::Resize:
+        case Communicator::Command::FrameSize:
         {
           auto frame=mainthread->framemap[mainthread->iframe];
           frame->window->SetSize(frame->win_x, frame->win_y);
         }
         break;
         
-        case MainThread::Command::Reposition:
+        case Communicator::Command::FramePosition:
         {
           auto frame=mainthread->framemap[mainthread->iframe];
           frame->window->SetPosition(frame->pos_x, frame->pos_y);
         }
         break;
         
-          // Close window and terminate
-        case MainThread::Command::Terminate:
+        case Communicator::Command::MainThreadTerminate:
         {
 
           for (auto & framepair: mainthread->framemap)
             framepair.second->window->Finalize();
+          mainthread->framemap.clear();
           interactor->TerminateApp();
+          mainthread->thread_alive=false;
+          mainthread->cv.notify_all();
+          return;
         }
         break;
         
@@ -313,7 +348,7 @@ namespace vtkfig
         }
         
         // Clear command
-        mainthread->cmd=MainThread::Command::None;
+        mainthread->cmd=Communicator::Command::None;
         
         // Notify that command was exeuted
         mainthread->cv.notify_all();
@@ -326,7 +361,7 @@ namespace vtkfig
     }
   };
 
-  void MainThread::RTAddFrame(std::shared_ptr<MainThread> mainthread, int iframe)
+  void MainThread::RTAddFrame(MainThread* mainthread, int iframe)
   {
     auto frame=mainthread->framemap[iframe];
     frame->window = vtkSmartPointer<vtkRenderWindow>::New();
@@ -355,7 +390,7 @@ namespace vtkfig
     }
   }
   
-  void MainThread::RenderThread(std::shared_ptr<MainThread> mainthread)
+  void MainThread::RenderThread(MainThread* mainthread)
   {
 
     RTAddFrame(mainthread,0);
@@ -386,6 +421,7 @@ namespace vtkfig
     
     interactor->SetRenderWindow(0);
     interactor->TerminateApp();
+    mainthread->thread_alive=false;
                                       
     
     //window->Finalize();
@@ -394,9 +430,9 @@ namespace vtkfig
   void MainThread::Start(void)
   {
     if (connection_open)
-      this->thread=std::make_shared<std::thread>(CommunicatorThread,shared_from_this());
+      this->thread=std::make_shared<std::thread>(CommunicatorThread,this);
     else
-      this->thread=std::make_shared<std::thread>(RenderThread,shared_from_this());
+      this->thread=std::make_shared<std::thread>(RenderThread,this);
 
     do
     {
@@ -409,46 +445,43 @@ namespace vtkfig
   ////////////////////////////////////////////////////////////////
   /// Server communication 
 
-  void  MainThread::CommunicatorThread( std::shared_ptr<MainThread> mainthread)
+  void  MainThread::CommunicatorThread(MainThread* mainthread)
   {
     mainthread->thread_alive=true;
 
-    auto frame=mainthread->framemap[0];
-    mainthread->communicator->SendInt(-1);
-    mainthread->communicator->SendCommand(vtkfig::Command::AddFrame);
-    mainthread->communicator->SendInt(frame->nrow);
-    mainthread->communicator->SendInt(frame->ncol);
+
+    mainthread->cmd=Communicator::Command::MainThreadAddFrame;
 
     while(1)
     {
       std::this_thread::sleep_for (std::chrono::milliseconds(5));
-
-      if (mainthread->cmd!=MainThread::Command::None)
+      if (mainthread->cmd!=Communicator::Command::None)
       {      
         
         // Lock mutex
         std::unique_lock<std::mutex> lock(mainthread->mtx);
 
+        if (mainthread->debug_level>0) 
+          cout << "s cmd: " << static_cast<int>(mainthread->cmd) << " frame: " <<mainthread->iframe<< endl;
 
+        mainthread->communicator->SendCommand(mainthread->cmd);
         mainthread->communicator->SendInt(mainthread->iframe);
 
         // Command dispatch
         switch(mainthread->cmd)
         {
           
-        case MainThread::Command::AddFrame:
+        case Communicator::Command::MainThreadAddFrame:
         {
           auto frame=mainthread->framemap[mainthread->iframe];
-          mainthread->communicator->SendCommand(vtkfig::Command::AddFrame);
           mainthread->communicator->SendInt(frame->nrow);
           mainthread->communicator->SendInt(frame->ncol);
 
         }
         break;
 
-        case MainThread::Command::Show:
+        case Communicator::Command::MainThreadShow:
         {
-          mainthread->communicator->SendCommand(vtkfig::Command::MainThreadShow);
           for (auto framepair: mainthread->framemap)
             for (auto & figure: framepair.second->figures)
             {
@@ -457,45 +490,41 @@ namespace vtkfig
         }
         break;
         
-        case MainThread::Command::Dump:
+        case Communicator::Command::FrameDump:
         {
           
           auto frame=mainthread->framemap[mainthread->iframe];
-          mainthread->communicator->SendCommand(vtkfig::Command::FrameDump);
           mainthread->communicator->SendString(frame->fname);
         }
         break;
         
-        case MainThread::Command::Resize:
+        case Communicator::Command::FrameSize:
         {
           auto frame=mainthread->framemap[mainthread->iframe];
-          mainthread->communicator->SendCommand(vtkfig::Command::FrameResize);
           mainthread->communicator->SendInt(frame->win_x);
           mainthread->communicator->SendInt(frame->win_y);
         }
         break;
 
-        case MainThread::Command::Reposition:
+        case Communicator::Command::FramePosition:
         {
           auto frame=mainthread->framemap[mainthread->iframe];
-          mainthread->communicator->SendCommand(vtkfig::Command::FrameReposition);
           mainthread->communicator->SendInt(frame->pos_x);
           mainthread->communicator->SendInt(frame->pos_y);
         }
         break;
 
-        case MainThread::Command::AddFigure:
+        case Communicator::Command::FrameAddFigure:
         {
           auto frame=mainthread->framemap[mainthread->iframe];
           auto figure=frame->figures.back();
-          mainthread->communicator->SendCommand(vtkfig::Command::AddFigure);
           mainthread->communicator->SendString(figure->SubClassName());
           mainthread->communicator->SendInt(frame->row(figure->framepos));
           mainthread->communicator->SendInt(frame->col(figure->framepos));
         }
         break;
 
-        case MainThread::Command::Clear:
+        case Communicator::Command::Clear:
         {
           // for (auto & figure: frame->figures)
           // {
@@ -506,24 +535,37 @@ namespace vtkfig
         }
         break;
         
-        case MainThread::Command::Terminate:
+        case Communicator::Command::MainThreadTerminate:
           // Close window and terminate
         {
-          //mainthread->communicator->SendCommand(vtkfig::Command::FrameDelete);
+
+          if (mainthread->debug_level>0)
+            cout << "s term" << endl;
+          mainthread->framemap.clear();
+          // Notify that command was exeuted
+          mainthread->cv.notify_all();
+          mainthread->thread_alive=false;
+           return;
         }
         break;
         
         default:
-          break;
+        {
+          cout << "s cmd: " << static_cast<int>(mainthread->cmd) << endl;
+          throw std::runtime_error("wrong command on server");
+        }
+        
+        break;
         }
         
         // Clear command
-        mainthread->cmd=MainThread::Command::None;
+        mainthread->cmd=Communicator::Command::None;
         
         // Notify that command was exeuted
         mainthread->cv.notify_all();
       }
     }
+    mainthread->thread_alive=false;
   }
   
  

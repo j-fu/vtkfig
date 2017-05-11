@@ -6,10 +6,7 @@
 
 int main()
 {
-  auto mainthread=vtkfig::MainThread::New();
-
-  auto frame=mainthread->AddFrame();
-
+  auto frame=vtkfig::Frame::New();
   
   const int NN = 40;
   const double t_low = 0;
@@ -33,9 +30,13 @@ int main()
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
   auto xyplot=vtkfig::XYPlot::New();
-  frame->AddFigure(xyplot);
 
-  while (1)
+  frame->AddFigure(xyplot);
+  // cout << "yyy"<< endl;
+  // mainthread->Terminate();
+  // exit(1);
+
+  while (ii<10)
   {
     double t = tt;
 
@@ -59,7 +60,9 @@ int main()
     xyplot->LineColorRGB(1,0,0);
     xyplot->LineType(".-");
     xyplot->AddPlot(x2, y2);
-    mainthread->Show();
+
+
+    frame->Show();
     
     if (ii==3) 
         frame->Dump("example-xyplot.png");
@@ -75,6 +78,7 @@ int main()
     }
     tt+=0.1;
   }
+
 }
 
 

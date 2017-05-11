@@ -3,7 +3,6 @@ add_library(vtkfig
   vtkfigFigure.cxx
   vtkfigMainThread.cxx
   vtkfigCommunicator.cxx
-  vtkfigServerConnection.cxx
   vtkfigTools.cxx
   vtkfigXYPlot.cxx
   vtkfigContour2DBase.cxx  

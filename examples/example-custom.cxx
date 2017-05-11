@@ -9,7 +9,6 @@
 #include "vtkfigFrame.h"
 #include "vtkfigFigure.h"
 #include "vtkfigTools.h"
-#include "vtkfigMainThread.h"
 
 inline double G(double x,double y, double t) 
 {
@@ -26,7 +25,6 @@ R"(
 Example showing creation of custom scenes using 
 vtkfigFrame and vtkfigFigure base class.
 )";
-  auto mainthread=vtkfig::MainThread::New();
 
 
   cout.sync_with_stdio(true);
@@ -45,7 +43,8 @@ vtkfigFrame and vtkfigFigure base class.
   const double dx = (x_upp-x_low)/(Nx-1);
   const double dy = (y_upp-y_low)/(Ny-1);
 
-  auto frame=mainthread->AddFrame();
+  auto frame=vtkfig::Frame::New();
+    
 
 
   
@@ -183,7 +182,7 @@ vtkfigFrame and vtkfigFigure base class.
     lut->SetTableRange(vmin,vmax);
     lut->Modified();
     
-    mainthread->Show();
+    frame->Show();
     
 
     t+=dt;

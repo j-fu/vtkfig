@@ -1,7 +1,6 @@
 #include <chrono>
 #include "vtkfigFrame.h"
 #include "vtkfigSurf2D.h"
-#include "vtkfigMainThread.h"
 
 
 inline double G(double x,double y, double t) 
@@ -13,7 +12,8 @@ inline double G(double x,double y, double t)
 
 int main(const int argc, const char *argv[])
 {
-  cout.sync_with_stdio(true);
+//  cout.sync_with_stdio(true);
+  auto frame=vtkfig::Frame::New();
   
   const int Nx = 200;
   const int Ny = 250;
@@ -29,8 +29,6 @@ int main(const int argc, const char *argv[])
   const double dx = (x_upp-x_low)/(Nx-1);
   const double dy = (y_upp-y_low)/(Ny-1);
 
-  auto mainthread=vtkfig::MainThread::New();
-  auto frame=mainthread->AddFrame();
 
 
   
@@ -60,6 +58,9 @@ int main(const int argc, const char *argv[])
   surf->SetRGBTable(colors,255);
 
   frame->AddFigure(surf);
+  // cout << "yyy"<< endl;
+  // mainthread->Terminate();
+  // exit(1);
 
   while (1)
   {
@@ -70,7 +71,8 @@ int main(const int argc, const char *argv[])
     
     surf->UpdateValues(z);
     
-    mainthread->Show();
+
+    frame->Show();
     
     if (ii==3) 
       frame->Dump("example-surf2d.png");

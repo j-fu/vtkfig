@@ -39,7 +39,16 @@ namespace vtkfig
       }
     }
   }
+  std::shared_ptr<Frame> Frame::New(int nrow, int ncol) 
+  {
+    auto frame=std::make_shared<Frame>(nrow,ncol);
+    MainThread::CreateMainThread();
+    MainThread::mainthread->AddFrame(frame);
+    return frame;
+  };
   
+  
+  void Frame::Show() { mainthread->Show();}
 
   void Frame::AddFigure(std::shared_ptr<Figure> fig, int irow, int icol)
   {
@@ -50,7 +59,7 @@ namespace vtkfig
     int pos=this->pos(irow,icol);
     fig->framepos=pos;
     
-    mainthread->SendCommand(framenum, "AddFigure", MainThread::Command::AddFigure);
+    SendCommand("AddFigure", Communicator::Command::FrameAddFigure);
   }
   
   
@@ -58,37 +67,37 @@ namespace vtkfig
   void Frame::Dump(std::string fname)
   {
     this->fname=fname;
-    if (mainthread)
-      mainthread->SendCommand(framenum, "Dump", MainThread::Command::Dump);
+    SendCommand("Dump", Communicator::Command::FrameDump);
   }
 
-  void Frame::Resize(int x, int y)
+  void Frame::Size(int x, int y)
   {
     this->win_x=x;
     this->win_y=y;
-    if (mainthread)
-      mainthread->SendCommand(framenum, "Resize", MainThread::Command::Resize);
+    SendCommand("Size", Communicator::Command::FrameSize);
   }
 
-  void Frame::Reposition(int x, int y)
+  void Frame::Position(int x, int y)
   {
     this->pos_x=x;
     this->pos_y=y;
-    if (mainthread)
-      mainthread->SendCommand(framenum, "Reposition", MainThread::Command::Reposition);
+    SendCommand("Position", Communicator::Command::FramePosition);
   }
 
+  void Frame::SendCommand(std::string source, Communicator::Command comm)
+  {
+    mainthread->SendCommand(framenum, source, comm);
+  }
 
   Frame::~Frame()
   {
-    // ??? Remove from thread
   }
   
   
   // void Frame::Clear(void)
   // {
   //   this->figures.clear();
-  //   SendCommand(MainThread::Command::Clear;
+  //   SendCommand(Communicator::Command::Clear;
   //   std::unique_lock<std::mutex> lock(this->mtx);
   //   this->cv.wait(lock);
   // }

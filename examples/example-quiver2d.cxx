@@ -1,5 +1,4 @@
 #include "vtkfigFrame.h"
-#include "vtkfigMainThread.h"
 #include "vtkfigContour2D.h"
 #include "vtkfigQuiver2D.h"
 
@@ -12,7 +11,6 @@ inline double G(double x,double y, double t)
 
 int main(void)
 {
-  auto mainthread=vtkfig::MainThread::New();
   
   const int Nx = 20;
   const int Ny = 25;
@@ -31,7 +29,7 @@ int main(void)
   const double dx = (x_upp-x_low)/(Nx-1);
   const double dy = (y_upp-y_low)/(Ny-1);
 
-  auto frame=mainthread->AddFrame();
+  auto frame=vtkfig::Frame::New();
 
   auto colors=vtkfig::RGBTable
     { 
@@ -105,7 +103,7 @@ int main(void)
     contour->UpdateValues(z);
     quiver->UpdateValues(u,v);
 
-    mainthread->Show();
+    frame->Show();
 
     if (ii==3) 
       frame->Dump("example-quiver2d.png");

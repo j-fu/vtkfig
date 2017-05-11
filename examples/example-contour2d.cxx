@@ -1,7 +1,7 @@
 #include <chrono>
 #include "vtkfigFrame.h"
 #include "vtkfigContour2D.h"
-#include "vtkfigMainThread.h"
+
 
 inline double G(double x,double y, double t) 
 {
@@ -12,7 +12,6 @@ inline double G(double x,double y, double t)
 
 int main(void)
 {
-  auto mainthread=vtkfig::MainThread::New();
 
   const int Nx = 200;
   const int Ny = 250;
@@ -28,7 +27,7 @@ int main(void)
   const double dx = (x_upp-x_low)/(Nx-1);
   const double dy = (y_upp-y_low)/(Ny-1);
   
-  auto frame=mainthread->AddFrame();
+  auto frame=vtkfig::Frame::New();
 
   auto colors=vtkfig::RGBTable
     { 
@@ -65,7 +64,7 @@ int main(void)
 
     contour->UpdateValues(z);
 
-    mainthread->Show();
+    frame->Show();
 
     if (ii==3) 
       frame->Dump("example-contour2d.png");

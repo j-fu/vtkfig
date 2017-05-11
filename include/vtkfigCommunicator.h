@@ -11,23 +11,26 @@ namespace vtkfig
 {
 
 
-  enum class Command: int
-  {
-    Dummy=0,
-      MainThreadShow=100,
-      String,
-      AddFrame,
-      AddFigure,
-      FrameResize,
-      FrameReposition,
-      FrameDump,
-      FrameDelete,
-      Exit
-      };
 
   class Communicator: public vtkSocketCommunicator
   {
   public:
+
+  enum class Command: int
+  {
+    Dummy=-1,
+      None=0,
+      MainThreadShow=100,
+      MainThreadAddFrame,
+      FrameAddFigure,
+      FrameSize,
+      FramePosition,
+      FrameDump,
+      MainThreadTerminate,
+      String,
+      Clear,
+      Exit
+      };
     
     int server_listen_num_retry=10;
     int server_listen_retry_timeout=100;
