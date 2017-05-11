@@ -1,6 +1,7 @@
 #include <chrono>
 #include "vtkfigFrame.h"
 #include "vtkfigSurf2D.h"
+#include "vtkfigMainThread.h"
 
 
 inline double G(double x,double y, double t) 
@@ -12,7 +13,6 @@ inline double G(double x,double y, double t)
 
 int main(const int argc, const char *argv[])
 {
-  vtkfig::ServerConnection connection;
   cout.sync_with_stdio(true);
   
   const int Nx = 200;
@@ -29,7 +29,8 @@ int main(const int argc, const char *argv[])
   const double dx = (x_upp-x_low)/(Nx-1);
   const double dy = (y_upp-y_low)/(Ny-1);
 
-  auto frame=vtkfig::Frame::New(connection);
+  auto mainthread=vtkfig::MainThread::New();
+  auto frame=mainthread->AddFrame();
 
 
   
@@ -69,7 +70,7 @@ int main(const int argc, const char *argv[])
     
     surf->UpdateValues(z);
     
-    frame->Show();
+    mainthread->Show();
     
     if (ii==3) 
       frame->Dump("example-surf2d.png");

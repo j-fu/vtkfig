@@ -2,6 +2,7 @@
 #include "vtkfigFrame.h"
 #include "vtkfigSurf2D.h"
 #include "vtkfigXYPlot.h"
+#include "vtkfigMainThread.h"
 
 inline double G(double x,double y, double t) 
 {
@@ -12,7 +13,7 @@ inline double G(double x,double y, double t)
 
 int main(void)
 {
-  vtkfig::ServerConnection connection;
+  auto mainthread=vtkfig::MainThread::New();
   cout.sync_with_stdio(true);
 
   const int Nx = 200;
@@ -52,7 +53,8 @@ int main(void)
   double i0=ii;
 
 
-  auto frame=vtkfig::Frame::New(connection,1,2);
+  auto frame=mainthread->AddFrame(1,2);
+
   frame->Resize(800,400);
   auto surf=vtkfig::Surf2D::New();
   surf->SetRGBTable(colors,255);
@@ -80,7 +82,7 @@ int main(void)
     xyplot->LineColorRGB(1,0,0);
     xyplot->LineType("-");
     xyplot->AddPlot(y, fy);
-    frame->Show();
+    mainthread->Show();
 
     if (ii==3) 
       frame->Dump("example-multifig.png");

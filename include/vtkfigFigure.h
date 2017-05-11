@@ -30,6 +30,7 @@ namespace vtkfig
   class Figure
   {
     friend class Frame;
+    friend class MainThread;
     friend class TimerCallback;
     friend class InteractorStyleTrackballCamera;
 

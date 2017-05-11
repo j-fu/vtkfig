@@ -1,12 +1,15 @@
 #include "vtkfigFrame.h"
 #include "vtkfigXYPlot.h"
+#include "vtkfigMainThread.h"
 #include <cstdio>
 
 
 int main()
 {
-  vtkfig::ServerConnection connection;
-  auto frame=vtkfig::Frame::New(connection);
+  auto mainthread=vtkfig::MainThread::New();
+
+  auto frame=mainthread->AddFrame();
+
   
   const int NN = 40;
   const double t_low = 0;
@@ -56,7 +59,7 @@ int main()
     xyplot->LineColorRGB(1,0,0);
     xyplot->LineType(".-");
     xyplot->AddPlot(x2, y2);
-    frame->Show();
+    mainthread->Show();
     
     if (ii==3) 
         frame->Dump("example-xyplot.png");

@@ -8,63 +8,31 @@
 #define VTKFIG_FRAME_H
 
 #include <memory>
-#include <mutex>
-#include <thread>
+
 #include <memory>
 #include <vector>
-#include <map>
-#include <condition_variable>
 
 #include "vtkSmartPointer.h"
 #include "vtkRenderer.h"
 
-#include "vtkfigCommunicator.h"
-#include "vtkfigServerConnection.h"
-
 namespace vtkfig
 {
 
-  class Figure;
+  class Frame;
   ///
   /// Frame: provide a thread based rendering
   /// 
+
+  class Figure;
+  class MainThread;
+
   class Frame
   {
   public:
 
-    ///
-    /// Create a empty frame for local rendering
-    ///
-    static std::shared_ptr<Frame> New() { return std::make_shared<Frame>(); }
-    static std::shared_ptr<Frame> New(int nrow, int ncol) { return std::make_shared<Frame>(nrow,ncol); }
 
-    ///
-    /// Create an empty frame  for server based rendering
-    ///
-    static std::shared_ptr<Frame> New(vtkSmartPointer<Communicator>comm, int nrow, int ncol) { return std::make_shared<Frame>(comm, nrow,  ncol); }
-
-    static std::shared_ptr<Frame> New(ServerConnection& sconn, int nrow, int ncol) 
-    {
-      if (sconn.IsOpen())
-        return New(sconn.GetCommunicator(),nrow,ncol); 
-      else
-        return New(nrow,ncol); 
-    }
-
-    static std::shared_ptr<Frame> New(ServerConnection& sconn) 
-    {
-      return New(sconn,1,1);
-    }
-    static std::shared_ptr<Frame> New(std::shared_ptr<ServerConnection> sconn) 
-    { return New(*sconn);}
-    
-    Frame(): Frame(1,1){};
-
-    Frame(vtkSmartPointer<Communicator>comm): Frame(comm,1,1){};
 
     Frame(const int nrow, const int ncol);
-
-    Frame(vtkSmartPointer<Communicator>, const int nrow, const int ncol);
 
     ~Frame();
     
@@ -74,9 +42,6 @@ namespace vtkfig
 
     void AddFigure(std::shared_ptr<Figure> figure) {AddFigure(figure,0,0);}
 
-    void Show();
-
-    void Interact();
 
     void Resize(int x, int y);
 
@@ -84,16 +49,11 @@ namespace vtkfig
 
     std::vector<std::shared_ptr<Figure>> figures;
     
-    static Frame* frame(int key) { return frames[key];}
-
-  private:
 
 
-    static std::map<int, Frame*> frames;
 
-    static int lastframenum;
 
-    int framenum=0;
+    int framenum=-1;
 
 
 
@@ -108,40 +68,11 @@ w      Wireframe modus
 --------------------------------------
 )";
 
-    void RestartRenderThread(void);
-    void StartCommunicatorThread(void);
-    void StartRenderThread(void);
-    void Terminate(void);
-
     const int nrow;
 
     const int ncol;
 
-    enum class Command
-    {
-      None=0,
-        Show,
-        Dump,            
-        Resize,            
-        AddFigure,            
-        Reposition,
-        Clear,            
-        Terminate,
-        SetBackgroundColor          
-    };
 
-    /// Communication command
-    Command cmd; 
-
-    void SendCommand(const std::string from, Command cmd);
-
-
-    /// mutex to organize communication
-    std::mutex mtx; 
-
-    /// condition variable signalizing finished command
-    std::condition_variable cv; 
-    
     /// File name to be passed 
     std::string fname; 
 
@@ -149,11 +80,8 @@ w      Wireframe modus
     int win_x=400;
     int win_y=400;
     
-    /// Thread state
-    bool thread_alive=false;
-    
-    /// space down state ?
-    bool communication_blocked=false;
+    int pos_x=0;
+    int pos_y=0;
     
     /// 
     bool wireframe;
@@ -169,13 +97,13 @@ w      Wireframe modus
       double viewport[4]={0,0,1,1};
     };
 
-    vtkSmartPointer<vtkfig::Communicator> communicator=0;
-    std::shared_ptr<std::thread> thread;
-
+    std::shared_ptr<MainThread> mainthread;
+    
     /// Each subframe can hold several figures
 
     std::vector<SubFrame> subframes;
 
+    vtkSmartPointer<vtkRenderWindow> window;
     
     int pos(const int irow, const int icol) { return irow*ncol+icol;}
     int row(const int pos) { return pos/ncol;}
@@ -183,8 +111,6 @@ w      Wireframe modus
 
     friend class  InteractorStyleTrackballCamera;
     friend class  TimerCallback;
-    static void RenderThread(Frame* frame);
-    static void CommunicatorThread(Frame* frame);
   };
 }
 

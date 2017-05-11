@@ -1,5 +1,6 @@
 #include "vtkfigFrame.h"
 #include "vtkfigContour3D.h"
+#include "vtkfigMainThread.h"
 
 
 inline double G(double x,double y, double z, double t) 
@@ -11,6 +12,7 @@ inline double G(double x,double y, double z, double t)
 
 int main(void)
 {
+  auto mainthread=vtkfig::MainThread::New();
   
   const int Nx = 40;
   const int Ny = 40;
@@ -36,7 +38,8 @@ int main(void)
   const double dy = (y_upp-y_low)/(Ny-1);
   const double dz = (z_upp-z_low)/(Nz-1);
 
-  auto frame=vtkfig::Frame::New();
+
+  auto frame=mainthread->AddFrame();
 
   auto colors=vtkfig::RGBTable
     { 
@@ -76,7 +79,7 @@ int main(void)
       }
 
     contour->UpdateValues(v);
-    frame->Show();
+    mainthread->Show();
 
     if (ii==3) 
       frame->Dump("example-contour3d.png");

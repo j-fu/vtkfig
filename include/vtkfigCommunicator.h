@@ -13,11 +13,11 @@ namespace vtkfig
 
   enum class Command: int
   {
-    Dummy=100,
+    Dummy=0,
+      MainThreadShow=100,
       String,
-      NewFrame,
+      AddFrame,
       AddFigure,
-      FrameShow,
       FrameResize,
       FrameReposition,
       FrameDump,

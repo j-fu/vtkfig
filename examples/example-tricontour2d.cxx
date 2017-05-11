@@ -1,6 +1,7 @@
 #include "vtkfigFrame.h"
 #include "vtkfigTools.h"
 #include "vtkfigTriContour2D.h"
+#include "vtkfigMainThread.h"
 
 
 
@@ -16,6 +17,7 @@ inline double G(double x,double y, double t)
 
 int main(void)
 {
+  auto mainthread=vtkfig::MainThread::New();
   
   std::vector<double> inpoints;
 
@@ -40,7 +42,8 @@ int main(void)
   int npoints=points.size()/2;
   std::vector<double>values(npoints);
 
-  auto frame=vtkfig::Frame::New();
+  auto frame=mainthread->AddFrame();
+
   auto colors=vtkfig::RGBTable
     { 
       {0.0, 0.0, 0.0, 1.0},
@@ -65,7 +68,7 @@ int main(void)
       values[ival]=G(points[ipoint+0],points[ipoint+1],t);
 
     contour->UpdateValues(values);
-    frame->Show();
+    mainthread->Show();
      if (ii==3) 
       frame->Dump("example-tricontour2d.png");
    

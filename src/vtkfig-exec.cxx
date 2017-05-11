@@ -11,6 +11,7 @@
 #include "vtkfigCommunicator.h"
 #include "vtkfigSurf2D.h"
 #include "vtkfigXYPlot.h"
+#include "vtkfigMainThread.h"
 
 
 
@@ -50,6 +51,8 @@ Aim:
 
 int main(int argc, const char * argv[])
 {
+  auto mainthread=vtkfig::MainThread::New();
+
   int port=35000;
   std::string remotecmd;
   std::string hostname;
@@ -204,13 +207,15 @@ int main(int argc, const char * argv[])
   {
     vtkfig::Command cmd;
     std::shared_ptr<vtkfig::Figure> figure;
+    std::shared_ptr<vtkfig::Frame> frame;
     int framenum=-1;
-    vtkfig::Frame *frame=0; /// Sorry, in the moment we cannot do better...
+    
 
     communicator->ReceiveInt(framenum);
     communicator->ReceiveCommand(cmd);
+
     if (framenum>=0)
-      frame=vtkfig::Frame::frame(framenum);
+      frame=mainthread->GetFrame(framenum);
 
     switch(cmd)
     {
@@ -239,13 +244,14 @@ int main(int argc, const char * argv[])
     }
     break;
 
-    case vtkfig::Command::NewFrame:
+    case vtkfig::Command::AddFrame:
     {
       int nrow, ncol;
       assert(framenum==-1);
       communicator->ReceiveInt(nrow);
       communicator->ReceiveInt(ncol);
-      frame=new vtkfig::Frame(nrow,ncol);
+      auto frame=mainthread->AddFrame(nrow,ncol);
+
       if (debug)
         cout << "New frame" << endl;
     }
@@ -281,13 +287,16 @@ int main(int argc, const char * argv[])
     }
     break;
 
-    case vtkfig::Command::FrameShow:
+    case vtkfig::Command::MainThreadShow:
     {
-          for (auto figure: frame->figures)
+      for (auto & framepair: mainthread->framemap)
+      {
+          for (auto figure: framepair.second->figures)
           {
             figure->ClientMTReceive(communicator);
-            frame->Show();
+            mainthread->Show();
           }
+      }
     }
     break;
 
@@ -319,7 +328,7 @@ int main(int argc, const char * argv[])
 
     case vtkfig::Command::FrameDelete:
     {
-      delete frame;
+      ///???
     }
     break;
 
