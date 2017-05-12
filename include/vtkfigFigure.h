@@ -66,13 +66,14 @@ namespace vtkfig
       for (auto actor: actors) {auto m=actor->GetMapper(); if (m) m->Update();}
       for (auto actor: actors2d){auto m=actor->GetMapper(); if (m) m->Update();}
     }
-    void ClearActors2D() { actors2d.clear();}
+    void ClearActors2D() { actors2d.clear(); cleared=true;}
     
   private:
     std::vector<vtkSmartPointer<vtkActor>> actors;
     std::vector<vtkSmartPointer<vtkActor2D>> actors2d;
     double bgcolor[3]={1,1,1};
     int framepos=0;
+    bool cleared=false;
   };
   
 };

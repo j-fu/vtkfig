@@ -270,17 +270,20 @@ namespace vtkfig
             for (auto & figure: framepair.second->figures)
             {
               auto &renderer=framepair.second->subframes[figure->framepos].renderer;
-              
               if (figure->IsEmpty()  || renderer->GetActors()->GetNumberOfItems()==0)
               {
-                // This allows clear figure to work
-                renderer->RemoveAllViewProps();
-                
+                // This possibly needs finer control
+                // (only remove actors of cleared figure)
+                if (figure->cleared)
+                {
+                  renderer->RemoveAllViewProps();
+                  figure->cleared=false;
+                } 
                 figure->RTBuild();
                 
                 for (auto & actor: figure->actors) 
                   renderer->AddActor(actor);
-                
+  
                 for (auto & actor: figure->actors2d) 
                   renderer->AddActor(actor);
                 
