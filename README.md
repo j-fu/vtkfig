@@ -1,4 +1,4 @@
-vtkfig V0.5
+vtkfig V0.6
 ============
 
 The intention of  vtkfig is to provide a C++  graphics library with an API similar to that of matplotlib and which uses [vtk](http://vtk.org) for rendering.
@@ -8,7 +8,7 @@ The intention of  vtkfig is to provide a C++  graphics library with an API simil
 - Mainly C++11
 - Separate rendering thread allowing for easy handling of changing data  handeled by the vtkfig::Frame class
 - Easy extension by implementing derived classes from vtkfig::Figure containing standard vtk rendering pipelines
-- Experimental client-Server communication for remote execution
+- Experimental client-server communication for remote execution
 
 ## Build
 
@@ -90,16 +90,18 @@ Initial experiments (for example-surf2d) show the following perfomance compariso
 | Remote    server       laptop  WLAN/tunnel           6 fps      |
 | Remote    server       laptop  WLAN                  4 fps      |
 
-A preliminary conclusion  tells us that the  client-server render path
-strongly depends on  the speed of the physical  connection.  Only with
-ethernet, there  is a significant  advantage over standard  vnc (where
-software rendering ist the default).  A solution for remote rendering
-seems to be TurboVNC+VirtualGL on servers with GPUs.
-
-
 ## Contributors
+
+
+A  preliminary  conclusion  tells  us   that  the  perfomance  of  the
+client-server  render  path  strongly  depends on  the  speed  of  the
+physical  connection.   Only  with  ethernet there  is  a  significant
+advantage  over  standard  vnc   (where  software  rendering  ist  the
+default).    A   solution   for   remote   rendering   might   be
+TurboVNC+VirtualGL on servers with GPUs.
 
 vtkfig started from [matplot](http://www.csc.kth.se/~dag/matplot_20091021.tar.gz) by Dag Lindbo found on [http://na-wiki.csc.kth.se/mediawiki/index.php/Mat_plot_vtk](http://na-wiki.csc.kth.se/mediawiki/index.php/Mat_plot_vtk).
 
 
-Numerous online postings by community members and the VTK examples were extremely helpful for setting up this code.
+Numerous online  postings by  community members  and the  VTK examples
+were extremely helpful for setting up this code.
