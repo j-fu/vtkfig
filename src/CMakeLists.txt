@@ -1,4 +1,4 @@
-add_library(vtkfig 
+add_library(vtkfig SHARED
   vtkfigFrame.cxx
   vtkfigFigure.cxx
   vtkfigMainThread.cxx
@@ -17,7 +17,10 @@ add_executable(vtkfig-exec MACOSX_BUNDLE vtkfig-exec.cxx)
 target_link_libraries(vtkfig-exec vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
 
-
 set_property(TARGET vtkfig-exec PROPERTY CXX_STANDARD 11)
+
 set_property(TARGET vtkfig PROPERTY CXX_STANDARD 11)
 
+
+install(TARGETS vtkfig DESTINATION lib EXPORT VTKFIGTargets)
+install(TARGETS vtkfig-exec DESTINATION bin EXPORT VTKFIGTargets)
