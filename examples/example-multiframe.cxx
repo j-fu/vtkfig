@@ -14,6 +14,7 @@
 #include "vtkfigFrame.h"
 #include "vtkfigSurf2D.h"
 #include "vtkfigXYPlot.h"
+#include "vtkfigContour2D.h"
 
 
 inline double G(double x,double y, double t) 
@@ -67,17 +68,30 @@ int main(void)
 
   auto frame1=vtkfig::Frame::New();
   auto frame2=vtkfig::Frame::New();
+  auto frame3=vtkfig::Frame::New();
 
 
   frame1->Size(400,400);
   frame2->Size(400,400);
   frame2->Position(500,0);
+  frame3->Size(400,400);
+  frame3->Position(1000,0);
+
   auto surf=vtkfig::Surf2D::New();
   surf->SetRGBTable(colors,255);
   surf->SetGrid(x,y);
   frame1->AddFigure(surf);
+
+
+  auto contour=vtkfig::Contour2D::New();
+  contour->SetGrid(x,y);
+  frame2->AddFigure(contour);
+
+  frame2->LinkCamera(frame1);
+
   auto xyplot=vtkfig::XYPlot::New();
-  frame2->AddFigure(xyplot);
+  frame3->AddFigure(xyplot);
+
 
   while (1)
   {
@@ -91,6 +105,7 @@ int main(void)
       }
 
     surf->UpdateValues(z);
+    contour->UpdateValues(z);
     xyplot->Clear();
     xyplot->LineColorRGB(0,0,1);
     xyplot->LineType("-");
@@ -99,6 +114,7 @@ int main(void)
     xyplot->LineType("-");
     xyplot->AddPlot(y, fy);
     frame1->Show();
+
    
 
     if (ii==3) 

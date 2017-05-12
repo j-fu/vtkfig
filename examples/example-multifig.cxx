@@ -1,6 +1,7 @@
 #include <chrono>
 #include "vtkfigFrame.h"
 #include "vtkfigSurf2D.h"
+#include "vtkfigContour2D.h"
 #include "vtkfigXYPlot.h"
 
 inline double G(double x,double y, double t) 
@@ -51,13 +52,21 @@ int main(void)
   double i0=ii;
 
 
-  auto frame=vtkfig::Frame::New(1,2);
+  auto frame=vtkfig::Frame::New(2,2);
+  frame->LinkCamera(1,0,frame,0,0);
 
   frame->Size(800,400);
+
   auto surf=vtkfig::Surf2D::New();
   surf->SetRGBTable(colors,255);
   surf->SetGrid(x,y);
   frame->AddFigure(surf,0,0);
+
+  auto contour=vtkfig::Contour2D::New();
+  contour->SetGrid(x,y);
+  frame->AddFigure(contour,1,0);
+
+
   auto xyplot=vtkfig::XYPlot::New();
   frame->AddFigure(xyplot,0,1);
 
@@ -73,6 +82,8 @@ int main(void)
       }
 
     surf->UpdateValues(z);
+    contour->UpdateValues(z);
+
     xyplot->Clear();
     xyplot->LineColorRGB(0,0,1);
     xyplot->LineType("-");

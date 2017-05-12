@@ -370,11 +370,6 @@ namespace vtkfig
 
     for (auto & subframe : frame->subframes)
     {
-      /*
-        For Subplots see http://public.kitware.com/pipermail/vtkusers/2009-October/054195.html
-        renderer2->SetActiveCamera( renderer1->GetActiveCamera() );
-        
-      */
       
       {
         auto renderer = vtkSmartPointer<vtkRenderer>::New();
@@ -382,10 +377,13 @@ namespace vtkfig
         renderer->SetViewport(subframe.viewport);
         renderer->SetBackground(1., 1., 1.);
         //      renderer->SetUseHiddenLineRemoval(1);
+
+
         renderer->GetActiveCamera()->SetPosition(subframe.default_camera_position);
         renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
         renderer->GetActiveCamera()->OrthogonalizeViewUp();
         frame->window->AddRenderer(renderer);
+        
       }
     }
   }

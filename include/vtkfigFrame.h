@@ -44,6 +44,11 @@ namespace vtkfig
 
     void AddFigure(std::shared_ptr<Figure> figure) {AddFigure(figure,0,0);}
 
+    void LinkCamera(int irow, int icol, std::shared_ptr<Frame> frame, int lirow, int licol);
+    void LinkCamera(std::shared_ptr<Frame> frame) 
+    {
+      LinkCamera(0,0,frame,0,0);
+    }
 
     void Size(int x, int y);
 

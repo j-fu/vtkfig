@@ -29,17 +29,35 @@ namespace vtkfig
 
   vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper)
   {
-        vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
-        colorbar->SetLookupTable(mapper->GetLookupTable());
-        colorbar->SetWidth(0.085);
-        colorbar->SetHeight(0.9);
-        colorbar->SetNumberOfLabels(10);
-        colorbar->SetPosition(0.9, 0.1);
 
-        vtkSmartPointer<vtkTextProperty> text_prop_cb = colorbar->GetLabelTextProperty();
-        text_prop_cb->SetColor(0,0,0);
-        text_prop_cb->SetFontSize(40);
-        colorbar->SetLabelTextProperty(text_prop_cb);
+// http://public.kitware.com/pipermail/vtkusers/2016-March/094540.html :
+// vtkTextProperty::SetFontSize
+// vtkScalarBarActor::GetTitleTextProperty
+// vtkScalarBarActor::GetLabelTextProperty
+// vtkScalarBarActor::GetAnnotationTextProperty
+// vtkScalarBarActor::SetUnconstrainedFontSize
+
+
+        vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
+
+        // 7.1 ?colorbar->SetUnconstrainedFontSize(true);
+        colorbar->SetLookupTable(mapper->GetLookupTable());
+        colorbar->SetWidth(0.175);
+        colorbar->SetHeight(0.7);
+        colorbar->SetMaximumWidthInPixels(150);
+        colorbar->SetBarRatio(0.1);
+        colorbar->SetNumberOfLabels(10);
+        colorbar->SetPosition(0.8, 0.2);
+        colorbar->GetTitleTextProperty()->SetFontSize(80);
+        colorbar->GetLabelTextProperty()->SetFontSize(80);
+        colorbar->SetLabelFormat("%.2e");
+
+//        colorbar->GetAnnotationTextProperty()->SetFontSize(80);
+
+        colorbar->GetTitleTextProperty()->SetColor(0,0,0);     
+        colorbar->GetLabelTextProperty()->SetColor(0,0,0);     
+//        colorbar->GetAnnotationTextProperty()->SetColor(1,0,0);
+
         return colorbar;
   }
 

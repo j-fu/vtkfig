@@ -58,7 +58,12 @@ namespace vtkfig
     void Start();
 
 
-
+    void LinkCamera(int iframe, int iframepos, int liframe, int liframepos)
+    {
+      auto renderer=mainthread->framemap[iframe]->subframes[iframepos].renderer;
+      auto lrenderer=mainthread->framemap[liframe]->subframes[liframepos].renderer;
+      renderer->SetActiveCamera(lrenderer->GetActiveCamera());
+    }
     /// mutex to organize communication
     std::mutex mtx; 
 

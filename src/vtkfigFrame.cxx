@@ -39,6 +39,9 @@ namespace vtkfig
       }
     }
   }
+
+
+
   std::shared_ptr<Frame> Frame::New(int nrow, int ncol) 
   {
     auto frame=std::make_shared<Frame>(nrow,ncol);
@@ -47,6 +50,14 @@ namespace vtkfig
     return frame;
   };
   
+
+  void Frame::LinkCamera(int irow, int icol, std::shared_ptr<Frame> frame, int lirow, int licol)
+  {
+    auto & subframe= subframes[pos(irow,icol)];
+    int linkframepos=frame->pos(lirow,licol);
+    int linkframenum=frame->framenum;
+    mainthread->LinkCamera(framenum,pos(irow,icol),frame->framenum,frame->pos(lirow,licol));
+  }
   
   void Frame::Show() { mainthread->Show();}
 
