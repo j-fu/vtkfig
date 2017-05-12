@@ -368,6 +368,7 @@ namespace vtkfig
   {
     auto frame=mainthread->framemap[iframe];
     frame->window = vtkSmartPointer<vtkRenderWindow>::New();
+    frame->window->DoubleBufferOff();
     frame->window->SetSize(frame->win_x, frame->win_y);
     frame->window->SetPosition(frame->pos_x, frame->pos_y);
 
