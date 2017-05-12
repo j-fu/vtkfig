@@ -6,8 +6,10 @@
 
 int main()
 {
+  int nspin=200;
   auto frame=vtkfig::Frame::New();
-  
+
+
   const int NN = 40;
   const double t_low = 0;
   const double t_upp = 5;
@@ -32,11 +34,8 @@ int main()
   auto xyplot=vtkfig::XYPlot::New();
 
   frame->AddFigure(xyplot);
-  // cout << "yyy"<< endl;
-  // mainthread->Terminate();
-  // exit(1);
 
-  while (ii<10)
+  while (ii<nspin)
   {
     double t = tt;
 

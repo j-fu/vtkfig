@@ -14,6 +14,7 @@ inline double G(double x,double y, double t)
 int main(void)
 {
   cout.sync_with_stdio(true);
+  int nspin=10000;
 
   const int Nx = 200;
   const int Ny = 250;
@@ -70,7 +71,7 @@ int main(void)
   auto xyplot=vtkfig::XYPlot::New();
   frame->AddFigure(xyplot,0,1);
 
-  while (1)
+  while (ii<nspin)
   {
     for (int i=0; i<Nx; i++)
       for (int j=0; j<Ny; j++)

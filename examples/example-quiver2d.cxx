@@ -12,6 +12,7 @@ inline double G(double x,double y, double t)
 int main(void)
 {
   
+  int nspin=1000;
   const int Nx = 20;
   const int Ny = 25;
   
@@ -70,7 +71,7 @@ int main(void)
   quiver->SetGrid(x,y);
   frame->AddFigure(quiver);
 
-  while (1)
+  while (ii<nspin)
   {
 
     for (int i=0; i<Nx; i++)

@@ -16,8 +16,8 @@ namespace vtkfig
   {
     friend class Frame;
     friend class Client;
-    friend  class TimerCallback;
-    friend class  InteractorStyleTrackballCamera;
+    friend class TimerCallback;
+    friend class InteractorStyleTrackballCamera;
 
 
   public:
@@ -28,17 +28,23 @@ namespace vtkfig
 
   private:
 
-
     static MainThread * CreateMainThread();
-    std::map<int, std::shared_ptr<Frame>> framemap;
-    static MainThread *mainthread;
     void Show();
     void Interact();
     void Terminate(void);
+    void AddFrame(Frame *frame);
+    void RemoveFrame(Frame *frame);
+    void Start();
+    void LinkCamera(int iframe, int iframepos, int liframe, int liframepos);
+
+
+    std::map<int,Frame*> framemap;
+    static MainThread *mainthread;
 
 
     static void RenderThread(MainThread*);
     static void CommunicatorThread(MainThread*);
+
     bool connection_open=false;
     void OpenConnection(int port, int wtime);
     vtkSmartPointer<Communicator> communicator;
@@ -47,23 +53,9 @@ namespace vtkfig
     static void RTAddFrame(MainThread* mt, int iframe);
     std::shared_ptr<std::thread> thread;
     int lastframenum=0;
-    
 
 
-    static std::shared_ptr<MainThread> New(){return std::make_shared<MainThread>();}
 
-    void AddFrame(std::shared_ptr<Frame>);
-
-    void RemoveFrame(std::shared_ptr<Frame> frame);
-    void Start();
-
-
-    void LinkCamera(int iframe, int iframepos, int liframe, int liframepos)
-    {
-      auto renderer=mainthread->framemap[iframe]->subframes[iframepos].renderer;
-      auto lrenderer=mainthread->framemap[liframe]->subframes[liframepos].renderer;
-      renderer->SetActiveCamera(lrenderer->GetActiveCamera());
-    }
     /// mutex to organize communication
     std::mutex mtx; 
 

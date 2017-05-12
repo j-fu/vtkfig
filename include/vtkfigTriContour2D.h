@@ -51,7 +51,7 @@ namespace vtkfig
                             const IV& cells)
   {
     int npoints=points.size()/2;
-    int ncells=cells.size()/3;
+//    int ncells=cells.size()/3;
     
     
     gridfunc=vtkSmartPointer<vtkUnstructuredGrid>::New();

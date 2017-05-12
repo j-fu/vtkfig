@@ -32,31 +32,44 @@ namespace vtkfig
   public:
 
 
+    
+    Frame(const int nvpx, const int nvpy);
+    Frame(): Frame(1,1){};
+    
+    static std::shared_ptr<Frame> New(int nvpx, int nvpy) 
+    {
+      return std::make_shared<Frame>(nvpx,nvpy);
+    };
 
-    static std::shared_ptr<Frame> New(int nrow, int ncol);
     static std::shared_ptr<Frame> New() {return  Frame::New(1,1);}
 
     ~Frame();
     
     void Dump(std::string fname);
         
-    void AddFigure(std::shared_ptr<Figure> figure, int irow, int icol);
+    void AddFigure(Figure &figure) {AddFigure(&figure, 0,0);};
+    void AddFigure(Figure &figure, int ivpx, int ivpy) {AddFigure(&figure,ivpx, ivpy);};
 
-    void AddFigure(std::shared_ptr<Figure> figure) {AddFigure(figure,0,0);}
+    void AddFigure(Figure *figure) {AddFigure(figure, 0,0);};
+    void AddFigure(Figure *figure, int ivpx, int ivpy);
+    void AddFigure(std::shared_ptr<Figure> figure, int ivpx, int ivpy){AddFigure(figure.get(),ivpx,ivpy);};
+    void AddFigure(std::shared_ptr<Figure> figure) {AddFigure(figure.get(),0,0);}
 
-    void LinkCamera(int irow, int icol, std::shared_ptr<Frame> frame, int lirow, int licol);
-    void LinkCamera(std::shared_ptr<Frame> frame) 
-    {
-      LinkCamera(0,0,frame,0,0);
-    }
+    void LinkCamera(int ivpx, int ivpy,Frame& frame, int livpx, int livpy);
+    void LinkCamera(Frame& frame)  {LinkCamera(0,0,frame,0,0);}
+    void LinkCamera(int ivpx, int ivpy,std::shared_ptr<Frame> frame, int livpx, int livpy) {LinkCamera(ivpx,ivpy,*frame,livpx,livpy);}
+    void LinkCamera(std::shared_ptr<Frame> frame)  {LinkCamera(0,0,*frame,0,0);}
+
 
     void Size(int x, int y);
 
     void Position(int x, int y);
 
-    std::vector<std::shared_ptr<Figure>> figures;
+    std::vector<Figure*>figures;
     
     void Show();
+
+    void Interact();
 
 
     int framenum=-1;
@@ -74,9 +87,9 @@ w      Wireframe modus
 --------------------------------------
 )";
 
-    const int nrow;
+    const int nvpx;
 
-    const int ncol;
+    const int nvpy;
 
 
     /// File name to be passed 
@@ -112,15 +125,14 @@ w      Wireframe modus
 
     vtkSmartPointer<vtkRenderWindow> window;
     
-    int pos(const int irow, const int icol) { return irow*ncol+icol;}
-    int row(const int pos) { return pos/ncol;}
-    int col(const int pos) { return pos%ncol;}
+    int pos(const int ivpx, const int ivpy) { return ivpx*nvpy+ivpy;}
+    int ivpx(const int pos) { return pos/nvpy;}
+    int ivpy(const int pos) { return pos%nvpy;}
 
     friend class  InteractorStyleTrackballCamera;
     friend class  TimerCallback;
 
 
-    Frame(const int nrow, const int ncol);
   };
 }
 

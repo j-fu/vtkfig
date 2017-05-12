@@ -25,7 +25,7 @@ R"(
 Example showing creation of custom scenes using 
 vtkfigFrame and vtkfigFigure base class.
 )";
-
+  int nspin=1000;
 
   cout.sync_with_stdio(true);
   
@@ -150,7 +150,7 @@ vtkfigFrame and vtkfigFigure base class.
   
   
   
-  while (1)
+  while (ii <nspin)
   {
     
     for (int i=0; i<Nx; i++)

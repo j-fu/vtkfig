@@ -28,6 +28,7 @@ int main(void)
 {
 
   cout.sync_with_stdio(true);
+  int nspin=10;
 
   const int Nx = 200;
   const int Ny = 250;
@@ -93,7 +94,7 @@ int main(void)
   frame3->AddFigure(xyplot);
 
 
-  while (1)
+  while (ii<nspin)
   {
     for (int i=0; i<Nx; i++)
       for (int j=0; j<Ny; j++)

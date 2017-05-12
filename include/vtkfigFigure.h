@@ -37,6 +37,9 @@ namespace vtkfig
   public:
     Figure();
     static std::shared_ptr<Figure> New() { return std::make_shared<Figure>(); }
+    ~Figure()
+    {
+    }
 
     void SetBackground(double r, double g, double b) { bgcolor[0]=r; bgcolor[1]=g; bgcolor[2]=b;}
 

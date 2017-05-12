@@ -83,9 +83,11 @@ namespace vtkfig
     }
     connection_open=true;
   }
-
+   
   MainThread::~MainThread()
   {
+    if (debug_level>0)
+      cout << " ~mt"  << endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     if (this->thread_alive)
       Terminate();
@@ -95,7 +97,7 @@ namespace vtkfig
   }
 
   
-  void  MainThread::AddFrame(std::shared_ptr<Frame>frame)
+  void  MainThread::AddFrame(Frame*frame)
   {
     frame->mainthread=this;
     frame->framenum=lastframenum;
@@ -112,6 +114,13 @@ namespace vtkfig
   }
 
 
+  void MainThread::RemoveFrame(Frame *frame)
+  {
+    assert(frame==framemap[frame->framenum]);
+    SendCommand(frame->framenum, "RemoveFrame", Communicator::Command::MainThreadRemoveFrame);
+    frame->framenum=-1;
+  }
+
   void MainThread::Show()
   {
     SendCommand(-1, "Show", Communicator::Command::MainThreadShow);
@@ -122,6 +131,8 @@ namespace vtkfig
   {
     if (!this->thread_alive)
       throw std::runtime_error("Interact: render thread is dead");
+
+    SendCommand(-1, "Show", Communicator::Command::MainThreadShow);
 
     this->communication_blocked=true;
     do
@@ -139,7 +150,8 @@ namespace vtkfig
   {
     if (!this->thread_alive)
       throw std::runtime_error(from+" : render thread is dead.");
-
+    if (debug_level>0)
+      cout << "mt " << from << " " << framenum << endl;
     this->cmd=cmd;
     this->iframe=framenum;
     std::unique_lock<std::mutex> lock(this->mtx);
@@ -158,7 +170,7 @@ namespace vtkfig
   class InteractorStyleTrackballCamera : public vtkInteractorStyleTrackballCamera
   {
   public:
-    std::shared_ptr<Frame> frame;
+    Frame* frame;
     
     static InteractorStyleTrackballCamera* New()
     {
@@ -243,7 +255,7 @@ namespace vtkfig
       
       if (
         vtkCommand::TimerEvent == eventId  // Check if timer event
-        && mainthread->cmd!=Communicator::Command::None  // Check if command has been given
+        && mainthread->cmd!=Communicator::Command::Empty  // Check if command has been given
         )
       {
         
@@ -259,6 +271,17 @@ namespace vtkfig
 
           mainthread->RTAddFrame(mainthread, mainthread->iframe);
           auto frame=mainthread->framemap[mainthread->iframe];
+        }
+       break;
+
+        case Communicator::Command::MainThreadRemoveFrame:
+        {
+
+          auto frame=mainthread->framemap[mainthread->iframe];
+          for (auto & subframe: frame->subframes)
+            subframe.renderer->RemoveAllViewProps();
+          frame->window->Finalize();
+          mainthread->framemap.erase(frame->framenum);
         }
        break;
 
@@ -295,7 +318,9 @@ namespace vtkfig
                                       figure->bgcolor[1],
                                       figure->bgcolor[2]);
             }
-          interactor->Render();
+          for (auto & framepair: mainthread->framemap)
+              framepair.second->window->Render();
+//          interactor->Render();
         }
         break;
         
@@ -351,18 +376,21 @@ namespace vtkfig
         }
         
         // Clear command
-        mainthread->cmd=Communicator::Command::None;
+        mainthread->cmd=Communicator::Command::Empty;
         
         // Notify that command was exeuted
         mainthread->cv.notify_all();
-
-        for (auto & framepair: mainthread->framemap)
-          if (framepair.first)
-            framepair.second->window->Render();
-
+        
       }
     }
   };
+
+  void MainThread::LinkCamera(int iframe, int iframepos, int liframe, int liframepos)
+  {
+    auto renderer=mainthread->framemap[iframe]->subframes[iframepos].renderer;
+    auto lrenderer=mainthread->framemap[liframe]->subframes[liframepos].renderer;
+      renderer->SetActiveCamera(lrenderer->GetActiveCamera());
+  }
 
   void MainThread::RTAddFrame(MainThread* mainthread, int iframe)
   {
@@ -457,7 +485,7 @@ namespace vtkfig
     while(1)
     {
       std::this_thread::sleep_for (std::chrono::milliseconds(5));
-      if (mainthread->cmd!=Communicator::Command::None)
+      if (mainthread->cmd!=Communicator::Command::Empty)
       {      
         
         // Lock mutex
@@ -476,8 +504,14 @@ namespace vtkfig
         case Communicator::Command::MainThreadAddFrame:
         {
           auto frame=mainthread->framemap[mainthread->iframe];
-          mainthread->communicator->SendInt(frame->nrow);
-          mainthread->communicator->SendInt(frame->ncol);
+          mainthread->communicator->SendInt(frame->nvpx);
+          mainthread->communicator->SendInt(frame->nvpx);
+
+        }
+        break;
+
+        case Communicator::Command::MainThreadRemoveFrame:
+        {
 
         }
         break;
@@ -521,8 +555,8 @@ namespace vtkfig
           auto frame=mainthread->framemap[mainthread->iframe];
           auto figure=frame->figures.back();
           mainthread->communicator->SendString(figure->SubClassName());
-          mainthread->communicator->SendInt(frame->row(figure->framepos));
-          mainthread->communicator->SendInt(frame->col(figure->framepos));
+          mainthread->communicator->SendInt(frame->ivpx(figure->framepos));
+          mainthread->communicator->SendInt(frame->ivpy(figure->framepos));
         }
         break;
 
@@ -547,7 +581,7 @@ namespace vtkfig
           // Notify that command was exeuted
           mainthread->cv.notify_all();
           mainthread->thread_alive=false;
-           return;
+          return;
         }
         break;
         
@@ -561,7 +595,7 @@ namespace vtkfig
         }
         
         // Clear command
-        mainthread->cmd=Communicator::Command::None;
+        mainthread->cmd=Communicator::Command::Empty;
         
         // Notify that command was exeuted
         mainthread->cv.notify_all();

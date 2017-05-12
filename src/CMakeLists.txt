@@ -4,8 +4,9 @@ add_library(vtkfig SHARED
   vtkfigMainThread.cxx
   vtkfigCommunicator.cxx
   vtkfigTools.cxx
-  vtkfigXYPlot.cxx
   vtkfigContour2DBase.cxx  
+ 
+  vtkfigXYPlot.cxx
   vtkfigContour2D.cxx  
   vtkfigSurf2D.cxx
   vtkfigQuiver2D.cxx

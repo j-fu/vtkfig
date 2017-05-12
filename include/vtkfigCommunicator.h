@@ -19,9 +19,10 @@ namespace vtkfig
   enum class Command: int
   {
     Dummy=-1,
-      None=0,
+      Empty=0,
       MainThreadShow=100,
       MainThreadAddFrame,
+      MainThreadRemoveFrame,
       FrameAddFigure,
       FrameSize,
       FramePosition,

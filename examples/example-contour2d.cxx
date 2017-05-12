@@ -12,7 +12,7 @@ inline double G(double x,double y, double t)
 
 int main(void)
 {
-
+  int nspin=100;
   const int Nx = 200;
   const int Ny = 250;
   
@@ -54,7 +54,7 @@ int main(void)
   contour->SetGrid(x,y);
   frame->AddFigure(contour);
 
-  while (1)
+  while (ii<nspin)
   {
     for (int i=0; i<Nx; i++)
       for (int j=0; j<Ny; j++)

@@ -12,8 +12,9 @@ inline double G(double x,double y, double t)
 
 int main(const int argc, const char *argv[])
 {
-//  cout.sync_with_stdio(true);
-  auto frame=vtkfig::Frame::New();
+
+  int nspin=10000;
+  vtkfig::Frame frame;
   
   const int Nx = 200;
   const int Ny = 250;
@@ -46,8 +47,9 @@ int main(const int argc, const char *argv[])
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
 
-  auto surf=vtkfig::Surf2D::New();
-  surf->SetGrid(x,y);
+  vtkfig::Surf2D surf;
+
+  surf.SetGrid(x,y);
 
   auto colors=vtkfig::RGBTable
     { 
@@ -55,27 +57,24 @@ int main(const int argc, const char *argv[])
       {0.5, 0.0, 1.0, 0.0},
       {1.0, 1.0, 0.0, 0.0}
     };
-  surf->SetRGBTable(colors,255);
+  surf.SetRGBTable(colors,255);
 
-  frame->AddFigure(surf);
-  // cout << "yyy"<< endl;
-  // mainthread->Terminate();
-  // exit(1);
+  frame.AddFigure(surf);
 
-  while (1)
+  while (ii<nspin)
   {
     
     for (int i=0; i<Nx; i++)
       for (int j=0; j<Ny; j++)
         z[j*Nx+i] = G(x[i],y[j],t);
     
-    surf->UpdateValues(z);
+    surf.UpdateValues(z);
     
 
-    frame->Show();
+    frame.Show();
     
     if (ii==3) 
-      frame->Dump("example-surf2d.png");
+      frame.Dump("example-surf2d.png");
 
     t+=dt;
     auto t1=std::chrono::system_clock::now();

@@ -17,7 +17,7 @@ inline double G(double x,double y, double t)
 
 int main(void)
 {
-  
+  int nspin=10000;
   std::vector<double> inpoints;
 
   for(double x = -2; x < 2; x+=0.02)
@@ -61,7 +61,7 @@ int main(void)
   contour->SetGrid(points,cells);
   frame->AddFigure(contour);
 
-  while (1)
+  while (ii<nspin)
   {
     for (int ipoint=0, ival=0;ipoint<points.size(); ipoint+=2,ival++)
       values[ival]=G(points[ipoint+0],points[ipoint+1],t);

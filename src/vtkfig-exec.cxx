@@ -216,8 +216,8 @@ namespace vtkfig
       while (1)
       {
         vtkfig::Communicator::Command cmd;
-        std::shared_ptr<vtkfig::Figure> figure;
-        std::shared_ptr<vtkfig::Frame> frame;
+        Figure *figure;
+        Frame* frame;
         int framenum=-1;
         
         
@@ -265,14 +265,23 @@ namespace vtkfig
         
         case vtkfig::Communicator::Command::MainThreadAddFrame:
         {
-          int nrow, ncol;
+          int nX, nY;
 //      assert(framenum==-1);
-          communicator->ReceiveInt(nrow);
-          communicator->ReceiveInt(ncol);
-          auto frame=vtkfig::Frame::New(nrow,ncol);
+          communicator->ReceiveInt(nX);
+          communicator->ReceiveInt(nY);
+          frame=new vtkfig::Frame(nX,nY);
           
           if (debug_level>0)
             cout << "New frame" << endl;
+        }
+        break;
+
+        case vtkfig::Communicator::Command::MainThreadRemoveFrame:
+        {
+          vtkfig::MainThread::mainthread->RemoveFrame(vtkfig::MainThread::mainthread->framemap[framenum]);
+          if (debug_level>0)
+            cout << "Remove Frame" << endl;
+          
         }
         break;
         
@@ -280,21 +289,21 @@ namespace vtkfig
         {
           std::string figtype;
           communicator->ReceiveString(figtype);
-          int irow, icol;
-          communicator->ReceiveInt(irow);
-          communicator->ReceiveInt(icol);
+          int iX, iY;
+          communicator->ReceiveInt(iX);
+          communicator->ReceiveInt(iY);
           
           if (figtype=="Surf2D")
           {
-            figure=vtkfig::Surf2D::New();
-            frame->AddFigure(figure,irow,icol);
+            figure=new vtkfig::Surf2D();
+            frame->AddFigure(figure,iX,iY);
             if (debug_level>0)
               cout << "Add Surf2d" << endl;
           }
           else if (figtype=="XYPlot")
           {
-            figure=vtkfig::XYPlot::New();
-            frame->AddFigure(figure,irow,icol);
+            figure=new vtkfig::XYPlot();
+            frame->AddFigure(figure,iX,iY);
             if (debug_level>0)
               cout << "Add XYPlot" << endl;
           }
