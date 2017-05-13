@@ -11,7 +11,7 @@ set(VTKFIG_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
 
  
 # Our library dependencies (contains definitions for IMPORTED targets)
-include("${CMAKE_CURRENT_LIST_DIR}/VTKFIGTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/@VTKFIG_EXPORT_NAME@.cmake")
  
 # These are IMPORTED targets created by FooBarTargets.cmake
 set(VTKFIG_LIBRARIES vtkfig)

@@ -28,7 +28,7 @@ int main(void)
 {
 
   cout.sync_with_stdio(true);
-  int nspin=10;
+  int nspin=10000;
 
   const int Nx = 200;
   const int Ny = 250;

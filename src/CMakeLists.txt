@@ -23,5 +23,6 @@ set_property(TARGET vtkfig-exec PROPERTY CXX_STANDARD 11)
 set_property(TARGET vtkfig PROPERTY CXX_STANDARD 11)
 
 
-install(TARGETS vtkfig DESTINATION lib EXPORT VTKFIGTargets)
-install(TARGETS vtkfig-exec DESTINATION bin EXPORT VTKFIGTargets)
+install(TARGETS vtkfig DESTINATION lib EXPORT ${VTKFIG_EXPORT_NAME})
+install(TARGETS vtkfig-exec DESTINATION bin EXPORT ${VTKFIG_EXPORT_NAME})
+

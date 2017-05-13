@@ -1,16 +1,97 @@
 # SEE https://cmake.org/Wiki/CMake/Tutorials/How_to_create_a_ProjectConfig.cmake_file
+# see also https://github.com/forexample/package-example
+# https://cmake.org/Wiki/CMake/Tutorials/Exporting_and_Importing_Targets
+
 cmake_minimum_required(VERSION 3.0)
 
 PROJECT(VTKFIG C CXX)
 
 set(VTKFIG_MAJOR_VERSION 0)
-set(VTKFIG_MINOR_VERSION 6)
+set(VTKFIG_MINOR_VERSION 7)
 set(VTKFIG_PATCH_VERSION 0)
 set(VTKFIG_VERSION    ${VTKFIG_MAJOR_VERSION}.${VTKFIG_MINOR_VERSION}.${VTKFIG_PATCH_VERSION})
 
+# Allow to specify -DVTKFIG_CONFIG=xxx  at cmake time on the 
+# command line of cmke.
+SET(VTKFIG_CONFIG "" CACHE STRING "VTKFIG  Config name")
+
+# Define an export name. It seems to be a good idea 
+# to that the default is just the pakage name.
+# This export name can be used by find_packge() 
+# in the NAMES section in order to select different
+# configs registered at for the package
+# It should be used for all install(TARGET ... EXPORT ${VTKFIG_EXPORT_NAME}
+
+set(VTKFIG_EXPORT_NAME "VTKFIG${VTKFIG_CONFIG}")
 
 
 
+
+#################################################################################
+#
+# Package content
+ 
+find_package(Threads REQUIRED)
+find_package(VTK REQUIRED)
+
+message(STATUS "VTK_USE_FILE= ${VTK_USE_FILE}")
+include(${VTK_USE_FILE})
+
+
+
+set(CMAKE_CXX_STANDARD 11)
+include_directories(include)
+add_subdirectory(include)
+add_subdirectory(src)
+add_subdirectory(examples)
+
+
+
+########################################################
+#
+# Export the package for use from the build-tree.
+#
+# This registers the build-tree with a global CMake-registry,
+# On unix, it sits under .cmake/packages. 
+# find_packages()  via the NAMES section is able to distinguish between
+# them.
+#
+# This stuff allows to access the current installation 
+# from other packages. No need to "make export" whatsoever.
+#
+# Furthermore, the target export allows client packages to
+# figure out if they need a recompile or not.
+
+export(TARGETS vtkfig-exec vtkfig FILE "${PROJECT_BINARY_DIR}/${VTKFIG_EXPORT_NAME}.cmake")
+export(PACKAGE ${VTKFIG_EXPORT_NAME})
+
+
+# In order to work, we need to set up  the corresponding 
+# Files in ${PROJECT_BINARY_DIR} which is the root of the
+# build subdirectory
+
+set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include")
+configure_file(cmake/VTKFIGConfig.cmake.in   "${PROJECT_BINARY_DIR}/${VTKFIG_EXPORT_NAME}Config.cmake" @ONLY)
+configure_file(cmake/VTKFIGConfigVersion.cmake.in  "${PROJECT_BINARY_DIR}/${VTKFIG_EXPORT_NAME}ConfigVersion.cmake" @ONLY)
+ 
+
+
+########################################################
+#
+# Installation magic, still to be fully understod
+# 
+# Relevant only or make install. 
+#
+# Relocatable according to 
+# https://cmake.org/Wiki/CMake/Tutorials/How_to_create_a_ProjectConfig.cmake_file
+#
+# It works from the same config.in files 
+#  cmake/VTKFIGConfig.cmake.in 
+#  cmake/VTKFIGConfigVersion.cmake.in 
+# as the export, to be instantiated in another place in order
+# to avoid clashes.
+
+#
 # Offer the user the choice of overriding the installation directories
 set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
@@ -32,51 +113,23 @@ foreach(p LIB BIN INCLUDE CMAKE)
 endforeach()
 
 
-######################################
-find_package(Threads REQUIRED)
-find_package(VTK REQUIRED)
 
-message(STATUS "VTK_USE_FILE= ${VTK_USE_FILE}")
-include(${VTK_USE_FILE})
-
-
-set(CMAKE_CXX_STANDARD 11)
-include_directories(include)
-add_subdirectory(include)
-add_subdirectory(src)
-add_subdirectory(examples)
-
-
-######################################
 
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"   "${INSTALL_INCLUDE_DIR}")
 
-# Export the package for use from the build-tree
-# (this registers the build-tree with a global CMake-registry)
-export(TARGETS vtkfig-exec vtkfig  FILE "${PROJECT_BINARY_DIR}/VTKFIGTargets.cmake")
-export(PACKAGE VTKFIG)
 
-set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include")
-configure_file(cmake/VTKFIGConfig.cmake.in   "${PROJECT_BINARY_DIR}/VTKFIGConfig.cmake" @ONLY)
-configure_file(cmake/VTKFIGConfigVersion.cmake.in  "${PROJECT_BINARY_DIR}/VTKFIGConfigVersion.cmake" @ONLY)
- 
-
-
-
-
-# ... for the install tree
-#set(CONF_INCLUDE_DIRS "\${VTKFIG_CMAKE_DIR}/${REL_INCLUDE_DIR}")
 set(CONF_INCLUDE_DIRS "\${CMAKE_CURRENT_LIST_DIR}/${REL_INCLUDE_DIR}/vtkfig")
-configure_file(cmake/VTKFIGConfig.cmake.in   "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/VTKFIGConfig.cmake" @ONLY)
-configure_file(cmake/VTKFIGConfigVersion.cmake.in  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/VTKFIGConfigVersion.cmake" @ONLY)
+configure_file(cmake/VTKFIGConfig.cmake.in   "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${VTKFIG_EXPORT_NAME}Config.cmake" @ONLY)
+configure_file(cmake/VTKFIGConfigVersion.cmake.in  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${VTKFIG_EXPORT_NAME}ConfigVersion.cmake" @ONLY)
 
-# Install the VTKFIGConfig.cmake and VTKFIGConfigVersion.cmake
+# Install the ${VTKFIG_EXPORT_NAME}Config.cmake and ${VTKFIG_EXPORT_NAME}ConfigVersion.cmake
 install(FILES
-  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/VTKFIGConfig.cmake"
-  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/VTKFIGConfigVersion.cmake"
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${VTKFIG_EXPORT_NAME}Config.cmake"
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${VTKFIG_EXPORT_NAME}ConfigVersion.cmake"
    DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
  
 # Install the export set for use with the install-tree
-install(EXPORT VTKFIGTargets DESTINATION  "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+install(EXPORT ${VTKFIG_EXPORT_NAME} DESTINATION  "${INSTALL_CMAKE_DIR}" COMPONENT dev)
 
-
+# .. an define an uninstall target.
+add_custom_target(uninstall cat ${PROJECT_BINARY_DIR}/install_manifest.txt | xargs rm -fv)
