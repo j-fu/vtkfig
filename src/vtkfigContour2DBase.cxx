@@ -28,20 +28,8 @@ namespace vtkfig
 
 
 
-  void Contour2DBase::RTSetInteractor(vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-                                      vtkSmartPointer<vtkRenderer> renderer) 
-  {
-    if (show_slider && show_contour)
-    {
-      sliderWidget->SetDefaultRenderer(renderer);
-      sliderWidget->SetCurrentRenderer(renderer);
-      sliderWidget->SetInteractor(interactor);
-      sliderWidget->SetAnimationModeToAnimate();
-     sliderWidget->EnabledOn();
-    }
-  };
-
-  void Contour2DBase::AddSlider()
+  void Contour2DBase::AddSlider(vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+                                vtkSmartPointer<vtkRenderer> renderer)
   {
       if (show_slider)
       {
@@ -77,6 +65,11 @@ namespace vtkfig
         auto callback =   vtkSmartPointer<mySliderCallback>::New();
         callback->contour2d = this;
         sliderWidget->AddObserver(vtkCommand::InteractionEvent,callback);
+        sliderWidget->SetDefaultRenderer(renderer);
+        sliderWidget->SetCurrentRenderer(renderer);
+        sliderWidget->SetInteractor(interactor);
+        sliderWidget->SetAnimationModeToAnimate();
+        sliderWidget->EnabledOn();
       }
 
   }

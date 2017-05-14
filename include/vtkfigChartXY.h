@@ -1,11 +1,12 @@
-#ifndef VTKFIG_XYPLOT_H
-#define VTKFIG_XYPLOT_H
+#ifndef VTKFIG_CHARTXY_H
+#define VTKFIG_CHARTXY_H
 
 #include "vtkDoubleArray.h"
-#include "vtkXYPlotActor.h"
-#include "vtkRectilinearGrid.h"
+#include "vtkChartXY.h"
+#include "vtkTable.h"
+#include "vtkPlot.h"
 #include "vtkPointData.h"
-#include "vtkXYPlotWidget.h"
+#include "vtkContextActor.h"
 
 
 #include "vtkfigFigure.h"
@@ -13,14 +14,14 @@
 namespace vtkfig
 {
   
-  class XYPlot: public Figure
+  class ChartXY: public Figure
   {
     
   public:
-    XYPlot();
-    static std::shared_ptr<XYPlot> New() { return std::make_shared<XYPlot>(); }
+    ChartXY();
+    static std::shared_ptr<ChartXY> New() { return std::make_shared<ChartXY>(); }
 
-    virtual std::string SubClassName() {return std::string("XYPlot");}
+    virtual std::string SubClassName() {return std::string("ChartXY");}
 
     void Title(const char *title);
 
@@ -50,20 +51,17 @@ namespace vtkfig
 
     void ClientMTReceive(vtkSmartPointer<Communicator> communicator); 
 
-    vtkSmartPointer<vtkXYPlotWidget> widget;
 
     void AddPlot();
-    
-  
+
     virtual void RTBuild(
       vtkSmartPointer<vtkRenderWindow> window,
       vtkSmartPointer<vtkRenderWindowInteractor> interactor,
       vtkSmartPointer<vtkRenderer> renderer);
 
-  
     
-    vtkSmartPointer<vtkXYPlotActor> xyplot;
-
+    vtkSmartPointer<vtkChartXY> chartxy;
+    vtkSmartPointer<vtkContextActor> chartxyactor;
  
     static const int desclen=4;
     std::string title="test";
@@ -72,22 +70,35 @@ namespace vtkfig
     {
       vtkSmartPointer<vtkDoubleArray> X;
       vtkSmartPointer<vtkDoubleArray> Y;
-      vtkSmartPointer<vtkRectilinearGrid> curve;
-      plot_data(vtkSmartPointer<vtkXYPlotActor> xyplot)
+      vtkSmartPointer<vtkTable> table;
+      vtkSmartPointer<vtkPlot> line;
+      plot_data(vtkSmartPointer<vtkChartXY> chartxy)
       {
         X=vtkSmartPointer<vtkDoubleArray>::New();
         Y=vtkSmartPointer<vtkDoubleArray>::New();
-        curve=vtkSmartPointer<vtkRectilinearGrid>::New();
-        curve->SetXCoordinates(X);
-        curve->GetPointData()->SetScalars(Y);
-        xyplot->AddDataSetInput(curve);
+        X->SetName("X");
+        Y->SetName("Y");
+        table=vtkSmartPointer<vtkTable>::New();
+        table->AddColumn(X);
+        table->AddColumn(Y);
+        line=chartxy->AddPlot(vtkChart::LINE);
+        line->SetInputData(table, 0, 1);
       }
     };
+
+/* line->SetColor(255, 0, 0, 255); */
+/*  104   line = chart->AddPlot(vtkChart::LINE); */
+/*  105   line->SetTable(table, 0, 2); */
+/*  106   line->SetColor(0, 255, 0, 255); */
+/*  107   line->SetWidth(2.0); */
     
     plot_data& get_plot_data(int nplot)
     {
       if (nplot>=all_plot_data.size())
-        all_plot_data.emplace_back(xyplot);
+      {
+        all_plot_data.emplace_back(chartxy);
+
+      }
       return all_plot_data[nplot];
     }
 
@@ -110,22 +121,24 @@ namespace vtkfig
   
   template<typename V>
     inline
-    void XYPlot::AddPlot(const V &x, const V &y)
+    void ChartXY::AddPlot(const V &x, const V &y)
   {
 
     auto plot=get_plot_data(num_plot);
     plot.X->Initialize();
     plot.Y->Initialize();
-
     int N=x.size();
+
+    plot.table->SetNumberOfRows(N);
+
     assert(x.size()==y.size());
     double xmin=1.0e100,xmax=-1.0e100;
     double ymin=1.0e100,ymax=-1.0e100;
 
     for (int i=0; i<N; i++)
     {
-      plot.X->InsertNextTuple1(x[i]);
-      plot.Y->InsertNextTuple1(y[i]);
+      plot.table->SetValue(i,0,x[i]);
+      plot.table->SetValue(i,1,y[i]);
       xmin=std::min(xmin,x[i]);
       ymin=std::min(ymin,y[i]);
       xmax=std::max(xmax,x[i]);

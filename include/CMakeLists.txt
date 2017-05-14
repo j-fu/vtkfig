@@ -12,4 +12,5 @@ install(FILES
   vtkfigTools.h
   vtkfigTriContour2D.h
   vtkfigXYPlot.h
+  vtkfigChartXY.h
 DESTINATION include/vtkfig)

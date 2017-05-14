@@ -1,6 +1,7 @@
 #include <chrono>
 #include "vtkfigFrame.h"
 #include "vtkfigSurf2D.h"
+#include "vtkfigTools.h"
 
 
 inline double G(double x,double y, double t) 
@@ -13,7 +14,7 @@ inline double G(double x,double y, double t)
 int main(const int argc, const char *argv[])
 {
 
-  int nspin=10000;
+  size_t nspin=vtkfig::NSpin();
   vtkfig::Frame frame;
   
   const int Nx = 200;

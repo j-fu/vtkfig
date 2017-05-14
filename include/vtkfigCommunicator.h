@@ -74,6 +74,10 @@ namespace vtkfig
 
     int ReceiveFloatBuffer(float *buf, int ndata, int tag= static_cast<int>(Tag::FloatBuffer));
 
+    int SendDoubleBuffer(double *buf, int ndata, int tag=static_cast<int>(Tag::DoubleBuffer) );
+
+    int ReceiveDoubleBuffer(double *buf, int ndata, int tag= static_cast<int>(Tag::DoubleBuffer));
+
 
   private:
     const int remoteHandle=1;
@@ -82,9 +86,11 @@ namespace vtkfig
       Command=100,
         Int,
         Float,
+        Double,
         String,
         CharBuffer,
-        FloatBuffer
+        FloatBuffer,
+        DoubleBuffer
         };
     
 

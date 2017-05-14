@@ -7,6 +7,7 @@ add_library(vtkfig SHARED
   vtkfigContour2DBase.cxx  
  
   vtkfigXYPlot.cxx
+  vtkfigChartXY.cxx
   vtkfigContour2D.cxx  
   vtkfigSurf2D.cxx
   vtkfigQuiver2D.cxx

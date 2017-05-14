@@ -142,6 +142,17 @@ namespace vtkfig
   }
 
 
+  int Communicator::SendDoubleBuffer(double  *buf, int ndata, int tag)
+  {
+    return Send(buf,ndata,remoteHandle,tag);
+  }
+
+  int Communicator::ReceiveDoubleBuffer(double *buf, int ndata, int tag)
+  {
+    return Receive(buf,ndata,remoteHandle,tag);
+  }
+
+
   
 }
   

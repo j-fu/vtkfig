@@ -1,6 +1,7 @@
 #include "vtkfigFrame.h"
 #include "vtkfigContour2D.h"
 #include "vtkfigQuiver2D.h"
+#include "vtkfigTools.h"
 
 inline double G(double x,double y, double t) 
 {
@@ -11,8 +12,7 @@ inline double G(double x,double y, double t)
 
 int main(void)
 {
-  
-  int nspin=1000;
+  size_t nspin=vtkfig::NSpin();
   const int Nx = 20;
   const int Ny = 25;
   

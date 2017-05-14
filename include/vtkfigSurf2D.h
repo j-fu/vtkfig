@@ -67,7 +67,13 @@ namespace vtkfig
 
 
     private:
-      void RTBuild(void);
+      
+      virtual void RTBuild(
+        vtkSmartPointer<vtkRenderWindow> window,
+        vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+        vtkSmartPointer<vtkRenderer> renderer);
+
+
       vtkSmartPointer<vtkStructuredGrid> 	    gridfunc;
       vtkSmartPointer<vtkPoints> points;
       vtkSmartPointer<vtkFloatArray> colors;

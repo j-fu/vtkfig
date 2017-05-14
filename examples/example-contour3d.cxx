@@ -1,5 +1,6 @@
 #include "vtkfigFrame.h"
 #include "vtkfigContour3D.h"
+#include "vtkfigTools.h"
 
 
 inline double G(double x,double y, double z, double t) 
@@ -12,7 +13,7 @@ inline double G(double x,double y, double z, double t)
 int main(void)
 {
   
-  int nspin=1000;
+  size_t nspin=vtkfig::NSpin();
 
   const int Nx = 40;
   const int Ny = 40;

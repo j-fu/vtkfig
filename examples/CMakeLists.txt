@@ -28,6 +28,10 @@ add_executable(example-multiframe MACOSX_BUNDLE example-multiframe.cxx )
 target_link_libraries(example-multiframe vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
 
+add_executable(example-chartxy MACOSX_BUNDLE example-chartxy.cxx )
+target_link_libraries(example-chartxy vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+
+
 add_executable(example-comm-client-server-vtk MACOSX_BUNDLE example-comm-client-server-vtk.cxx )
 target_link_libraries(example-comm-client-server-vtk vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 

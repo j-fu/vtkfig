@@ -1,6 +1,7 @@
 #include "vtkfigFrame.h"
 #include "vtkfigTools.h"
 #include "vtkfigTriContour2D.h"
+#include "vtkfigTools.h"
 
 
 
@@ -17,7 +18,7 @@ inline double G(double x,double y, double t)
 
 int main(void)
 {
-  int nspin=10000;
+  size_t nspin=vtkfig::NSpin();
   std::vector<double> inpoints;
 
   for(double x = -2; x < 2; x+=0.02)

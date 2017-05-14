@@ -10,7 +10,10 @@ namespace vtkfig
   {
   }
   
-  void TriContour2D::RTBuild()
+  void TriContour2D::RTBuild(
+    vtkSmartPointer<vtkRenderWindow> window,
+    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+    vtkSmartPointer<vtkRenderer> renderer)
   {
     // filter to geometry primitive
     
@@ -55,7 +58,8 @@ namespace vtkfig
       if (show_contour_colorbar)
         Figure::RTAddActor2D(BuildColorBar(mapper));
 
-      AddSlider();
+      if (show_slider)
+        AddSlider(interactor, renderer);
     }
 
   }

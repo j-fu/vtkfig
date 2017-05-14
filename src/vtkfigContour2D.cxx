@@ -23,7 +23,10 @@ namespace vtkfig
   }
   
   
-  void Contour2D::RTBuild()
+  void Contour2D::RTBuild(
+        vtkSmartPointer<vtkRenderWindow> window,
+        vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+        vtkSmartPointer<vtkRenderer> renderer)
   {
     bool do_warp=false;
 
@@ -129,7 +132,8 @@ namespace vtkfig
       if (show_contour_colorbar)
         Figure::RTAddActor2D(BuildColorBar(mapper));
       
-      AddSlider();
+      if (show_slider)
+        AddSlider(interactor,renderer);
 
     }
 

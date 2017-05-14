@@ -2,8 +2,10 @@
 #define VTKFIG_CONTOUR3D_H
 
 #include "vtkRectilinearGrid.h"
+#include "vtkRectilinearGridGeometryFilter.h"
 #include "vtkFloatArray.h"
 #include "vtkContourFilter.h"
+#include "vtkImagePlaneWidget.h"
 
 #include "vtkfigFigure.h"
 #include "vtkfigTools.h"
@@ -50,9 +52,16 @@ class Contour3D: public Figure
       
     private:
 
-
-
-      virtual void RTBuild();
+      void RTSetInteractor(vtkSmartPointer<vtkRenderWindowInteractor> i,vtkSmartPointer<vtkRenderer> r);
+      vtkSmartPointer<vtkImagePlaneWidget> imageplaneWidget;
+      vtkSmartPointer<vtkRectilinearGridGeometryFilter> geometry;
+      
+      virtual void RTBuild(
+        vtkSmartPointer<vtkRenderWindow> window,
+        vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+        vtkSmartPointer<vtkRenderer> renderer);
+      
+    
 
       vtkSmartPointer<vtkFloatArray> xcoord;
       vtkSmartPointer<vtkFloatArray> ycoord;

@@ -197,6 +197,7 @@ namespace vtkfig
           subframe.renderer->GetActiveCamera()->OrthogonalizeViewUp();
           subframe.renderer->GetActiveCamera()->SetRoll(0);
         }
+        interactor->Render();
       }
 
       else if(key == "w")
@@ -293,24 +294,19 @@ namespace vtkfig
             for (auto & figure: framepair.second->figures)
             {
               auto &renderer=framepair.second->subframes[figure->framepos].renderer;
+              auto &window=framepair.second->window;
               if (figure->IsEmpty()  || renderer->GetActors()->GetNumberOfItems()==0)
               {
-                // This possibly needs finer control
-                // (only remove actors of cleared figure)
-                if (figure->cleared)
-                {
-                  renderer->RemoveAllViewProps();
-                  figure->cleared=false;
-                } 
-                figure->RTBuild();
+                figure->RTBuild(window,interactor,renderer);
                 
                 for (auto & actor: figure->actors) 
                   renderer->AddActor(actor);
   
+                for (auto & actor: figure->ctxactors) 
+                  renderer->AddActor(actor);
+  
                 for (auto & actor: figure->actors2d) 
                   renderer->AddActor(actor);
-                
-                figure->RTSetInteractor(interactor,renderer);
                 
               }
               figure->RTUpdateActors();

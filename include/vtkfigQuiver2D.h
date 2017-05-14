@@ -35,7 +35,13 @@ namespace vtkfig
 
     private:
 
-      void RTBuild();
+     
+      virtual void RTBuild(
+        vtkSmartPointer<vtkRenderWindow> window,
+        vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+        vtkSmartPointer<vtkRenderer> renderer);
+
+
       double vmax=0;
       double vmin=0;
 

@@ -15,6 +15,7 @@
 #include "vtkfigSurf2D.h"
 #include "vtkfigXYPlot.h"
 #include "vtkfigContour2D.h"
+#include "vtkfigTools.h"
 
 
 inline double G(double x,double y, double t) 
@@ -28,7 +29,7 @@ int main(void)
 {
 
   cout.sync_with_stdio(true);
-  int nspin=10000;
+  size_t nspin=vtkfig::NSpin();
 
   const int Nx = 200;
   const int Ny = 250;

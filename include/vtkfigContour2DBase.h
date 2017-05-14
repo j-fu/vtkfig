@@ -64,7 +64,7 @@ namespace vtkfig
     bool show_surface_colorbar=true;
     bool show_contour_colorbar=false;
     bool show_elevation=true;
-    void AddSlider();
+    void AddSlider(vtkSmartPointer<vtkRenderWindowInteractor> i,vtkSmartPointer<vtkRenderer> r);
     
   };
 

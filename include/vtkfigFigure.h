@@ -7,6 +7,8 @@
 #include "vtkSmartPointer.h"
 #include "vtkRenderWindowInteractor.h"
 #include "vtkActor.h"
+#include "vtkContextActor.h"
+#include "vtkContextScene.h"
 #include "vtkActor2D.h"
 #include "vtkMapper.h"
 #include "vtkMapper2D.h"
@@ -51,6 +53,8 @@ namespace vtkfig
 
     virtual void ClientMTReceive(vtkSmartPointer<Communicator> communicator) {};
 
+    void RTAddContextActor(vtkSmartPointer<vtkContextActor> prop);
+
     void RTAddActor(vtkSmartPointer<vtkActor> prop);
 
     void RTAddActor2D(vtkSmartPointer<vtkActor2D> prop);
@@ -59,24 +63,26 @@ namespace vtkfig
 
     
     /// All functions here are to be called from render thread.
-    virtual void RTBuild() {};
+    virtual void RTBuild(
+      vtkSmartPointer<vtkRenderWindow> window,
+      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+      vtkSmartPointer<vtkRenderer> renderer) {};
 
-    virtual void RTSetInteractor(vtkSmartPointer<vtkRenderWindowInteractor> interactor,vtkSmartPointer<vtkRenderer> ) {};
 
 
     void RTUpdateActors()
     {
       for (auto actor: actors) {auto m=actor->GetMapper(); if (m) m->Update();}
+      for (auto actor: ctxactors) {auto m=actor->GetScene(); if (m) m->SetDirty(true);}
       for (auto actor: actors2d){auto m=actor->GetMapper(); if (m) m->Update();}
     }
-    void ClearActors2D() { actors2d.clear(); cleared=true;}
     
   private:
+    std::vector<vtkSmartPointer<vtkContextActor>> ctxactors;
     std::vector<vtkSmartPointer<vtkActor>> actors;
     std::vector<vtkSmartPointer<vtkActor2D>> actors2d;
     double bgcolor[3]={1,1,1};
     int framepos=0;
-    bool cleared=false;
   };
   
 };

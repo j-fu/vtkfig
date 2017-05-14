@@ -4,7 +4,6 @@
 #include "vtkFloatArray.h"
 #include "vtkContourFilter.h"
 #include "vtkOutlineFilter.h"
-#include "vtkRectilinearGridGeometryFilter.h"
 #include "vtkPlane.h"
 #include "vtkCutter.h"
 #include "vtkPolyDataNormals.h"
@@ -24,8 +23,21 @@ namespace vtkfig
     isocontours = vtkSmartPointer<vtkContourFilter>::New();
   }
   
+  // Must go into contour3dbase
+  void Contour3D::RTSetInteractor(vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+                                      vtkSmartPointer<vtkRenderer> renderer) 
+  {
+      imageplaneWidget->SetInteractor(interactor);
+      imageplaneWidget->SetInputConnection(geometry->GetOutputPort());
+      imageplaneWidget->TextureInterpolateOff();
+      imageplaneWidget->TextureVisibilityOff();
+      imageplaneWidget->SetKeyPressActivationValue('x');
+      imageplaneWidget->On();
+  };
   
-  void Contour3D::RTBuild()
+  void Contour3D::RTBuild(vtkSmartPointer<vtkRenderWindow> window,
+                          vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+                          vtkSmartPointer<vtkRenderer> renderer)
   {
     
 
@@ -43,10 +55,10 @@ namespace vtkfig
     gridfunc->GetPointData()->SetScalars(values);
 
     // filter to geometry primitive
-    vtkSmartPointer<vtkRectilinearGridGeometryFilter> geometry =  vtkSmartPointer<vtkRectilinearGridGeometryFilter>::New();
+    geometry =  vtkSmartPointer<vtkRectilinearGridGeometryFilter>::New();
     geometry->SetInputDataObject(gridfunc);
 
-    if (show_slice)
+    if (0&&show_slice)
     {
 
       vtkSmartPointer<vtkPlane> plane= vtkSmartPointer<vtkPlane>::New();
@@ -100,6 +112,8 @@ namespace vtkfig
     outline->SetMapper(outlineMapper);
     outline->GetProperty()->SetColor(0, 0, 0);
     Figure::RTAddActor(outline);
+
+    imageplaneWidget= vtkSmartPointer<vtkImagePlaneWidget>::New();
 
   }
 

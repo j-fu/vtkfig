@@ -20,7 +20,8 @@ namespace vtkfig
 {
   struct RGBPoint { double x,r,g,b;};
   typedef std::vector<RGBPoint> RGBTable;
-  
+
+  size_t NSpin();
   vtkSmartPointer<vtkLookupTable>  BuildLookupTable(RGBTable & xrgb, int size);
   vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper);
   template <class V, class IV>

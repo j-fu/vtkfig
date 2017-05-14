@@ -25,7 +25,10 @@ namespace vtkfig
     lut=BuildLookupTable(quiver_rgb,255);
   }
   
-  void  Quiver2D::RTBuild()
+  void  Quiver2D::RTBuild(
+        vtkSmartPointer<vtkRenderWindow> window,
+        vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+        vtkSmartPointer<vtkRenderer> renderer)
   {
     vtkSmartPointer<vtkRectilinearGrid> gridfunc= vtkSmartPointer<vtkRectilinearGrid>::New();
     int Nx = xcoord->GetNumberOfTuples();

@@ -1,6 +1,6 @@
 #include <cstdio>
 #include "vtkfigFrame.h"
-#include "vtkfigXYPlot.h"
+#include "vtkfigChartXY.h"
 #include "vtkfigMainThread.h"
 #include "vtkfigTools.h"
 
@@ -32,9 +32,9 @@ int main()
 
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
-  auto xyplot=vtkfig::XYPlot::New();
+  auto chartxy=vtkfig::ChartXY::New();
 
-  frame->AddFigure(xyplot);
+  frame->AddFigure(chartxy);
 
   while (ii<nspin)
   {
@@ -52,20 +52,20 @@ int main()
     char titlebuf[20];
   
     snprintf(titlebuf,20,"frame %d",ii++);
-    xyplot->Clear();
-    xyplot->Title(titlebuf);
-    xyplot->LineColorRGB(0,0,1);
-    xyplot->LineType("-");
-    xyplot->AddPlot(x1, y1);
-    xyplot->LineColorRGB(1,0,0);
-    xyplot->LineType(".-");
-    xyplot->AddPlot(x2, y2);
+    chartxy->Clear();
+    chartxy->Title(titlebuf);
+    chartxy->LineColorRGB(0,0,1);
+    chartxy->LineType("-");
+    chartxy->AddPlot(x1, y1);
+    chartxy->LineColorRGB(1,0,0);
+    chartxy->LineType(".-");
+    chartxy->AddPlot(x2, y2);
 
 
     frame->Show();
     
     if (ii==3) 
-        frame->Dump("example-xyplot.png");
+        frame->Dump("example-chartxy.png");
 
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;
     double i1=ii;

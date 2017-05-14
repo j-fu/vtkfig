@@ -6,6 +6,14 @@
 #include "vtkTextProperty.h"
 namespace vtkfig
 {
+  size_t NSpin()
+  {
+    char *spinstr=getenv("VTKFIG_NSPIN");
+    if (spinstr==nullptr)
+      return  std::numeric_limits<size_t>::max();
+    else
+      return atoi(spinstr);
+  }
 
   vtkSmartPointer<vtkLookupTable>  BuildLookupTable(std::vector<RGBPoint> & xrgb, int size)
   {
