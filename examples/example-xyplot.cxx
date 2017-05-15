@@ -53,12 +53,14 @@ int main()
   
     snprintf(titlebuf,20,"frame %d",ii++);
     xyplot->Clear();
-    xyplot->Title(titlebuf);
+    xyplot->SetTitle(titlebuf);
     xyplot->LineColorRGB(0,0,1);
     xyplot->LineType("-");
+    xyplot->Legend("A");
     xyplot->AddPlot(x1, y1);
     xyplot->LineColorRGB(1,0,0);
     xyplot->LineType(".-");
+    xyplot->Legend("B");
     xyplot->AddPlot(x2, y2);
 
 

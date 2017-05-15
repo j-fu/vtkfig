@@ -68,8 +68,8 @@ int main(void)
   contour->SetGrid(x,y);
   frame->AddFigure(contour,1,0);
 
-
   auto xyplot=vtkfig::XYPlot::New();
+  xyplot->SetYRange(-0.5,0.5);
   frame->AddFigure(xyplot,0,1);
 
   while (ii<nspin)
@@ -89,9 +89,11 @@ int main(void)
     xyplot->Clear();
     xyplot->LineColorRGB(0,0,1);
     xyplot->LineType("-");
+    xyplot->Legend("y=0.5");
     xyplot->AddPlot(x, fx);
     xyplot->LineColorRGB(1,0,0);
     xyplot->LineType("-");
+    xyplot->Legend("x=0.5");
     xyplot->AddPlot(y, fy);
     frame->Show();
 

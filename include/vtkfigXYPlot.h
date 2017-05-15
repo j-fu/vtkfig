@@ -22,16 +22,35 @@ namespace vtkfig
 
     virtual std::string SubClassName() {return std::string("XYPlot");}
 
-    void Title(const char *title);
+    void SetTitle(const char *t) {xyplot->SetTitle(t);    title=t;}
+    void SetXTitle(const char *t) {xyplot->SetTitle(t);    xtitle=t;}
+    void SetYTitle(const char *t) {xyplot->SetTitle(t);    ytitle=t;}
+    void SetXRange(double x0, double x1) {fixXMin=x0; fixXMax=x1;}
+    void SetYRange(double y0, double y1) {fixYMin=y0; fixYMax=y1;}
+    void SetNumberOfXLabels(int n) {nxlabels=n;}
+    void SetNumberOfYLabels(int n) {nylabels=n;}
+
 
     template <typename T> 
     void LineType(const T *type) 
-    { for (int i=0;i<desclen;i++) 
+    {
+      for (int i=0;i<desclen;i++) 
       {
         next_plot_info.line_type[i]=static_cast<double>(type[i]);
         if (type[i]=='\0') break;
       }
     }
+
+    template <typename T> 
+    void Legend(const T *type) 
+    {
+      for (int i=0;i<desclen;i++) 
+      {
+        next_plot_info.legend[i]=static_cast<double>(type[i]);
+        if (type[i]=='\0') break;
+      }
+    }
+
     void LineColorRGB(double r, double g, double b) { next_plot_info.line_rgb[0]=r; next_plot_info.line_rgb[1]=g; next_plot_info.line_rgb[2]=b;}
 
     void LineColorRGB(double rgb[3]) { next_plot_info.line_rgb[0]=rgb[0]; next_plot_info.line_rgb[1]=rgb[1]; next_plot_info.line_rgb[2]=rgb[2];}
@@ -65,8 +84,11 @@ namespace vtkfig
     vtkSmartPointer<vtkXYPlotActor> xyplot;
 
  
-    static const int desclen=4;
+    static const int desclen=12;
     std::string title="test";
+    std::string ytitle="y";
+    std::string xtitle="x";
+
     // has to consist of doubles only because of endianness
     struct plot_data
     {
@@ -93,7 +115,8 @@ namespace vtkfig
 
     struct plot_info
     {
-      double line_type[desclen]={'-',0,0,0};
+      double line_type[desclen]={'-',0};
+      double legend[desclen]={0};
       double line_rgb[3]={0,0,0};
       plot_info(){};
       ~plot_info(){};
@@ -103,19 +126,23 @@ namespace vtkfig
     std::vector<plot_data> all_plot_data;
     std::vector<plot_info> all_plot_info;
 
-    double all_plot_range[4]={1.0e100,-1.0e100,1.0e100,-1.0e100};
-
+    double dynXMin=1.0e100,dynXMax=-1.0e100,dynYMin=1.0e100,dynYMax=-1.0e100;
+    double fixXMin=1.0e100,fixXMax=-1.0e100,fixYMin=1.0e100,fixYMax=-1.0e100;
+    int nxlabels=5;
+    int nylabels=5;
+        
   };
   
   
   template<typename V>
     inline
-    void XYPlot::AddPlot(const V &x, const V &y)
+  void XYPlot::AddPlot(const V &x, const V &y)
   {
 
     auto plot=get_plot_data(num_plot);
     plot.X->Initialize();
     plot.Y->Initialize();
+    
 
     int N=x.size();
     assert(x.size()==y.size());
@@ -132,10 +159,10 @@ namespace vtkfig
       ymax=std::max(ymax,y[i]);
     }
 
-    all_plot_range[0]=std::min(xmin,all_plot_range[0]);
-    all_plot_range[1]=std::max(xmax,all_plot_range[1]);
-    all_plot_range[2]=std::min(ymin,all_plot_range[2]);
-    all_plot_range[3]=std::max(ymax,all_plot_range[3]);
+    dynXMin=std::min(xmin,dynXMin);
+    dynXMax=std::max(xmax,dynXMax);
+    dynYMin=std::min(ymin,dynYMin);
+    dynYMax=std::max(ymax,dynYMax);
     
     AddPlot();;
   }

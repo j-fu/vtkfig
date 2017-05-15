@@ -103,6 +103,18 @@ namespace vtkfig
   {
     return Receive(&d,1,remoteHandle,tag);
   }
+
+
+  int Communicator::SendDouble(double d, int tag)
+  {
+    return Send(&d,1,remoteHandle,tag);
+  }
+  
+  int Communicator::ReceiveDouble(double &d, int tag)
+  {
+    return Receive(&d,1,remoteHandle,tag);
+  }
+
   
   int Communicator::SendString(const std::string  s, int tag)
   {

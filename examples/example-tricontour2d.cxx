@@ -21,12 +21,12 @@ int main(void)
   size_t nspin=vtkfig::NSpin();
   std::vector<double> inpoints;
 
-  for(double x = -2; x < 2; x+=0.02)
+  for(double x = -2; x < 2; x+=0.03)
   {
-    for(double y = -2; y < 2; y+=0.02)
+    for(double y = -2; y < 2; y+=0.03)
     {
-      inpoints.push_back(x + vtkMath::Random(-.025, .025));
-      inpoints.push_back(y + vtkMath::Random(-.025, .025));
+      inpoints.push_back(x + vtkMath::Random(-.1, .1));
+      inpoints.push_back(y + vtkMath::Random(-.1, .1));
     }
   }
   
@@ -60,6 +60,7 @@ int main(void)
   auto contour=vtkfig::TriContour2D::New();
   contour->SetSurfaceRGBTable(colors,255);
   contour->SetGrid(points,cells);
+  contour->SetValueRange(-1,1);
   frame->AddFigure(contour);
 
   while (ii<nspin)

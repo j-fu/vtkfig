@@ -8,60 +8,44 @@ namespace vtkfig
 {
   TriContour2D::TriContour2D(): Contour2DBase()
   {
+    gridfunc=vtkSmartPointer<vtkUnstructuredGrid>::New();
+    gridvalues = vtkSmartPointer<vtkFloatArray>::New();
+    gridpoints = vtkSmartPointer<vtkPoints>::New();
+    gridfunc->SetPoints(gridpoints);
+    gridfunc->GetPointData()->SetScalars(gridvalues);
   }
+
+  void TriContour2D::ServerRTSend(vtkSmartPointer<Communicator> communicator) 
+  {
+    communicator->SendCharBuffer((char*)&state,sizeof(state));
+    communicator->Send(gridfunc,1,1);
+  }
+
+  void TriContour2D::ClientMTReceive(vtkSmartPointer<Communicator> communicator) 
+  {
+    if (has_data)
+    {
+      gridfunc->Reset();
+    }
+    communicator->ReceiveCharBuffer((char*)&state,sizeof(state));
+    communicator->Receive(gridfunc,1,1);
+    gridfunc->Modified();
+    has_data=true;
+  }
+
   
   void TriContour2D::RTBuild(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer)
   {
-    // filter to geometry primitive
     
-    // see http://www.vtk.org/Wiki/VTK/Examples/Cxx/PolyData/GeometryFilter
-
-
-
     vtkSmartPointer<vtkGeometryFilter> geometry =  vtkSmartPointer<vtkGeometryFilter>::New();
     geometry->SetInputDataObject(gridfunc);
-
-
-    if (show_surface)
-    {
-      vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      mapper->SetInputConnection(geometry->GetOutputPort());
-      mapper->UseLookupTableScalarRangeOn();
-      mapper->SetLookupTable(surface_lut);
-      mapper->Update();
-
-      vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
-      plot->SetMapper(mapper);
-      Figure::RTAddActor(plot);
-      
-      if (show_surface_colorbar)
-        Figure::RTAddActor2D(BuildColorBar(mapper));
-    }
-
-
-    if (show_contour)
-    {
-      isocontours = vtkSmartPointer<vtkContourFilter>::New();
-      isocontours->SetInputConnection(geometry->GetOutputPort());
-      
-      vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      mapper->SetInputConnection(isocontours->GetOutputPort());
-      mapper->UseLookupTableScalarRangeOn();
-      mapper->SetLookupTable(contour_lut);
-      
-      vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
-      plot->SetMapper(mapper);
-      Figure::RTAddActor(plot);
-      if (show_contour_colorbar)
-        Figure::RTAddActor2D(BuildColorBar(mapper));
-
-      if (show_slider)
-        AddSlider(interactor, renderer);
-    }
-
+    
+    double bounds[6];
+    gridfunc->GetBounds(bounds);
+    ProcessData(interactor,renderer,geometry,bounds);
   }
 
 }

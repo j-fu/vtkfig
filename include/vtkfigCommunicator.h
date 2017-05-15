@@ -62,6 +62,10 @@ namespace vtkfig
 
     int ReceiveFloat(float &d, int tag= static_cast<int>(Tag::Float));
 
+    int SendDouble(double d, int tag= static_cast<int>(Tag::Double));
+
+    int ReceiveDouble(double &d, int tag= static_cast<int>(Tag::Double));
+
     int SendString(const std::string  s, int tag=static_cast<int>(Tag::String) );
 
     int ReceiveString(std::string &s, int tag= static_cast<int>(Tag::String));

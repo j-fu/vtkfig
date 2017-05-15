@@ -5,8 +5,18 @@ namespace vtkfig
   ////////////////////////////////////////////////
   ChartXY::ChartXY():Figure()
   {
+    cout <<
+R"(
+vtkfigChartXY does not (yet?) work as intended:
+- How to handle bounds properly ?
+- How to prevent leaking ?
+Use vtkfigXYPlot instead...
+)";
+
     chartxy  = vtkSmartPointer<vtkChartXY>::New();
     LineType("-");
+
+
   }
 
   void ChartXY::RTBuild(vtkSmartPointer<vtkRenderWindow> window,
@@ -16,8 +26,7 @@ namespace vtkfig
     chartxyactor= vtkSmartPointer<vtkContextActor>::New(); 
     chartxyactor->GetScene()->AddItem(chartxy);
     Figure::RTAddContextActor(chartxyactor);
-    chartxy->SetAutoAxes(true);
-    chartxy->SetForceAxesToBounds(true);
+//    chartxy->SetForceAxesToBounds(true);
     chartxy->Modified();
   }
 
@@ -108,7 +117,8 @@ namespace vtkfig
     plot.Y->Modified();
     plot.table->Modified();
     plot.line->Modified();
-//    chartxy->RecalculateBounds();
+    chartxy->SetForceAxesToBounds(true);
+
     
     all_plot_info.insert(all_plot_info.begin()+num_plot,next_plot_info);
 

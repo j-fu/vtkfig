@@ -23,6 +23,7 @@ namespace vtkfig
     
     TriContour2D();
     static std::shared_ptr<TriContour2D> New() { return std::make_shared<TriContour2D>(); }
+    virtual std::string SubClassName() {return std::string("TriContour2D");}
     
     template <class V, class IV>
     void SetGrid(const V& points, 
@@ -30,20 +31,23 @@ namespace vtkfig
     
     template <class V>
     void UpdateValues(const V&values);
-    
-    
+        
   private:
+
 
     virtual void RTBuild(
       vtkSmartPointer<vtkRenderWindow> window,
       vtkSmartPointer<vtkRenderWindowInteractor> interactor,
       vtkSmartPointer<vtkRenderer> renderer);
 
+    void ServerRTSend(vtkSmartPointer<Communicator> communicator);
+    void ClientMTReceive(vtkSmartPointer<Communicator> communicator);
    
     
     vtkSmartPointer<vtkUnstructuredGrid> gridfunc;
     vtkSmartPointer<vtkFloatArray> gridvalues;
-
+    vtkSmartPointer<vtkPoints> gridpoints;
+    bool has_data=false;
   };
   
 
@@ -59,38 +63,37 @@ namespace vtkfig
     int npoints=points.size()/2;
 //    int ncells=cells.size()/3;
     
-    
-    gridfunc=vtkSmartPointer<vtkUnstructuredGrid>::New();
-    
+    if (has_data)
+    {
+      gridfunc->Reset();
+      gridpoints->Initialize();
+      gridvalues->Initialize();
+    }
+
     for (int icell=0;icell<cells.size(); icell+=3)
     {
       vtkIdType 	 c[3]={cells[icell+0],cells[icell+1],cells[icell+2]};
       gridfunc->InsertNextCell(VTK_TRIANGLE,3,c);
     }
-    
-    vtkSmartPointer<vtkPoints> gridpoints = vtkSmartPointer<vtkPoints>::New();
+
     for (int ipoint=0;ipoint<points.size(); ipoint+=2)
     {
       gridpoints->InsertNextPoint(points[ipoint+0],points[ipoint+1],0);
     }
-    gridfunc->SetPoints(gridpoints);
     
     
-    gridvalues = vtkSmartPointer<vtkFloatArray>::New();
     gridvalues->SetNumberOfComponents(1);
     gridvalues->SetNumberOfTuples(npoints);
-    for (int i=0;i<npoints; i++)
-    {
-      gridvalues->InsertComponent(i,0,0);
-    }
-    
-    gridfunc->GetPointData()->SetScalars(gridvalues);
+
+    has_data=true;
   }
   
   template <class V>
   inline
   void TriContour2D::UpdateValues(const V& values)
   {
+    double vmin=1.0e100;
+    double vmax=-1.0e100;
     int npoints=values.size();
     for (int i=0;i<npoints; i++)
     {
@@ -100,14 +103,7 @@ namespace vtkfig
         gridvalues->InsertComponent(i,0,v);
     }
     gridvalues->Modified();
-    surface_lut->SetTableRange(vmin,vmax);
-    surface_lut->Modified();
-    contour_lut->SetTableRange(vmin,vmax);
-    contour_lut->Modified();
-
-    double tempdiff = (vmax-vmin)/(10*ncont);
-    isocontours->GenerateValues(ncont, vmin+tempdiff, vmax-tempdiff);
-    isocontours->Modified();
+    SetVMinMax(vmin,vmax);
   }
 
 

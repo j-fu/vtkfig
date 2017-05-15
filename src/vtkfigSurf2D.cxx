@@ -23,8 +23,7 @@ namespace vtkfig
   void Surf2D::RTBuild(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-    vtkSmartPointer<vtkRenderer> renderer
-    )
+    vtkSmartPointer<vtkRenderer> renderer)
   {
 
     bool do_warp=true;

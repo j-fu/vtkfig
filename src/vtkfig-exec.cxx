@@ -10,6 +10,7 @@
 #include "vtkfigFrame.h"
 #include "vtkfigCommunicator.h"
 #include "vtkfigSurf2D.h"
+#include "vtkfigTriContour2D.h"
 #include "vtkfigXYPlot.h"
 #include "vtkfigMainThread.h"
 
@@ -72,7 +73,7 @@ namespace vtkfig
     {
       
       vtkfig::MainThread::CreateMainThread();
-      char *debug_string=getenv("VTKFIG_DEBUG_LEVEL");
+      char *debug_string=getenv("VTKFIG_DEBUG");
       if (debug_string!=0)
         debug_level=atoi(debug_string);
       
@@ -299,6 +300,13 @@ namespace vtkfig
             frame->AddFigure(figure,iX,iY);
             if (debug_level>0)
               cout << "Add Surf2d" << endl;
+          }
+          else if (figtype=="TriContour2D")
+          {
+            figure=new vtkfig::TriContour2D();
+            frame->AddFigure(figure,iX,iY);
+            if (debug_level>0)
+              cout << "Add TriContour2D" << endl;
           }
           else if (figtype=="XYPlot")
           {

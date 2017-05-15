@@ -1,6 +1,7 @@
 #include "vtkProperty2D.h"
 #include "vtkTextProperty.h"
 #include "vtkAxisActor2D.h"
+#include "vtkLegendBoxActor.h"
 
 #include "vtkfigXYPlot.h"
 
@@ -29,29 +30,53 @@ namespace vtkfig
     
     xyplot->SetAdjustXLabels(1);
     xyplot->SetAdjustYLabels(1);
+    xyplot->LegendOn();
+    xyplot->SetLegendBox(1);
+    xyplot->SetLegendBorder(1);
 
+    
     xyplot->PlotPointsOff();
     xyplot->PlotLinesOff();
     xyplot->PlotCurvePointsOn();
     xyplot->PlotCurveLinesOn();
     
-    xyplot->SetXValuesToArcLength();
     
     xyplot->SetLabelFormat("%2.1f");
     xyplot->SetTitle(title.c_str());
     xyplot->SetXTitle("x");
     xyplot->SetYTitle("y");
     
-    vtkSmartPointer<vtkTextProperty>  text_prop = xyplot->GetTitleTextProperty();
-    text_prop->SetColor(0.0, 0.0, 0.0);
+    int fs=20;
+    xyplot->SetTitleFontSize(fs);
+    xyplot->SetTitleShadow(0);
+    xyplot->SetTitleItalic(0);
+    xyplot->SetTitleBold(1);
+    xyplot->SetTitleColor(0,0,0);
+
+    xyplot->SetAxisTitleFontSize(fs);
+    xyplot->SetAxisTitleItalic(0);
+    xyplot->SetAxisTitleShadow(0);
+    xyplot->SetAxisTitleColor(0,0,0);
+
+    xyplot->SetAxisLabelFontSize(fs);
+    xyplot->SetAxisLabelShadow(0);
+    xyplot->SetAxisLabelItalic(0);
+    xyplot->SetAxisLabelColor(0,0,0);
+    auto text_prop = xyplot->GetLegendActor()->GetEntryTextProperty();
+
+//    xyplot->SetLegendPosition(0.8,0.8);
+    // Font scaling is influenced in text actors...
+//    text_prop->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_NONE);
     text_prop->ItalicOff();
     text_prop->SetFontFamilyToArial();
-    text_prop->SetFontSize(70);
-    xyplot->SetAxisTitleTextProperty(text_prop);
-    xyplot->SetAxisLabelTextProperty(text_prop);
-    xyplot->SetTitleTextProperty(text_prop);
-    xyplot->Modified();
+    text_prop->SetFontSize(fs);
+    xyplot->GetLegendActor()->SetEntryTextProperty(text_prop);
+
+
     xyplot->SetXValuesToValue();
+
+
+
     //widget->SetEnabled(1);
 
     Figure::RTAddActor2D(xyplot);
@@ -60,29 +85,40 @@ namespace vtkfig
   void XYPlot::Clear()
   {
     num_plot=0;
-    all_plot_range[0]=1.0e100;
-    all_plot_range[1]=-1.0e100;
-    all_plot_range[2]=1.0e100;
-    all_plot_range[3]=-1.0e100;
+    dynXMin=1.0e100;
+    dynXMax=-1.0e100;
+    dynYMin=1.0e100;
+    dynYMax=-1.0e100;
   }
 
-  void XYPlot::Title(const char * xtitle)
-  {
-    xyplot->SetTitle(xtitle);
-    title=xtitle;
-    xyplot->Modified();
-  }
   
 
   void  XYPlot::ServerRTSend(vtkSmartPointer<Communicator> communicator) 
   {
     communicator->SendString(title);
+    communicator->SendString(xtitle);
+    communicator->SendString(ytitle);
+
+    communicator->SendDouble(dynXMin);
+    communicator->SendDouble(dynXMax);
+    communicator->SendDouble(dynYMin);
+    communicator->SendDouble(dynYMax);
+   
+    communicator->SendDouble(fixXMin);
+    communicator->SendDouble(fixXMax);
+    communicator->SendDouble(fixYMin);
+    communicator->SendDouble(fixYMax);
+
+    communicator->SendInt(nxlabels);
+    communicator->SendInt(nylabels);
+    
+
     communicator->SendInt(num_plot);
     communicator->SendInt(all_plot_info.size());
     double *data=(double*)all_plot_info.data();
     int ndata=all_plot_info.size()*sizeof(plot_info)/sizeof(double);
     communicator->SendDoubleBuffer(data,ndata);
-    communicator->SendDoubleBuffer(all_plot_range,4);
+
    
 
     for (int i=0;i<num_plot;i++)
@@ -97,6 +133,23 @@ namespace vtkfig
   {
     Clear();
     communicator->ReceiveString(title);
+    communicator->ReceiveString(xtitle);
+    communicator->ReceiveString(ytitle);
+
+    communicator->ReceiveDouble(dynXMin);
+    communicator->ReceiveDouble(dynXMax);
+    communicator->ReceiveDouble(dynYMin);
+    communicator->ReceiveDouble(dynYMax);
+   
+    communicator->ReceiveDouble(fixXMin);
+    communicator->ReceiveDouble(fixXMax);
+    communicator->ReceiveDouble(fixYMin);
+    communicator->ReceiveDouble(fixYMax);
+
+    communicator->ReceiveInt(nxlabels);
+    communicator->ReceiveInt(nylabels);
+
+
     int np;
     int npi;
     communicator->ReceiveInt(np);
@@ -105,7 +158,7 @@ namespace vtkfig
     double *data=(double*)new_plot_info.data();
     int ndata=npi*sizeof(plot_info)/sizeof(double);
     communicator->ReceiveDoubleBuffer(data,ndata);
-    communicator->ReceiveDoubleBuffer(all_plot_range,4);
+
 
     for (int i=0;i<np;i++)
     {
@@ -114,6 +167,7 @@ namespace vtkfig
       communicator->Receive(plot.Y,1,1);
       LineColorRGB(new_plot_info[i].line_rgb);
       LineType(new_plot_info[i].line_type);
+      Legend(new_plot_info[i].legend);
       AddPlot();
     }
   };
@@ -141,7 +195,10 @@ namespace vtkfig
       plot_points = 1;
       plot_lines = 1;
     }
+    for (int i=0;i<desclen;i++) s[i]=static_cast<char>(next_plot_info.legend[i]);
+    xyplot->GetLegendActor()->SetEntryString(num_plot,s);
 
+    
 
     all_plot_info.insert(all_plot_info.begin()+num_plot,next_plot_info);
 
@@ -151,7 +208,22 @@ namespace vtkfig
     xyplot->SetPlotLines(num_plot, plot_lines);
     xyplot->SetPlotPoints(num_plot, plot_points);
 
-    xyplot->SetPlotRange(all_plot_range[0],all_plot_range[2],all_plot_range[1],all_plot_range[3]);
+    if (fixXMin>fixXMax)     
+      xyplot->SetXRange(dynXMin,dynXMax);
+    else
+      xyplot->SetXRange(fixXMin,fixXMax);
+
+    if (fixYMin>fixYMax)     
+      xyplot->SetYRange(dynYMin,dynYMax);
+    else
+      xyplot->SetYRange(fixYMin,fixYMax);
+
+    xyplot->SetNumberOfXLabels(nxlabels);
+    xyplot->SetNumberOfYLabels(nylabels);
+
+    xyplot->SetLegendPosition2(0.15,0.05*(num_plot+1));
+
+
     num_plot++;
     xyplot->Modified();
   }

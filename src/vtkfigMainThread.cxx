@@ -10,6 +10,7 @@
 #include "vtkProperty.h"
 #include "vtkProperty2D.h"
 #include "vtkObjectBase.h"
+#include "vtkPropCollection.h"
 
 
 
@@ -45,7 +46,7 @@ namespace vtkfig
     int wtime=5;
     char* port_string=getenv("VTKFIG_PORT_NUMBER");
     char* wtime_string=getenv("VTKFIG_WAIT_SECONDS");
-    char *debug_string=getenv("VTKFIG_DEBUG_LEVEL");
+    char *debug_string=getenv("VTKFIG_DEBUG");
     if (debug_string!=0)
       debug_level=atoi(debug_string);
 

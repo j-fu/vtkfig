@@ -51,11 +51,11 @@ namespace vtkfig
         // 7.1 ?colorbar->SetUnconstrainedFontSize(true);
         colorbar->SetLookupTable(mapper->GetLookupTable());
         colorbar->SetWidth(0.175);
-        colorbar->SetHeight(0.7);
+        colorbar->SetHeight(0.8);
         colorbar->SetMaximumWidthInPixels(150);
         colorbar->SetBarRatio(0.1);
-        colorbar->SetNumberOfLabels(10);
-        colorbar->SetPosition(0.8, 0.2);
+        colorbar->SetNumberOfLabels(11);
+        colorbar->SetPosition(0.8, 0.1);
         colorbar->GetTitleTextProperty()->SetFontSize(80);
         colorbar->GetLabelTextProperty()->SetFontSize(80);
         colorbar->SetLabelFormat("%.2e");
