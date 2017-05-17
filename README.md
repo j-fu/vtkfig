@@ -1,4 +1,4 @@
-vtkfig V0.6
+vtkfig V0.7
 ============
 
 The intention of  vtkfig is to provide a C++  graphics library with an API similar to that of matplotlib and which uses [vtk](http://vtk.org) for rendering.
@@ -7,8 +7,10 @@ The intention of  vtkfig is to provide a C++  graphics library with an API simil
 
 - Mainly C++11
 - Separate rendering thread allowing for easy handling of changing data  handeled by the vtkfig::Frame class
+- Standard views for 2D, 3D grid
 - Easy extension by implementing derived classes from vtkfig::Figure containing standard vtk rendering pipelines
 - Experimental client-server communication for remote execution
+
 
 ## Build
 
