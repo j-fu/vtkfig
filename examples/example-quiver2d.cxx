@@ -1,5 +1,5 @@
 #include "vtkfigFrame.h"
-#include "vtkfigContour2D.h"
+#include "vtkfigRectContour.h"
 #include "vtkfigQuiver2D.h"
 #include "vtkfigTools.h"
 
@@ -56,7 +56,7 @@ int main(void)
   int ii=0;
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
-  auto contour=vtkfig::Contour2D::New();
+  auto contour=vtkfig::RectContour::New();
   contour->SetSurfaceRGBTable(colors,255);
   contour->ShowContour(false);
   

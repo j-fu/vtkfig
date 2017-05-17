@@ -14,7 +14,7 @@
 #include "vtkfigFrame.h"
 #include "vtkfigSurf2D.h"
 #include "vtkfigXYPlot.h"
-#include "vtkfigContour2D.h"
+#include "vtkfigRectContour.h"
 #include "vtkfigTools.h"
 
 
@@ -85,7 +85,7 @@ int main(void)
   frame1->AddFigure(surf);
 
 
-  auto contour=vtkfig::Contour2D::New();
+  auto contour=vtkfig::RectContour::New();
   contour->SetGrid(x,y);
   frame2->AddFigure(contour);
 

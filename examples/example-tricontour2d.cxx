@@ -2,7 +2,7 @@
 
 #include "vtkfigFrame.h"
 #include "vtkfigTools.h"
-#include "vtkfigTriContour2D.h"
+#include "vtkfigSimplexContour.h"
 #include "vtkfigTools.h"
 
 
@@ -59,9 +59,9 @@ int main(void)
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
 
-  auto contour=vtkfig::TriContour2D::New();
+  auto contour=vtkfig::SimplexContour::New();
   contour->SetSurfaceRGBTable(colors,255);
-  contour->SetGrid(points,cells);
+  contour->SetGrid(2,points,cells);
   contour->SetValueRange(-1,1);
   frame->AddFigure(contour);
 

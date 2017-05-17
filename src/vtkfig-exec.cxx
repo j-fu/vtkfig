@@ -10,10 +10,9 @@
 #include "vtkfigFrame.h"
 #include "vtkfigCommunicator.h"
 #include "vtkfigSurf2D.h"
-#include "vtkfigContour2D.h"
-#include "vtkfigTetContour3D.h"
-#include "vtkfigTriContour2D.h"
-#include "vtkfigContour3D.h"
+#include "vtkfigRectContour.h"
+#include "vtkfigSimplexContour.h"
+#include "vtkfigRectContour.h"
 #include "vtkfigXYPlot.h"
 #include "vtkfigMainThread.h"
 
@@ -305,40 +304,19 @@ namespace vtkfig
             if (debug_level>0)
               cout << "Add Surf2d" << endl;
           }
-          else if (figtype=="TriContour2D")
+          else if (figtype=="SimplexContour")
           {
-            figure=new vtkfig::TriContour2D();
+            figure=new vtkfig::SimplexContour();
             frame->AddFigure(figure,iX,iY);
             if (debug_level>0)
-              cout << "Add TriContour2D" << endl;
+              cout << "Add SimplexContour" << endl;
           }
-          else if (figtype=="Contour2D")
+          else if (figtype=="RectContour")
           {
-            figure=new vtkfig::Contour2D();
+            figure=new vtkfig::RectContour();
             frame->AddFigure(figure,iX,iY);
             if (debug_level>0)
-              cout << "Add Contour2D" << endl;
-          }
-          else if (figtype=="Contour3D")
-          {
-            figure=new vtkfig::Contour3D();
-            frame->AddFigure(figure,iX,iY);
-            if (debug_level>0)
-              cout << "Add Contour3D" << endl;
-          }
-          else if (figtype=="TriContour2D")
-          {
-            figure=new vtkfig::TriContour2D();
-            frame->AddFigure(figure,iX,iY);
-            if (debug_level>0)
-              cout << "Add TriContour2D" << endl;
-          }
-          else if (figtype=="TetContour3D")
-          {
-            figure=new vtkfig::TetContour3D();
-            frame->AddFigure(figure,iX,iY);
-            if (debug_level>0)
-              cout << "Add TetContour3D" << endl;
+              cout << "Add RectContour" << endl;
           }
           else if (figtype=="XYPlot")
           {

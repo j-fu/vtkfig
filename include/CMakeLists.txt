@@ -1,16 +1,15 @@
 
 install(FILES
   vtkfigCommunicator.h
-  vtkfigContour2DBase.h
-  vtkfigContour2D.h
-  vtkfigContour3D.h
+  vtkfigContourBase.h
+  vtkfigRectContour.h
   vtkfigFigure.h
   vtkfigFrame.h
   vtkfigMainThread.h
   vtkfigQuiver2D.h
   vtkfigSurf2D.h
   vtkfigTools.h
-  vtkfigTriContour2D.h
+  vtkfigSimplexContour.h
   vtkfigXYPlot.h
   vtkfigChartXY.h
 DESTINATION include/vtkfig)

@@ -187,6 +187,7 @@ namespace vtkfig
       int surface_rgbtab_size=255;
       bool surface_rgbtab_modified=true;
       bool wireframe=false;
+      int spacedim=2;
     } state;
 
     

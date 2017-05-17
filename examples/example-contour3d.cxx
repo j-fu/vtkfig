@@ -1,5 +1,5 @@
 #include "vtkfigFrame.h"
-#include "vtkfigContour3D.h"
+#include "vtkfigRectContour.h"
 #include "vtkfigTools.h"
 
 
@@ -64,7 +64,7 @@ int main(void)
   int ii=0;
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
-  vtkfig::Contour3D contour;
+  vtkfig::RectContour contour;
   contour.SetContourRGBTable(colors,255);
   contour.SetGrid(x,y,z);
   frame.AddFigure(contour);

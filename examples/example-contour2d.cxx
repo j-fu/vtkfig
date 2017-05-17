@@ -1,6 +1,6 @@
 #include <chrono>
 #include "vtkfigFrame.h"
-#include "vtkfigContour2D.h"
+#include "vtkfigRectContour.h"
 #include "vtkfigTools.h"
 
 
@@ -50,7 +50,7 @@ int main(void)
   double i0=ii;
 
 
-  auto contour=vtkfig::Contour2D::New();
+  auto contour=vtkfig::RectContour::New();
   contour->SetSurfaceRGBTable(colors,255);
   contour->SetGrid(x,y);
   frame->AddFigure(contour);

@@ -1,7 +1,7 @@
 #include <chrono>
 #include "vtkfigFrame.h"
 #include "vtkfigSurf2D.h"
-#include "vtkfigContour2D.h"
+#include "vtkfigRectContour.h"
 #include "vtkfigXYPlot.h"
 #include "vtkfigTools.h"
 
@@ -65,7 +65,7 @@ int main(void)
   surf->SetGrid(x,y);
   frame->AddFigure(surf,0,0);
 
-  auto contour=vtkfig::Contour2D::New();
+  auto contour=vtkfig::RectContour::New();
   contour->SetGrid(x,y);
   frame->AddFigure(contour,1,0);
 

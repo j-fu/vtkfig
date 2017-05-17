@@ -4,17 +4,12 @@ add_library(vtkfig SHARED
   vtkfigMainThread.cxx
   vtkfigCommunicator.cxx
   vtkfigTools.cxx
-  vtkfigContour2DBase.cxx  
-  vtkfigContour3DBase.cxx  
+  vtkfigContourBase.cxx  
  
   vtkfigXYPlot.cxx
   vtkfigChartXY.cxx
-  vtkfigContour2D.cxx  
   vtkfigSurf2D.cxx
   vtkfigQuiver2D.cxx
-  vtkfigContour3D.cxx  
-  vtkfigTriContour2D.cxx  
-  vtkfigTetContour3D.cxx  
 )
 
 add_executable(vtkfig-exec MACOSX_BUNDLE vtkfig-exec.cxx)
