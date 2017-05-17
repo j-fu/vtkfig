@@ -78,10 +78,11 @@ int main(const int argc, const char *argv[])
       frame.Dump("example-surf2d.png");
 
     t+=dt;
+
     auto t1=std::chrono::system_clock::now();
-    double dt=std::chrono::duration_cast<std::chrono::duration<double>>(t1-t0).count();
+    double xdt=std::chrono::duration_cast<std::chrono::duration<double>>(t1-t0).count();
     double i1=ii;
-    if (dt>4.0)
+    if (xdt>4.0)
     {
       printf("Frame rate: %.2f fps\n",(double)(i1-i0)/4.0);
       t0=std::chrono::system_clock::now();

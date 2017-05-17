@@ -19,21 +19,27 @@ namespace vtkfig
   public:
     Contour2DBase()
     {
-      RGBTable surface_rgb={{0,0,0,1},{1,1,0,0}};
-      RGBTable contour_rgb={{0,0,0,0},{1,0,0,0}};
-      surface_lut=BuildLookupTable(surface_rgb,255);
-      contour_lut=BuildLookupTable(contour_rgb,2);
+      surface_lut=BuildLookupTable(surface_rgbtab,state.surface_rgbtab_size);
+      contour_lut=BuildLookupTable(contour_rgbtab,state.contour_rgbtab_size);
       isocontours = vtkSmartPointer<vtkContourFilter>::New();
       sliderWidget = vtkSmartPointer<vtkSliderWidget>::New();
     }
   
 
+
     void SetSurfaceRGBTable(RGBTable & tab, int tabsize)
     {
+      state.surface_rgbtab_size=tabsize;
+      state.surface_rgbtab_modified=true;
+      surface_rgbtab=tab;
       surface_lut=BuildLookupTable(tab,tabsize);
     }
+
     void SetContourRGBTable(RGBTable & tab, int tabsize)
     {
+      state.contour_rgbtab_size=tabsize;
+      state.contour_rgbtab_modified=true;
+      contour_rgbtab=tab;
       contour_lut=BuildLookupTable(tab,tabsize);
     }
 
@@ -57,11 +63,12 @@ namespace vtkfig
     
     vtkSmartPointer<vtkLookupTable> surface_lut;
     vtkSmartPointer<vtkLookupTable> contour_lut;
+    RGBTable surface_rgbtab{{0,0,0,1},{1,1,0,0}};
+    RGBTable contour_rgbtab{{0,0,0,0},{1,0,0,0}};
 
     void ProcessData(    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
                          vtkSmartPointer<vtkRenderer> renderer,
                          vtkSmartPointer<vtkPolyDataAlgorithm> data, double bounds[6]);
-
 
     void SetVMinMax(double vmin, double vmax)
     {
@@ -108,6 +115,12 @@ namespace vtkfig
       bool show_surface_colorbar=true;
       bool show_contour_colorbar=false;
       bool show_elevation=true;
+
+      int contour_rgbtab_size=2;
+      bool contour_rgbtab_modified=true;
+
+      int surface_rgbtab_size=2;
+      bool surface_rgbtab_modified=true;
     } state;
     
     

@@ -15,11 +15,25 @@
 #include "vtkLookupTable.h"
 #include "vtkScalarBarActor.h"
 
+#include "vtkfigCommunicator.h"
 
 namespace vtkfig
 {
   struct RGBPoint { double x,r,g,b;};
   typedef std::vector<RGBPoint> RGBTable;
+  static void SendRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab)
+  {
+    communicator->SendInt(rgbtab.size());
+    communicator->SendFloatBuffer((float*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(float));
+  }
+
+  static void ReceiveRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab)
+  {
+    int tabsize;
+    communicator->ReceiveInt(tabsize);
+    rgbtab.resize(tabsize);
+    communicator->ReceiveFloatBuffer((float*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(float));
+  }
 
   size_t NSpin();
   vtkSmartPointer<vtkLookupTable>  BuildLookupTable(RGBTable & xrgb, int size);

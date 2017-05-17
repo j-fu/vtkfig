@@ -43,13 +43,6 @@ namespace vtkfig
   }
   
 
-  void Frame::LinkCamera(int ivpx, int ivpy, Frame& frame, int livpx, int livpy)
-  {
-    auto & subframe= subframes[pos(ivpx,ivpy)];
-    int linkframepos=frame.pos(livpx,livpy);
-    int linkframenum=frame.framenum;
-    mainthread->LinkCamera(framenum,pos(ivpx,ivpy),frame.framenum,frame.pos(livpx,livpy));
-  }
   
   void Frame::Show() { mainthread->Show();}
 
@@ -64,6 +57,14 @@ namespace vtkfig
     SendCommand("AddFigure", Communicator::Command::FrameAddFigure);
   }
   
+
+  void Frame::LinkCamera(int ivpx, int ivpy, Frame& frame, int livpx, int livpy)
+  {
+    camlinkthisframepos=pos(ivpx,ivpy);
+    camlinkframepos=frame.pos(livpx,livpy);
+    camlinkframenum=frame.framenum;
+    SendCommand("LinkCamera", Communicator::Command::FrameLinkCamera);
+  }
   
 
   void Frame::Dump(std::string fname)

@@ -30,8 +30,10 @@ int main()
   double tt=0;
   int ii=0;
 
-  double t0=(double)clock()/(double)CLOCKS_PER_SEC;
+  auto t0=std::chrono::system_clock::now();
   double i0=ii;
+
+
   auto xyplot=vtkfig::XYPlot::New();
 
   frame->AddFigure(xyplot);
@@ -69,16 +71,20 @@ int main()
     if (ii==3) 
         frame->Dump("example-xyplot.png");
 
-    double t1=(double)clock()/(double)CLOCKS_PER_SEC;
+    tt+=0.1;
+    auto t1=std::chrono::system_clock::now();
+    double xdt=std::chrono::duration_cast<std::chrono::duration<double>>(t1-t0).count();
     double i1=ii;
-    if (t1-t0>4.0)
+
+    if (xdt>4.0)
     {
       printf("Frame rate: %.2f fps\n",(double)(i1-i0)/4.0);
-      fflush(stdout);
-      t0=(double)clock()/(double)CLOCKS_PER_SEC;
+      t0=std::chrono::system_clock::now();
       i0=ii;
+      fflush(stdout);
     }
-    tt+=0.1;
+    
+    ii++;
   }
 
 }

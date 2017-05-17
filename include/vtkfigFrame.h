@@ -31,8 +31,6 @@ namespace vtkfig
   {
   public:
 
-
-    
     Frame(const int nvpx, const int nvpy);
     Frame(): Frame(1,1){};
     
@@ -58,6 +56,7 @@ namespace vtkfig
     void LinkCamera(int ivpx, int ivpy,Frame& frame, int livpx, int livpy);
     void LinkCamera(Frame& frame)  {LinkCamera(0,0,frame,0,0);}
     void LinkCamera(int ivpx, int ivpy,std::shared_ptr<Frame> frame, int livpx, int livpy) {LinkCamera(ivpx,ivpy,*frame,livpx,livpy);}
+    void LinkCamera(int ivpx, int ivpy, Frame*frame, int livpx, int livpy) {LinkCamera(ivpx,ivpy,*frame,livpx,livpy);}
     void LinkCamera(std::shared_ptr<Frame> frame)  {LinkCamera(0,0,*frame,0,0);}
 
 
@@ -101,6 +100,10 @@ w      Wireframe modus
     
     int pos_x=0;
     int pos_y=0;
+
+    int camlinkthisframepos;
+    int camlinkframepos;
+    int camlinkframenum;
     
     /// 
     bool wireframe;

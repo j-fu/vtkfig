@@ -11,6 +11,7 @@
 #include "vtkfigCommunicator.h"
 #include "vtkfigSurf2D.h"
 #include "vtkfigTriContour2D.h"
+#include "vtkfigContour2D.h"
 #include "vtkfigXYPlot.h"
 #include "vtkfigMainThread.h"
 
@@ -212,6 +213,7 @@ namespace vtkfig
       }
       
     }
+
     int spin()
     {
       while (1)
@@ -308,6 +310,13 @@ namespace vtkfig
             if (debug_level>0)
               cout << "Add TriContour2D" << endl;
           }
+          else if (figtype=="Contour2D")
+          {
+            figure=new vtkfig::Contour2D();
+            frame->AddFigure(figure,iX,iY);
+            if (debug_level>0)
+              cout << "Add Contour2D" << endl;
+          }
           else if (figtype=="XYPlot")
           {
             figure=new vtkfig::XYPlot();
@@ -361,6 +370,25 @@ namespace vtkfig
           frame->Dump(fname);
         }
         break;
+
+        case Communicator::Command::FrameLinkCamera:
+        {
+          int thisframepos;
+          int otherframenum;
+          int otherframepos;
+          communicator->ReceiveInt(thisframepos);
+          communicator->ReceiveInt(otherframenum);
+          communicator->ReceiveInt(otherframepos);
+          auto otherframe=vtkfig::MainThread::mainthread->framemap[otherframenum];
+          frame->LinkCamera(
+            frame->ivpx(thisframepos),
+            frame->ivpy(thisframepos),
+            otherframe,
+            otherframe->ivpx(otherframepos),
+            otherframe->ivpy(otherframepos));
+        }
+        break;
+
         
         case vtkfig::Communicator::Command::MainThreadTerminate:
         {

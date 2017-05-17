@@ -48,6 +48,7 @@ namespace vtkfig
     vtkSmartPointer<vtkFloatArray> gridvalues;
     vtkSmartPointer<vtkPoints> gridpoints;
     bool has_data=false;
+    int grid_changed=0;
   };
   
 
@@ -85,6 +86,7 @@ namespace vtkfig
     gridvalues->SetNumberOfComponents(1);
     gridvalues->SetNumberOfTuples(npoints);
 
+    grid_changed=1;
     has_data=true;
   }
   

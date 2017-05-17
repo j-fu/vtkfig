@@ -55,6 +55,7 @@ int main(void)
 
 
   auto frame=vtkfig::Frame::New(2,2);
+
   frame->LinkCamera(1,0,frame,0,0);
 
   frame->Size(800,400);

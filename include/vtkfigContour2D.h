@@ -22,6 +22,7 @@ namespace vtkfig
     Contour2D();
     
     static std::shared_ptr<Contour2D> New() { return std::make_shared<Contour2D>(); }
+    virtual std::string SubClassName() {return std::string("Contour2D");}
     
     template<typename V>
       void SetGrid(const V &xcoord, 
@@ -37,15 +38,19 @@ namespace vtkfig
       vtkSmartPointer<vtkRenderWindowInteractor> interactor,
       vtkSmartPointer<vtkRenderer> renderer);
 
+    void ServerRTSend(vtkSmartPointer<Communicator> communicator);
+    void ClientMTReceive(vtkSmartPointer<Communicator> communicator);
     
 
+    vtkSmartPointer<vtkRectilinearGrid> gridfunc;
     vtkSmartPointer<vtkFloatArray> xcoord;
     vtkSmartPointer<vtkFloatArray> ycoord;
     vtkSmartPointer<vtkFloatArray> values;
     
     unsigned int Nx;
     unsigned int Ny;
-    
+    int grid_changed=0;
+    bool has_data=false;
   };
 
 
@@ -79,9 +84,9 @@ namespace vtkfig
     for (int i=0; i<Ny; i++)
       ycoord->InsertComponent(i, 0, y[i]);
 
-
-    values->SetNumberOfComponents(1);
-    values->SetNumberOfTuples(Nx*Ny);
+    gridfunc->SetDimensions(Nx, Ny, 1);
+    grid_changed=1;
+    has_data=true;
   }
 
   template<typename V>

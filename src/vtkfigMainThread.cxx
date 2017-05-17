@@ -355,6 +355,18 @@ namespace vtkfig
           frame->window->SetPosition(frame->pos_x, frame->pos_y);
         }
         break;
+
+        case Communicator::Command::FrameLinkCamera:
+        {
+          auto frame=mainthread->framemap[mainthread->iframe];
+          auto renderer=mainthread->framemap[mainthread->iframe]->subframes[frame->camlinkthisframepos].renderer;
+          auto lrenderer=mainthread->framemap[frame->camlinkframenum]->subframes[frame->camlinkframepos].renderer;
+          renderer->SetActiveCamera(lrenderer->GetActiveCamera());
+        }
+        break;
+
+
+
         
         case Communicator::Command::MainThreadTerminate:
         {
@@ -382,12 +394,6 @@ namespace vtkfig
     }
   };
 
-  void MainThread::LinkCamera(int iframe, int iframepos, int liframe, int liframepos)
-  {
-    auto renderer=mainthread->framemap[iframe]->subframes[iframepos].renderer;
-    auto lrenderer=mainthread->framemap[liframe]->subframes[liframepos].renderer;
-      renderer->SetActiveCamera(lrenderer->GetActiveCamera());
-  }
 
   void MainThread::RTAddFrame(MainThread* mainthread, int iframe)
   {
@@ -502,7 +508,7 @@ namespace vtkfig
         {
           auto frame=mainthread->framemap[mainthread->iframe];
           mainthread->communicator->SendInt(frame->nvpx);
-          mainthread->communicator->SendInt(frame->nvpx);
+          mainthread->communicator->SendInt(frame->nvpy);
 
         }
         break;
@@ -547,6 +553,7 @@ namespace vtkfig
         }
         break;
 
+
         case Communicator::Command::FrameAddFigure:
         {
           auto frame=mainthread->framemap[mainthread->iframe];
@@ -554,6 +561,16 @@ namespace vtkfig
           mainthread->communicator->SendString(figure->SubClassName());
           mainthread->communicator->SendInt(frame->ivpx(figure->framepos));
           mainthread->communicator->SendInt(frame->ivpy(figure->framepos));
+        }
+        break;
+
+
+        case Communicator::Command::FrameLinkCamera:
+        {
+          auto frame=mainthread->framemap[mainthread->iframe];
+          mainthread->communicator->SendInt(frame->camlinkthisframepos);
+          mainthread->communicator->SendInt(frame->camlinkframenum);
+          mainthread->communicator->SendInt(frame->camlinkframepos);
         }
         break;
 

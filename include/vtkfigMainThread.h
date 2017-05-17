@@ -35,7 +35,6 @@ namespace vtkfig
     void AddFrame(Frame *frame);
     void RemoveFrame(Frame *frame);
     void Start();
-    void LinkCamera(int iframe, int iframepos, int liframe, int liframepos);
 
 
     std::map<int,Frame*> framemap;
