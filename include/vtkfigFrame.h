@@ -106,9 +106,6 @@ w      Wireframe modus
     int camlinkframenum;
     
     /// 
-    bool wireframe;
-
-    /// 
     struct SubFrame
     {
       SubFrame(){};

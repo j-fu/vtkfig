@@ -1,9 +1,13 @@
-
 #include "vtkSliderRepresentation2D.h"
 #include "vtkProperty2D.h"
 #include "vtkTextProperty.h"
 #include "vtkTransform.h"
 #include "vtkTransformPolyDataFilter.h"
+#include "vtkRectilinearGrid.h"
+#include "vtkGeometryFilter.h"
+#include "vtkRectilinearGridGeometryFilter.h"
+#include "vtkUnstructuredGrid.h"
+
 
 #include "vtkfigContour2DBase.h"
 
@@ -21,10 +25,9 @@ namespace vtkfig
     virtual void Execute(vtkObject *caller, unsigned long, void*)
     {
       vtkSliderWidget *sliderWidget =         reinterpret_cast<vtkSliderWidget*>(caller);
-      this->contour2d->state.ncont=static_cast<vtkSliderRepresentation *>(sliderWidget->GetRepresentation())->GetValue();
-      double tempdiff = (this->contour2d->state.real_vmax-this->contour2d->state.real_vmin)/(10*this->contour2d->state.ncont);
-      this->contour2d->isocontours->GenerateValues(this->contour2d->state.ncont, this->contour2d->state.real_vmin+tempdiff, this->contour2d->state.real_vmax-tempdiff);
-      this->contour2d->isocontours->Modified();
+      this->contour2d->state.num_contours=static_cast<vtkSliderRepresentation *>(sliderWidget->GetRepresentation())->GetValue();
+      
+      this->contour2d->SetVMinMax(this->contour2d->state.real_vmin, this->contour2d->state.real_vmax);
     }
     mySliderCallback():contour2d(0) {}
     Contour2DBase *contour2d;
@@ -42,9 +45,9 @@ namespace vtkfig
         
         
         sliderRep->SetMinimumValue(0.0);
-        sliderRep->SetMaximumValue(20.0);
+        sliderRep->SetMaximumValue(state.max_num_contours);
         sliderRep->SetLabelFormat("%.0f");
-        sliderRep->SetValue(state.ncont);
+        sliderRep->SetValue(state.num_contours);
         
         sliderRep->SetTitleText("Number of Isolines");
         sliderRep->GetSliderProperty()->SetColor(0.5,0.5,0.5);
@@ -79,12 +82,17 @@ namespace vtkfig
 
   }
 
+  template <class DATA, class FILTER>
   void Contour2DBase::ProcessData(
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer,
-    vtkSmartPointer<vtkPolyDataAlgorithm> data, 
-    double bounds[6])
+    vtkSmartPointer<DATA> gridfunc)
   {
+    double bounds[6];
+    gridfunc->GetBounds(bounds);
+
+    auto geometry=vtkSmartPointer<FILTER>::New();
+    geometry->SetInputDataObject(gridfunc);
 
     // transform everything to [0,1]x[0,1]
     // 
@@ -120,7 +128,7 @@ namespace vtkfig
     transform->Translate(-bounds[0],-bounds[2],0);
     
     auto transformFilter =vtkSmartPointer<vtkTransformPolyDataFilter>::New();
-    transformFilter->SetInputConnection(data->GetOutputPort());
+    transformFilter->SetInputConnection(geometry->GetOutputPort());
     transformFilter->SetTransform(transform);
     transformFilter->Update();
     
@@ -164,4 +172,15 @@ namespace vtkfig
       
     } 
   }
+  
+  template void Contour2DBase::ProcessData<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(
+    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+    vtkSmartPointer<vtkRenderer> renderer,
+    vtkSmartPointer<vtkRectilinearGrid> data);
+  
+  template void Contour2DBase::ProcessData<vtkUnstructuredGrid,vtkGeometryFilter>(
+    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+    vtkSmartPointer<vtkRenderer> renderer,
+    vtkSmartPointer<vtkUnstructuredGrid> data);
+
 }

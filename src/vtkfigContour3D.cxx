@@ -14,106 +14,94 @@ namespace vtkfig
   
 
 ////////////////////////////////////////////////////////////
-  Contour3D::Contour3D(): Figure()
+  Contour3D::Contour3D(): Contour3DBase()
   {
-    RGBTable slice_rgb={{0,0,0,1},{1,1,0,0}};
-    RGBTable contour_rgb={{0,0,0,0},{1,0,0,0}};
-    slice_lut=BuildLookupTable(slice_rgb,255);
-    contour_lut=BuildLookupTable(contour_rgb,2);
-    isocontours = vtkSmartPointer<vtkContourFilter>::New();
+
+    xcoord = vtkSmartPointer<vtkFloatArray>::New();
+    ycoord =vtkSmartPointer<vtkFloatArray>::New();
+    zcoord =vtkSmartPointer<vtkFloatArray>::New();
+    values = vtkSmartPointer<vtkFloatArray>::New();
+    gridfunc=vtkSmartPointer<vtkRectilinearGrid>::New();
+    gridfunc->SetXCoordinates(xcoord);
+    gridfunc->SetYCoordinates(ycoord);
+    gridfunc->SetZCoordinates(ycoord);
+    gridfunc->GetPointData()->SetScalars(values);
   }
   
-  // Must go into contour3dbase
-  void Contour3D::RTSetInteractor(vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-                                      vtkSmartPointer<vtkRenderer> renderer) 
+
+
+  void Contour3D::ServerRTSend(vtkSmartPointer<Communicator> communicator) 
   {
-      imageplaneWidget->SetInteractor(interactor);
-      imageplaneWidget->SetInputConnection(geometry->GetOutputPort());
-      imageplaneWidget->TextureInterpolateOff();
-      imageplaneWidget->TextureVisibilityOff();
-      imageplaneWidget->SetKeyPressActivationValue('x');
-      imageplaneWidget->On();
-  };
+    communicator->SendCharBuffer((char*)&state,sizeof(state));
+    
+    if (state.surface_rgbtab_modified)
+    {
+      SendRGBTable(communicator, surface_rgbtab);
+      state.surface_rgbtab_modified=false;
+    }
+
+    if (state.contour_rgbtab_modified)
+    {
+      SendRGBTable(communicator, contour_rgbtab);
+      state.contour_rgbtab_modified=false;
+    }
+
+
+    communicator->SendInt(grid_changed);
+    if (grid_changed)
+      communicator->Send(gridfunc,1,1);
+    else
+      communicator->Send(values,1,1);
+  }
+
+  void Contour3D::ClientMTReceive(vtkSmartPointer<Communicator> communicator) 
+  {
+
+    communicator->ReceiveCharBuffer((char*)&state,sizeof(state));
+
+    if (state.surface_rgbtab_modified)
+    {
+      RGBTable new_rgbtab;
+      ReceiveRGBTable(communicator, new_rgbtab);
+      SetSurfaceRGBTable(new_rgbtab,state.surface_rgbtab_size);
+    }
+
+    if (state.contour_rgbtab_modified)
+    {
+      RGBTable new_rgbtab;
+      ReceiveRGBTable(communicator, new_rgbtab);
+      SetContourRGBTable(new_rgbtab,state.contour_rgbtab_size);
+    }
+
+    communicator->ReceiveInt(grid_changed);
+    if (has_data|| grid_changed)
+    {
+//      gridfunc->Reset();
+    }
+
+    if (grid_changed)
+      communicator->Receive(gridfunc,1,1);
+    else
+      communicator->Receive(values,1,1);
+
+
+
+    SetVMinMax(state.real_vmin,state.real_vmax);
+
+    gridfunc->Modified();
+
+
+    has_data=true;
+  }
+
   
   void Contour3D::RTBuild(vtkSmartPointer<vtkRenderWindow> window,
                           vtkSmartPointer<vtkRenderWindowInteractor> interactor,
                           vtkSmartPointer<vtkRenderer> renderer)
   {
     
+    ProcessData<vtkRectilinearGrid>(interactor,renderer,gridfunc);
 
-
-    vtkSmartPointer<vtkRectilinearGrid> gridfunc=vtkSmartPointer<vtkRectilinearGrid>::New();
-
-    int nisocontours=10;
-
-    // Create rectilinear grid
-    gridfunc->SetDimensions(Nx, Ny, Nz);
-    gridfunc->SetXCoordinates(xcoord);
-    gridfunc->SetYCoordinates(ycoord);
-    gridfunc->SetZCoordinates(zcoord);
-
-    gridfunc->GetPointData()->SetScalars(values);
-
-    // filter to geometry primitive
-    geometry =  vtkSmartPointer<vtkRectilinearGridGeometryFilter>::New();
-    geometry->SetInputDataObject(gridfunc);
-
-    if (0&&show_slice)
-    {
-
-      vtkSmartPointer<vtkPlane> plane= vtkSmartPointer<vtkPlane>::New();
-      plane->SetOrigin(gridfunc->GetCenter());
-      plane->SetNormal(1,0,0);
-
-      vtkSmartPointer<vtkCutter> planecut= vtkSmartPointer<vtkCutter>::New();
-      planecut->SetInputDataObject(gridfunc);
-      planecut->SetCutFunction(plane);
-
-      vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      mapper->SetInputConnection(planecut->GetOutputPort());
-      mapper->UseLookupTableScalarRangeOn();
-      mapper->SetLookupTable(contour_lut);
-    
-      vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
-      plot->SetMapper(mapper);
-      Figure::RTAddActor(plot);
-    
-      if (show_slice_colorbar)
-        Figure::RTAddActor2D(BuildColorBar(mapper));
-
-    }
-
-
-    if (show_contour)
-    {
-
-      isocontours->SetInputDataObject(gridfunc);
-
-      vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      mapper->SetInputConnection(isocontours->GetOutputPort());
-      mapper->UseLookupTableScalarRangeOn();
-      mapper->SetLookupTable(contour_lut);
-
-      vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
-      plot->GetProperty()->SetOpacity(0.5);
-      plot->SetMapper(mapper);
-      Figure::RTAddActor(plot);
-      if (show_contour_colorbar)
-        Figure::RTAddActor2D(BuildColorBar(mapper));
-
-    }
-
-    // create outline
-    vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
-    outlinefilter->SetInputConnection(geometry->GetOutputPort());
-    vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
-    vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
-    outline->SetMapper(outlineMapper);
-    outline->GetProperty()->SetColor(0, 0, 0);
-    Figure::RTAddActor(outline);
-
-    imageplaneWidget= vtkSmartPointer<vtkImagePlaneWidget>::New();
 
   }
 

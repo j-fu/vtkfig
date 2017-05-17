@@ -203,21 +203,29 @@ namespace vtkfig
 
       else if(key == "w")
       {
-
-        frame->wireframe=!frame->wireframe;
-
-        if (frame->wireframe)
-        {
-          for (auto &figure: frame->figures)
+        /// get figure number from mouse position
+        for (auto &figure: frame->figures)
+        { 
+          figure->state.wireframe=!figure->state.wireframe;
+          if (figure->state.wireframe)
             for (auto & actor: figure->actors)  actor->GetProperty()->SetRepresentationToWireframe();
-          
-        }
-        else
-        {
-          for (auto & figure: frame->figures)
+          else
             for (auto&  actor: figure->actors)  actor->GetProperty()->SetRepresentationToSurface();
         }
+        interactor->Render();
       }
+
+      else if(key == "l")
+      {
+        /// get figure number from mouse position
+        for (auto &figure: frame->figures)
+        {
+          figure->state.num_contours=(figure->state.num_contours+1)%figure->state.max_num_contours;
+          figure->SetVMinMax(figure->state.real_vmin, figure->state.real_vmax);
+        }
+        interactor->Render();
+      }
+
       
       else if (key=="space")
       {

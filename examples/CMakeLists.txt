@@ -21,6 +21,9 @@ target_link_libraries(example-custom vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS
 add_executable(example-tricontour2d MACOSX_BUNDLE example-tricontour2d.cxx )
 target_link_libraries(example-tricontour2d vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
+add_executable(example-tetcontour3d MACOSX_BUNDLE example-tetcontour3d.cxx )
+target_link_libraries(example-tetcontour3d vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+
 add_executable(example-multifig MACOSX_BUNDLE example-multifig.cxx )
 target_link_libraries(example-multifig vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 

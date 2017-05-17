@@ -1,15 +1,4 @@
 #include "vtkRectilinearGridGeometryFilter.h"
-#include "vtkStructuredGridGeometryFilter.h"
-#include "vtkStructuredGrid.h"
-#include "vtkContourFilter.h"
-#include "vtkOutlineFilter.h"
-#include "vtkPointData.h"
-#include "vtkActor.h"
-#include "vtkCommand.h"
-#include "vtkProperty2D.h"
-#include "vtkTextProperty.h"
-#include "vtkSliderRepresentation2D.h"
-
 #include "vtkfigContour2D.h"
 
 
@@ -103,15 +92,8 @@ namespace vtkfig
         vtkSmartPointer<vtkRenderer> renderer)
   {
 
-    double bounds[6];
-    gridfunc->GetBounds(bounds);
 
-    // filter to geometry primitive
-    vtkSmartPointer<vtkRectilinearGridGeometryFilter> geometry =  vtkSmartPointer<vtkRectilinearGridGeometryFilter>::New();
-    geometry->SetInputDataObject(gridfunc);
-
-
-    ProcessData(interactor,renderer,geometry,bounds);
+    ProcessData<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(interactor,renderer,gridfunc);
 
   }
 

@@ -1,10 +1,10 @@
 #include <vtkGeometryFilter.h>
 #include "vtkActor.h"
-#include "vtkfigTriContour2D.h"
+#include "vtkfigTetContour3D.h"
 
 namespace vtkfig
 {
-  TriContour2D::TriContour2D(): Contour2DBase()
+  TetContour3D::TetContour3D(): Contour3DBase()
   {
     gridfunc=vtkSmartPointer<vtkUnstructuredGrid>::New();
     gridvalues = vtkSmartPointer<vtkFloatArray>::New();
@@ -15,7 +15,7 @@ namespace vtkfig
 
 
 
-  void TriContour2D::ServerRTSend(vtkSmartPointer<Communicator> communicator) 
+  void TetContour3D::ServerRTSend(vtkSmartPointer<Communicator> communicator) 
   {
     communicator->SendCharBuffer((char*)&state,sizeof(state));
     
@@ -39,7 +39,7 @@ namespace vtkfig
       communicator->Send(gridvalues,1,1);
   }
 
-  void TriContour2D::ClientMTReceive(vtkSmartPointer<Communicator> communicator) 
+  void TetContour3D::ClientMTReceive(vtkSmartPointer<Communicator> communicator) 
   {
 
     communicator->ReceiveCharBuffer((char*)&state,sizeof(state));
@@ -80,13 +80,13 @@ namespace vtkfig
   }
 
   
-  void TriContour2D::RTBuild(
+  void TetContour3D::RTBuild(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer)
   {
     
-    ProcessData<vtkUnstructuredGrid,vtkGeometryFilter>(interactor,renderer,gridfunc);
+    ProcessData<vtkUnstructuredGrid>(interactor,renderer,gridfunc);
   }
 
 }
