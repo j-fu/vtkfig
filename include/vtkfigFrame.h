@@ -111,7 +111,9 @@ w      Wireframe modus
       SubFrame(){};
       SubFrame(const double vp[4]):viewport{vp[0],vp[1],vp[2],vp[3]}{};
       double default_camera_focal_point[3]={0.65,0.5,0};
-      double default_camera_position[3]={0.65,0.5,3};
+      double default_camera_position[3]={0.65,0.5,10};
+      double default_camera_zoom={1};
+      double default_camera_view_angle={15};
       vtkSmartPointer<vtkRenderer>    renderer;
       double viewport[4]={0,0,1,1};
     };

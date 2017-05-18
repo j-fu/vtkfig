@@ -5,6 +5,10 @@
 #include "vtkActor.h"
 #include "vtkOutlineFilter.h"
 #include "vtkStructuredGridGeometryFilter.h"
+#include "vtkRenderWindow.h"
+#include "vtkRenderer.h"
+#include "vtkRenderWindowInteractor.h"
+#include "vtkCommand.h"
 
 #include "vtkfigFrame.h"
 #include "vtkfigFigure.h"
@@ -16,6 +20,26 @@ inline double G(double x,double y, double t)
   return exp(-(x*x+y*y))*sin(t+x)*cos(y-t);
 }
 
+  class TimerCallback : public vtkCommand
+  {
+  public:
+    
+
+    vtkSmartPointer<vtkRenderWindowInteractor> interactor=0;
+    
+    static TimerCallback *New()    {return new TimerCallback;}
+    
+    virtual void Execute(
+      vtkObject *vtkNotUsed(caller),
+      unsigned long eventId,
+      void *vtkNotUsed(callData)
+      )
+    {
+     
+//      cout << "t" << endl;
+     interactor->TerminateApp();
+    }
+  };
 
 int main(void)
 {
@@ -44,7 +68,7 @@ vtkfigFrame and vtkfigFigure base class.
   const double dx = (x_upp-x_low)/(Nx-1);
   const double dy = (y_upp-y_low)/(Ny-1);
 
-  auto frame=vtkfig::Frame::New();
+//  auto frame=vtkfig::Frame::New();
     
 
 
@@ -139,16 +163,25 @@ vtkfigFrame and vtkfigFigure base class.
   auto outline = vtkSmartPointer<vtkActor>::New();
   outline->SetMapper(outlineMapper);
   outline->GetProperty()->SetColor(0, 0, 0);
-  
-  
-  
 
-  // renderer
-  figure->RTAddActor(surfplot);
-  figure->RTAddActor(outline);
-  figure->RTAddActor2D(vtkfig::BuildColorBar(mapper));
+  auto window=vtkSmartPointer<vtkRenderWindow>::New();
+  auto renderer=vtkSmartPointer<vtkRenderer>::New();
+  window->AddRenderer(renderer);
+  auto interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
+  interactor->SetRenderWindow(window);
+  renderer->AddActor(surfplot);
+  renderer->AddActor(outline);
+  renderer->AddActor2D(vtkfig::BuildColorBar(mapper));
+
+
+  auto callback =  vtkSmartPointer<TimerCallback>::New();
+  callback->interactor=interactor;
+  interactor->AddObserver(vtkCommand::TimerEvent,callback);
+
+
+  interactor->Initialize();
+  int timerId = interactor->CreateRepeatingTimer(10);
   
-  frame->AddFigure(figure);
   
   
   
@@ -184,9 +217,9 @@ vtkfigFrame and vtkfigFigure base class.
     double Lz = vmax-vmin;
     lut->SetTableRange(vmin,vmax);
     lut->Modified();
-    
-    frame->Show();
-    
+    renderer->SetBackground(1,1,1);
+    interactor->Render();
+    interactor->Start();
 
     t+=dt;
     auto t1=std::chrono::system_clock::now();

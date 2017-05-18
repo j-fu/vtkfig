@@ -23,7 +23,7 @@ namespace vtkfig
   public:
     ~MainThread();
     MainThread();
-
+    vtkSmartPointer<vtkRenderWindowInteractor> interactor;
 
 
   private:
@@ -35,14 +35,19 @@ namespace vtkfig
     void AddFrame(Frame *frame);
     void RemoveFrame(Frame *frame);
     void Start();
+    void Update();
 
 
     std::map<int,Frame*> framemap;
     static MainThread *mainthread;
 
 
+    static void PrepareRenderThread(MainThread*);
     static void RenderThread(MainThread*);
+
+    static void PrepareCommunicatorThread(MainThread*);
     static void CommunicatorThread(MainThread*);
+    static void CommunicatorThreadCallback(MainThread*);
 
     bool connection_open=false;
     void OpenConnection(int port, int wtime);
@@ -62,7 +67,10 @@ namespace vtkfig
     std::condition_variable cv; 
         
     /// Thread state
-    bool thread_alive=false;
+    bool running_multithreaded=false;
+
+    /// 
+    bool try_running_multithreaded=true; 
     
     /// space down state ?
     bool communication_blocked=false;

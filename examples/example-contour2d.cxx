@@ -83,5 +83,6 @@ int main(void)
     }
     ii++;
   }
+  frame->Interact();
 
 }

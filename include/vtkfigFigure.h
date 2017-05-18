@@ -89,13 +89,11 @@ namespace vtkfig
     void ShowContourColorbar(bool b) {state.show_contour_colorbar=b;}
     void ShowElevation(bool b) {state.show_elevation=b;}
     void SetValueRange(double vmin, double vmax){state.vmin_set=vmin; state.vmax_set=vmax;}
-    void SetNumberOfIsocontours(int n) {state.num_contours=n;}
+    void SetNumberOfIsocontours(int n) {state.num_contours=n; state.max_num_contours= std::max(n,state.max_num_contours);}
+    void SetIsoContourLineWidth(double w) {state.contour_line_width=w;}
+    void SetMaxNumberOfIsocontours(int n) {state.max_num_contours=n;}
     void SetXYAspect(double a) {state.aspect=a;}
     void KeepXYAspect(bool b) {state.keep_aspect=b;}
-
-    
-    vtkSmartPointer<vtkContourFilter> isocontours;
-
 
     void RTAddContextActor(vtkSmartPointer<vtkContextActor> prop);
 
@@ -104,7 +102,13 @@ namespace vtkfig
     void RTAddActor2D(vtkSmartPointer<vtkActor2D> prop);
 
     
+
+    
   protected:
+
+    vtkSmartPointer<vtkContourFilter> isocontours;
+
+
     vtkSmartPointer<vtkLookupTable> surface_lut;
     vtkSmartPointer<vtkLookupTable> contour_lut;
     RGBTable surface_rgbtab{{0,0,0,1},{1,1,0,0}};
@@ -129,7 +133,7 @@ namespace vtkfig
       contour_lut->SetTableRange(state.real_vmin,state.real_vmax);
       contour_lut->Modified();
       
-      double tempdiff = (state.real_vmax-state.real_vmin)/(1.0e4*state.num_contours);
+      double tempdiff = (state.real_vmax-state.real_vmin)/(1.0e8*state.num_contours);
       isocontours->GenerateValues(state.num_contours, state.real_vmin+tempdiff, state.real_vmax-tempdiff);
       isocontours->Modified();
 
@@ -188,6 +192,7 @@ namespace vtkfig
       bool surface_rgbtab_modified=true;
       bool wireframe=false;
       int spacedim=2;
+      double contour_line_width=1;
     } state;
 
     

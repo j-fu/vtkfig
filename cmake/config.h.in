@@ -1,0 +1,8 @@
+///
+/// Configuration file for vtkfig libraries
+///
+
+#ifndef CONFIG_APPLE
+#define CONFIG_APPLE @CONFIG_APPLE@
+#endif
+

@@ -47,7 +47,7 @@ namespace vtkfig
       if (state.spacedim==2)
         ContourBase::RTBuild2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,gridfunc);
       else
-        ContourBase::RTBuild3D<vtkUnstructuredGrid>(window,interactor,renderer,gridfunc);
+        ContourBase::RTBuild3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,gridfunc); 
     }
     
     void ServerRTSend(vtkSmartPointer<Communicator> communicator)

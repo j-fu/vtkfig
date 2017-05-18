@@ -1,12 +1,15 @@
 #include "vtkSliderRepresentation2D.h"
 #include "vtkProperty2D.h"
+#include "vtkAlgorithmOutput.h"
 #include "vtkTextProperty.h"
 #include "vtkTransform.h"
+#include "vtkTransformFilter.h"
 #include "vtkTransformPolyDataFilter.h"
 #include "vtkRectilinearGrid.h"
 #include "vtkGeometryFilter.h"
 #include "vtkRectilinearGridGeometryFilter.h"
 #include "vtkUnstructuredGrid.h"
+#include "vtkUnstructuredGridGeometryFilter.h"
 #include "vtkPlane.h"
 #include "vtkCutter.h"
 #include "vtkOutlineFilter.h"
@@ -132,7 +135,7 @@ namespace vtkfig
     
     transform->Translate(-bounds[0],-bounds[2],0);
     
-    auto transformFilter =vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+    auto transformFilter =vtkSmartPointer<vtkTransformFilter>::New();
     transformFilter->SetInputConnection(geometry->GetOutputPort());
     transformFilter->SetTransform(transform);
     transformFilter->Update();
@@ -168,6 +171,7 @@ namespace vtkfig
       
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
       plot->SetMapper(mapper);
+      plot->GetProperty()->SetLineWidth(state.contour_line_width);
       Figure::RTAddActor(plot);
       if (state.show_contour_colorbar)
         Figure::RTAddActor2D(BuildColorBar(mapper));
@@ -179,23 +183,66 @@ namespace vtkfig
   }
   
  
-  template <class DATA>
+  template <class DATA,class FILTER>
   void ContourBase::RTBuild3D(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer,
     vtkSmartPointer<DATA> gridfunc)
   {
+
+    double bounds[6];
+    gridfunc->GetBounds(bounds);
     
+    auto transform =  vtkSmartPointer<vtkTransform>::New();
+    double xsize=bounds[1]-bounds[0];
+    double ysize=bounds[3]-bounds[2];
+    double zsize=bounds[5]-bounds[4];
+    
+    double xysize=std::max(xsize,ysize);
+    double xyzsize=std::max(xysize,zsize);
+
+    // transform everything to [0,1]x[0,1]x[0,1]
+    
+    if (state.keep_aspect)
+    {
+      if (xsize>ysize)
+        transform->Translate(0,0.5*(xsize-ysize)/xyzsize,0);
+      else
+        transform->Translate(0.5*(ysize-xsize)/xyzsize,0,0);
+      
+      transform->Scale(1.0/xyzsize, 1.0/xyzsize,1.0/xyzsize);
+    }
+    else
+    {
+      if (state.aspect>1.0)
+      {
+        transform->Translate(0,0.5-0.5/state.aspect,0);
+        transform->Scale(1.0/xsize, 1.0/(state.aspect*ysize),1);
+      }
+      else
+      {
+        transform->Translate(0.5-0.5*state.aspect,0,0);
+        transform->Scale(state.aspect/xsize, 1.0/ysize,1);
+      }
+    }
+    
+    transform->Translate(-bounds[0],-bounds[2],-bounds[4]);
+    
+    auto transformFilter =vtkSmartPointer<vtkTransformFilter>::New();
+    transformFilter->SetInputDataObject(gridfunc);
+    transformFilter->SetTransform(transform);
+    transformFilter->Update();
+
     if (true)
     {
       
       vtkSmartPointer<vtkPlane> plane= vtkSmartPointer<vtkPlane>::New();
-      plane->SetOrigin(gridfunc->GetCenter());
+      plane->SetOrigin(0.5,0.5,0.5);
       plane->SetNormal(1,0,0);
       
       vtkSmartPointer<vtkCutter> planecut= vtkSmartPointer<vtkCutter>::New();
-      planecut->SetInputDataObject(gridfunc);
+      planecut->SetInputConnection(transformFilter->GetOutputPort());
       planecut->SetCutFunction(plane);
       
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -216,7 +263,7 @@ namespace vtkfig
     if (true)
     {
       
-      isocontours->SetInputDataObject(gridfunc);
+      isocontours->SetInputConnection(transformFilter->GetOutputPort());;
       
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       mapper->SetInputConnection(isocontours->GetOutputPort());
@@ -233,7 +280,7 @@ namespace vtkfig
 
     // create outline
     vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
-    outlinefilter->SetInputDataObject(gridfunc);
+    outlinefilter->SetInputConnection(transformFilter->GetOutputPort());;
     vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
     vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
@@ -262,14 +309,13 @@ namespace vtkfig
     vtkSmartPointer<vtkUnstructuredGrid> data);
 
 
-  template void ContourBase::RTBuild3D<vtkRectilinearGrid>(
+  template void ContourBase::RTBuild3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer,
     vtkSmartPointer<vtkRectilinearGrid> data);
 
-  
-  template void ContourBase::RTBuild3D<vtkUnstructuredGrid>(
+  template void ContourBase::RTBuild3D<vtkUnstructuredGrid,vtkGeometryFilter>(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer,

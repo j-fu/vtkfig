@@ -40,12 +40,20 @@ include(${VTK_USE_FILE})
 
 
 set(CMAKE_CXX_STANDARD 11)
-include_directories(include)
+include_directories(include ${PROJECT_BINARY_DIR})
 add_subdirectory(include)
 add_subdirectory(src)
 add_subdirectory(examples)
 
 
+if (APPLE)
+  set(CONFIG_APPLE 1)
+else()
+  set(CONFIG_APPLE 0)
+endif()
+
+configure_file(cmake/config.h.in   "${PROJECT_BINARY_DIR}/config.h" @ONLY)
+#include_directories(${PROJECT_BINARY_DIR})
 
 ########################################################
 #

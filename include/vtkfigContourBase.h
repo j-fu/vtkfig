@@ -26,7 +26,7 @@ namespace vtkfig
                      vtkSmartPointer<vtkRenderer> renderer,
                      vtkSmartPointer<GRIDFUNC> gridfunc);
     
-    template <class GRIDFUNC>
+    template <class GRIDFUNC, class FILTER>
       void RTBuild3D(vtkSmartPointer<vtkRenderWindow> window,
                      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
                      vtkSmartPointer<vtkRenderer> renderer,

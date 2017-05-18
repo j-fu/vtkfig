@@ -3,6 +3,8 @@
 
 #include "vtkRectilinearGrid.h"
 #include "vtkRectilinearGridGeometryFilter.h"
+#include "vtkGeometryFilter.h"
+#include "vtkUnstructuredGridGeometryFilter.h"
 #include "vtkFloatArray.h"
 #include "vtkContourFilter.h"
 
@@ -66,7 +68,7 @@ namespace vtkfig
       if (state.spacedim==2)
         ContourBase::RTBuild2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,gridfunc);
       else
-        ContourBase::RTBuild3D<vtkRectilinearGrid>(window, interactor,renderer,gridfunc);
+        ContourBase::RTBuild3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,gridfunc);
     }
 
     void ServerRTSend(vtkSmartPointer<Communicator> communicator)

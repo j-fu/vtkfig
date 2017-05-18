@@ -17,6 +17,7 @@
 #include "vtkfigFrame.h"
 #include "vtkfigFigure.h"
 #include "vtkfigMainThread.h"
+#include "config.h"
 
 
 namespace vtkfig
@@ -47,8 +48,31 @@ namespace vtkfig
     char* port_string=getenv("VTKFIG_PORT_NUMBER");
     char* wtime_string=getenv("VTKFIG_WAIT_SECONDS");
     char *debug_string=getenv("VTKFIG_DEBUG");
+    char *multi_string=getenv("VTKFIG_MULTITHREADED");
+
+
     if (debug_string!=0)
       debug_level=atoi(debug_string);
+
+    
+#if CONFIG_APPLE
+    try_running_multithreaded=false;
+    if (multi_string!=0 && atoi(multi_string))
+    {
+    if (debug_level>0)
+      cout << "overriding multithreading default (off) on APPLE" << endl;
+    try_running_multithreaded=false;
+  }
+#else
+    try_running_multithreaded=true;
+    if (multi_string!=0 && !atoi(multi_string))
+    {
+    if (debug_level>0)
+      cout << "overriding multithreading default (on) on NON-APPLE" << endl;
+      try_running_multithreaded=false;
+    }
+#endif
+
 
     if (wtime_string!=0)
       wtime=atoi(wtime_string);
@@ -62,6 +86,17 @@ namespace vtkfig
       OpenConnection(port,wtime);
     }
 
+    if (debug_level>0)
+    {   
+      char sc='c';
+      if (connection_open) 
+        sc='s';
+
+      if (try_running_multithreaded)
+        cout << sc<< " try running multithreaded" << endl;
+      else
+        cout << sc<<" try running single threaded" << endl;
+    }
   }
 
 
@@ -89,14 +124,28 @@ namespace vtkfig
   {
     if (debug_level>0)
       cout << " ~mt"  << endl;
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    if (this->thread_alive)
+    if (this->running_multithreaded)
+    {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
       Terminate();
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    this->thread->join();
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      this->thread->join();
+    }
+    else
+      Terminate();
+
     framemap.clear();
   }
 
+
+
+  void  MainThread::Update()
+  {
+    if (connection_open)
+      CommunicatorThreadCallback(this);
+    else
+      interactor->Start();
+  }
   
   void  MainThread::AddFrame(Frame*frame)
   {
@@ -106,7 +155,22 @@ namespace vtkfig
     framemap[lastframenum++]=frame;
     if (lastframenum==1)
     {
-      Start();
+      if (try_running_multithreaded)
+      {
+        Start();
+      }
+      else
+      {
+        if (connection_open)
+        {
+          PrepareCommunicatorThread(this);
+          CommunicatorThreadCallback(this);
+        }
+        else
+        {
+          PrepareRenderThread(this);
+        }
+      }
     }
     else
     {
@@ -130,8 +194,8 @@ namespace vtkfig
 
   void MainThread::Interact()
   {
-    if (!this->thread_alive)
-      throw std::runtime_error("Interact: render thread is dead");
+    // if (!this->running_multithreaded)
+    //   throw std::runtime_error("Interact: render thread is dead");
 
     SendCommand(-1, "Show", Communicator::Command::MainThreadShow);
 
@@ -139,6 +203,8 @@ namespace vtkfig
     do
     {
       std::this_thread::sleep_for (std::chrono::milliseconds(10));
+      if (!this->running_multithreaded)
+        Show();
     }
     while (this->communication_blocked);
 
@@ -149,14 +215,19 @@ namespace vtkfig
 
   void MainThread::SendCommand(int framenum, const std::string from, Communicator::Command cmd)
   {
-    if (!this->thread_alive)
-      throw std::runtime_error(from+" : render thread is dead.");
     if (debug_level>0)
       cout << "mt " << from << " " << framenum << endl;
+
+
     this->cmd=cmd;
     this->iframe=framenum;
-    std::unique_lock<std::mutex> lock(this->mtx);
-    this->cv.wait(lock);
+    if (running_multithreaded)
+    {
+      std::unique_lock<std::mutex> lock(this->mtx);
+      this->cv.wait(lock);
+    }
+    else
+      Update();
   }
 
   void MainThread::Terminate(void)
@@ -187,8 +258,13 @@ namespace vtkfig
 
       std::string key = interactor->GetKeySym();
       
-      if(key == "e" || key== "q" || key== "f")  {}
+      if(key == "e" ||  key== "f")  {}
 
+      else if(key == "q")
+      {
+
+
+      }
       else if(key == "r")
       {
         for (auto & subframe: frame->subframes)
@@ -197,6 +273,8 @@ namespace vtkfig
           subframe.renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
           subframe.renderer->GetActiveCamera()->OrthogonalizeViewUp();
           subframe.renderer->GetActiveCamera()->SetRoll(0);
+          subframe.renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
+          subframe.renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
         }
         interactor->Render();
       }
@@ -267,10 +345,10 @@ namespace vtkfig
         vtkCommand::TimerEvent == eventId  // Check if timer event
         && mainthread->cmd!=Communicator::Command::Empty  // Check if command has been given
         )
-      {
-        
+      {        
         // Lock mutex
-        std::unique_lock<std::mutex> lock(mainthread->mtx);
+        if (mainthread->running_multithreaded)
+          std::unique_lock<std::mutex> lock(mainthread->mtx);
         
         // Command dispatch
         switch(mainthread->cmd)
@@ -383,7 +461,7 @@ namespace vtkfig
             framepair.second->window->Finalize();
           mainthread->framemap.clear();
           interactor->TerminateApp();
-          mainthread->thread_alive=false;
+          mainthread->running_multithreaded=false;
           mainthread->cv.notify_all();
           return;
         }
@@ -396,7 +474,10 @@ namespace vtkfig
         mainthread->cmd=Communicator::Command::Empty;
         
         // Notify that command was exeuted
-        mainthread->cv.notify_all();
+        if (mainthread->running_multithreaded)
+          mainthread->cv.notify_all();
+        else
+          mainthread->interactor->TerminateApp();
         
       }
     }
@@ -425,46 +506,53 @@ namespace vtkfig
         renderer->GetActiveCamera()->SetPosition(subframe.default_camera_position);
         renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
         renderer->GetActiveCamera()->OrthogonalizeViewUp();
+        renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
+        renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
         frame->window->AddRenderer(renderer);
         
       }
     }
   }
+
+
+  void MainThread::PrepareRenderThread(MainThread* mainthread)
+  {
+    RTAddFrame(mainthread,0);
+    auto frame=mainthread->framemap[0];
+
+    mainthread->interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    auto style =  vtkSmartPointer<InteractorStyleTrackballCamera>::New();
+    style->frame=frame;
+    mainthread->interactor->SetInteractorStyle(style);
+    
+    mainthread->interactor->SetRenderWindow(frame->window);
+
+    auto callback =  vtkSmartPointer<TimerCallback>::New();
+    callback->interactor=mainthread->interactor;
+    callback->mainthread=mainthread;
+    mainthread->interactor->AddObserver(vtkCommand::TimerEvent,callback);
+
+
+
+
+    mainthread->interactor->Initialize();
+    int timerId = mainthread->interactor->CreateRepeatingTimer(10);
+  }
   
   void MainThread::RenderThread(MainThread* mainthread)
   {
 
-    RTAddFrame(mainthread,0);
-    auto frame=mainthread->framemap[0];
-
-    auto interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
-    auto style =  vtkSmartPointer<InteractorStyleTrackballCamera>::New();
-    style->frame=frame;
-    interactor->SetInteractorStyle(style);
-    
-    interactor->SetRenderWindow(frame->window);
-
-    auto callback =  vtkSmartPointer<TimerCallback>::New();
-    callback->interactor=interactor;
-    callback->mainthread=mainthread;
-    interactor->AddObserver(vtkCommand::TimerEvent,callback);
-
-
-
-
-    interactor->Initialize();
-    int timerId = interactor->CreateRepeatingTimer(10);
+    MainThread::PrepareRenderThread(mainthread);
   
-    mainthread->thread_alive=true;
-    interactor->Start();
-    mainthread->thread_alive=false;
+    mainthread->running_multithreaded=true;
+    mainthread->interactor->Start();
+    mainthread->running_multithreaded=false;
     mainthread->cv.notify_all();
     
-    interactor->SetRenderWindow(0);
-    interactor->TerminateApp();
-    mainthread->thread_alive=false;
-                                      
-    
+    mainthread->interactor->SetRenderWindow(0);
+    mainthread->interactor->TerminateApp();
+    mainthread->running_multithreaded=false;
+                                     
     //window->Finalize();
   }
 
@@ -479,28 +567,26 @@ namespace vtkfig
     {
       std::this_thread::sleep_for (std::chrono::milliseconds(10));
     }
-    while (!this->thread_alive);
+    while (!this->running_multithreaded);
   }
 
 
   ////////////////////////////////////////////////////////////////
   /// Server communication 
-
-  void  MainThread::CommunicatorThread(MainThread* mainthread)
+  void  MainThread::PrepareCommunicatorThread(MainThread* mainthread)
   {
-    mainthread->thread_alive=true;
-
-
     mainthread->cmd=Communicator::Command::MainThreadAddFrame;
 
-    while(1)
-    {
-      std::this_thread::sleep_for (std::chrono::milliseconds(5));
+  }
+
+  void  MainThread::CommunicatorThreadCallback(MainThread* mainthread)
+  {
       if (mainthread->cmd!=Communicator::Command::Empty)
       {      
         
         // Lock mutex
-        std::unique_lock<std::mutex> lock(mainthread->mtx);
+        if (mainthread->running_multithreaded)
+          std::unique_lock<std::mutex> lock(mainthread->mtx);
 
         if (mainthread->debug_level>0) 
           cout << "s cmd: " << static_cast<int>(mainthread->cmd) << " frame: " <<mainthread->iframe<< endl;
@@ -602,7 +688,7 @@ namespace vtkfig
           mainthread->framemap.clear();
           // Notify that command was exeuted
           mainthread->cv.notify_all();
-          mainthread->thread_alive=false;
+          mainthread->running_multithreaded=false;
           return;
         }
         break;
@@ -620,10 +706,22 @@ namespace vtkfig
         mainthread->cmd=Communicator::Command::Empty;
         
         // Notify that command was exeuted
-        mainthread->cv.notify_all();
+        if (mainthread->running_multithreaded)
+          mainthread->cv.notify_all();
       }
+
+  }
+
+  void  MainThread::CommunicatorThread(MainThread* mainthread)
+  {
+    mainthread->running_multithreaded=true;
+    PrepareCommunicatorThread(mainthread);
+    while(1)
+    {
+      std::this_thread::sleep_for (std::chrono::milliseconds(5));
+      MainThread::CommunicatorThreadCallback(mainthread);
     }
-    mainthread->thread_alive=false;
+    mainthread->running_multithreaded=false;
   }
   
  

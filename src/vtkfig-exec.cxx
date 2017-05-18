@@ -222,8 +222,7 @@ namespace vtkfig
         vtkfig::Communicator::Command cmd;
         Figure *figure;
         Frame* frame;
-        int framenum=-1;
-        
+        int framenum=-1;        
         
         communicator->ReceiveCommand(cmd);
         communicator->ReceiveInt(framenum);
