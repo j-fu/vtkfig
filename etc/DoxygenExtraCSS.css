@@ -1,0 +1,37 @@
+body {
+        background-color: white;
+        color: black;
+        margin: 0;
+}
+
+body, table, div, p, dl {
+	font: 400 20px/30px Roboto,sans-serif;
+}
+
+pre.fragment, div.line,.params, .paramdir {
+    font: Inconsolata,monospace;Electrochemical Properties of Al–based Solid Solutions
+Alloyed by Element Mg, Ga, Zn and Mn under the Guide of
+First Principles
+
+}
+div.contents {
+        margin-bottom: 10px;
+        padding: 12px;
+        margin-left: auto;
+        margin-right: auto;
+        width: 960px;
+        background-color: white;
+        border-radius: 8px;
+}
+
+#titlearea {
+        background-color: white;
+}
+
+hr.footer {
+        display: none;
+}
+
+.footer {
+        background-color: #AAA;
+}
