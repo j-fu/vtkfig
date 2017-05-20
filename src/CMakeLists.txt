@@ -1,4 +1,4 @@
-add_library(vtkfig SHARED
+add_library(vtkfig 
   vtkfigFrame.cxx
   vtkfigFigure.cxx
   vtkfigMainThread.cxx
@@ -12,9 +12,12 @@ add_library(vtkfig SHARED
   vtkfigQuiver2D.cxx
 )
 
-add_executable(vtkfig-exec MACOSX_BUNDLE vtkfig-exec.cxx)
-target_link_libraries(vtkfig-exec vtkfig ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+###### target_link_libraries(vtkfig PUBLIC ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+#target_link_libraries(vtkfig vtklib)
+set_target_properties(vtkfig PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+add_executable(vtkfig-exec MACOSX_BUNDLE vtkfig-exec.cxx)
+target_link_libraries(vtkfig-exec vtkfig ${VTK_LIBRARIES})
 
 set_property(TARGET vtkfig-exec PROPERTY CXX_STANDARD 11)
 

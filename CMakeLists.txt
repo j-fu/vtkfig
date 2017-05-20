@@ -34,8 +34,15 @@ set(VTKFIG_EXPORT_NAME "VTKFIG${VTKFIG_CONFIG}")
 find_package(Threads REQUIRED)
 find_package(VTK REQUIRED)
 
-message(STATUS "VTK_USE_FILE= ${VTK_USE_FILE}")
+
+#message(STATUS "VTK_USE_FILE= ${VTK_USE_FILE}")
 include(${VTK_USE_FILE})
+
+# Add include directories needed to use VTK.
+include_directories(${VTK_INCLUDE_DIRS})
+
+# Add link directories needed to use VTK.
+#link_directories(${VTK_LIBRARY_DIRS})
 
 
 
@@ -70,13 +77,14 @@ configure_file(cmake/config.h.in   "${PROJECT_BINARY_DIR}/config.h" @ONLY)
 # Furthermore, the target export allows client packages to
 # figure out if they need a recompile or not.
 
-export(TARGETS vtkfig-exec vtkfig FILE "${PROJECT_BINARY_DIR}/${VTKFIG_EXPORT_NAME}.cmake")
+export(TARGETS vtkfig-exec vtkfig FILE "${PROJECT_BINARY_DIR}/${VTKFIG_EXPORT_NAME}Targets.cmake" EXPORT_LINK_INTERFACE_LIBRARIES)
 export(PACKAGE ${VTKFIG_EXPORT_NAME})
 
 
 # In order to work, we need to set up  the corresponding 
 # Files in ${PROJECT_BINARY_DIR} which is the root of the
 # build subdirectory
+
 
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include")
 configure_file(cmake/VTKFIGConfig.cmake.in   "${PROJECT_BINARY_DIR}/${VTKFIG_EXPORT_NAME}Config.cmake" @ONLY)

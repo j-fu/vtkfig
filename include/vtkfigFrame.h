@@ -3,11 +3,8 @@
 ///
 /// Define Frame class  providing a window for rendering.
 /// 
-
 #ifndef VTKFIG_FRAME_H
 #define VTKFIG_FRAME_H
-
-#include <memory>
 
 #include <memory>
 #include <vector>
@@ -19,19 +16,30 @@
 namespace vtkfig
 {
 
-  class Frame;
-  ///
-  /// Frame: provide a thread based rendering
-  /// 
-
   class Figure;
   class MainThread;
 
+  ///
+  /// Provide Window+interactor+renderers 
+  /// 
   class Frame
   {
   public:
 
+
+    ///
+    /// Create frame with multiple subframes 
+    ///
+    /// Viewports are arranged in a rectagular scheme
+    ///
+    /// \param nvpx  number of viewport columns
+    /// \param nvpx  number of viewport rows
+    ///
     Frame(const int nvpx, const int nvpy);
+
+    ///
+    /// Create frame with single subframe 
+    ///
     Frame(): Frame(1,1){};
     
     static std::shared_ptr<Frame> New(int nvpx, int nvpy) 
@@ -39,6 +47,9 @@ namespace vtkfig
       return std::make_shared<Frame>(nvpx,nvpy);
     };
 
+    ///
+    /// Create frame with single subframe 
+    ///
     static std::shared_ptr<Frame> New() {return  Frame::New(1,1);}
 
     ~Frame();
