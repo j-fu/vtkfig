@@ -12,8 +12,11 @@
 #include "vtkUnstructuredGridGeometryFilter.h"
 #include "vtkPlane.h"
 #include "vtkCutter.h"
+#include "vtkImplicitBoolean.h"
 #include "vtkOutlineFilter.h"
-
+#include "vtkCubeAxesActor2D.h"
+#include "vtkCamera.h"
+#include "vtkAppendPolyData.h"
 
 
 #include "vtkfigContourBase.h"
@@ -45,7 +48,7 @@ namespace vtkfig
   void ContourBase::AddSlider(vtkSmartPointer<vtkRenderWindowInteractor> interactor,
                                 vtkSmartPointer<vtkRenderer> renderer)
   {
-      if (state.show_slider)
+      if (true)
       {
 
         auto sliderRep = vtkSmartPointer<vtkSliderRepresentation2D>::New();
@@ -98,6 +101,7 @@ namespace vtkfig
   {
     double bounds[6];
     gridfunc->GetBounds(bounds);
+    renderer->GetActiveCamera()->SetParallelProjection(1);
 
     auto geometry=vtkSmartPointer<FILTER>::New();
     geometry->SetInputDataObject(gridfunc);
@@ -105,11 +109,12 @@ namespace vtkfig
     // transform everything to [0,1]x[0,1]
     // 
     auto transform =  vtkSmartPointer<vtkTransform>::New();
+   
     double xsize=bounds[1]-bounds[0];
     double ysize=bounds[3]-bounds[2];
-    
+
     double xysize=std::max(xsize,ysize);
-    
+
     if (state.keep_aspect)
     {
       if (xsize>ysize)
@@ -134,17 +139,15 @@ namespace vtkfig
     }
     
     transform->Translate(-bounds[0],-bounds[2],0);
+
     
-    auto transformFilter =vtkSmartPointer<vtkTransformFilter>::New();
-    transformFilter->SetInputConnection(geometry->GetOutputPort());
-    transformFilter->SetTransform(transform);
-    transformFilter->Update();
+    renderer->GetActiveCamera()->SetModelTransformMatrix(transform->GetMatrix());
     
     
     if (state.show_surface)
     {
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      mapper->SetInputConnection(transformFilter->GetOutputPort());
+      mapper->SetInputConnection(geometry->GetOutputPort());
       
       mapper->UseLookupTableScalarRangeOn();
       mapper->SetLookupTable(surface_lut);
@@ -162,7 +165,7 @@ namespace vtkfig
     if (state.show_contour)
     {
       
-      isocontours->SetInputConnection(transformFilter->GetOutputPort());
+      isocontours->SetInputConnection(geometry->GetOutputPort());
       
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       mapper->SetInputConnection(isocontours->GetOutputPort());
@@ -176,10 +179,38 @@ namespace vtkfig
       if (state.show_contour_colorbar)
         Figure::RTAddActor2D(BuildColorBar(mapper));
       
-      if (state.show_slider)
-        AddSlider(interactor,renderer);
+      AddSlider(interactor,renderer);
       
     } 
+
+    if (true)
+    {
+      auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
+      axes->SetInputConnection(geometry->GetOutputPort());
+      axes->GetProperty()->SetColor(0, 0, 0);
+      axes->SetFontFactor(1.25);
+      axes->SetCornerOffset(0); 
+      axes->SetNumberOfLabels(3); 
+
+      axes->SetCamera(renderer->GetActiveCamera());
+      axes->ZAxisVisibilityOff();
+      axes->SetXLabel("");
+      axes->SetYLabel("");
+
+      auto textprop=axes->GetAxisLabelTextProperty();
+      textprop->ItalicOff();
+      textprop->SetFontFamilyToArial();
+      textprop->SetColor(0,0,0);
+
+      textprop=axes->GetAxisTitleTextProperty();
+      textprop->ItalicOff();
+      textprop->SetFontFamilyToArial();
+      textprop->SetColor(0,0,0);
+
+      Figure::RTAddActor2D(axes);
+    }
+    
+
   }
   
  
@@ -193,6 +224,8 @@ namespace vtkfig
 
     double bounds[6];
     gridfunc->GetBounds(bounds);
+    double center[3];
+    gridfunc->GetCenter(center);
     
     auto transform =  vtkSmartPointer<vtkTransform>::New();
     double xsize=bounds[1]-bounds[0];
@@ -228,66 +261,134 @@ namespace vtkfig
     }
     
     transform->Translate(-bounds[0],-bounds[2],-bounds[4]);
-    
-    auto transformFilter =vtkSmartPointer<vtkTransformFilter>::New();
-    transformFilter->SetInputDataObject(gridfunc);
-    transformFilter->SetTransform(transform);
-    transformFilter->Update();
 
-    if (true)
-    {
+    renderer->GetActiveCamera()->SetModelTransformMatrix(transform->GetMatrix());
+    
+
+
+
+    auto planeX= vtkSmartPointer<vtkPlane>::New();
+    planeX->SetOrigin(center);
+    planeX->SetNormal(1,0,0);
       
-      vtkSmartPointer<vtkPlane> plane= vtkSmartPointer<vtkPlane>::New();
-      plane->SetOrigin(0.5,0.5,0.5);
-      plane->SetNormal(1,0,0);
+    auto planeY= vtkSmartPointer<vtkPlane>::New();
+    planeY->SetOrigin(center);
+    planeY->SetNormal(0,1,0);
       
-      vtkSmartPointer<vtkCutter> planecut= vtkSmartPointer<vtkCutter>::New();
-      planecut->SetInputConnection(transformFilter->GetOutputPort());
-      planecut->SetCutFunction(plane);
+    auto planeZ= vtkSmartPointer<vtkPlane>::New();
+    planeZ->SetOrigin(center);
+    planeZ->SetNormal(0,0,1);
+    
+    
+    auto planecutX= vtkSmartPointer<vtkCutter>::New();
+    planecutX->SetInputDataObject(gridfunc);
+    planecutX->SetCutFunction(planeX);
       
+    auto planecutY= vtkSmartPointer<vtkCutter>::New();
+    planecutY->SetInputDataObject(gridfunc);
+    planecutY->SetCutFunction(planeY);
+      
+    auto planecutZ= vtkSmartPointer<vtkCutter>::New();
+    planecutZ->SetInputDataObject(gridfunc);
+    planecutZ->SetCutFunction(planeZ);
+      
+
+    auto xyz =    vtkSmartPointer<vtkAppendPolyData>::New();
+    xyz->SetUserManagedInputs (1);
+    xyz->SetNumberOfInputs(3);
+
+    xyz->SetInputConnectionByNumber(0,planecutX->GetOutputPort());
+    xyz->SetInputConnectionByNumber(1,planecutY->GetOutputPort());
+    xyz->SetInputConnectionByNumber(2,planecutZ->GetOutputPort());
+
+//      planecut->SetValue(0,0);
+//      planecut->SetValue(1,0.25*zsize);
+//      planecut->SetValue(2,-0.25*zsize);
+      
+
+
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      mapper->SetInputConnection(planecut->GetOutputPort());
+      mapper->SetInputConnection(xyz->GetOutputPort());
       mapper->UseLookupTableScalarRangeOn();
       mapper->SetLookupTable(surface_lut);
       
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
+      plot->GetProperty()->SetOpacity(1);
       plot->SetMapper(mapper);
       Figure::RTAddActor(plot);
       
-      // if (show_slice_colorbar)
+      //if (show_slice_colorbar)
       //   Figure::RTAddActor2D(BuildColorBar(mapper));
       
-    }
+      Figure::RTAddActor2D(BuildColorBar(mapper));
+
     
     
     if (true)
     {
       
-      isocontours->SetInputConnection(transformFilter->GetOutputPort());;
+//      isocontours->SetInputDataObject(gridfunc);
+      isocontours->SetInputConnection(xyz->GetOutputPort());
       
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       mapper->SetInputConnection(isocontours->GetOutputPort());
       mapper->UseLookupTableScalarRangeOn();
-      mapper->SetLookupTable(surface_lut);
+      mapper->SetLookupTable(contour_lut);
       
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
-      plot->GetProperty()->SetOpacity(0.5);
+      plot->GetProperty()->SetOpacity(0.4);
+      plot->GetProperty()->SetLineWidth(state.contour_line_width);
       plot->SetMapper(mapper);
       Figure::RTAddActor(plot);
-      Figure::RTAddActor2D(BuildColorBar(mapper));
       
+      AddSlider(interactor,renderer);
     }
 
-    // create outline
-    vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
-    outlinefilter->SetInputConnection(transformFilter->GetOutputPort());;
-    vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
-    vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
-    outline->SetMapper(outlineMapper);
-    outline->GetProperty()->SetColor(0, 0, 0);
-    Figure::RTAddActor(outline);
+
+
     
+    if (true)
+    {
+      // create outline
+      vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
+      outlinefilter->SetInputDataObject(gridfunc);;
+      vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+      outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
+      vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
+      outline->SetMapper(outlineMapper);
+      outline->GetProperty()->SetColor(0, 0, 0);
+      Figure::RTAddActor(outline);
+    }
+
+    if (true)
+    {
+      auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
+      axes->SetInputData(gridfunc);
+      axes->GetProperty()->SetColor(0, 0, 0);
+      axes->SetFontFactor(1.0);
+      axes->SetCornerOffset(0); 
+      axes->SetNumberOfLabels(3); 
+      axes->SetInertia(100);
+
+      axes->SetCamera(renderer->GetActiveCamera());
+      axes->SetXLabel("x");
+      axes->SetYLabel("y");
+      axes->SetZLabel("z");
+
+      auto textprop=axes->GetAxisLabelTextProperty();
+      textprop->ItalicOff();
+      textprop->SetFontFamilyToArial();
+      textprop->SetColor(0,0,0);
+
+      textprop=axes->GetAxisTitleTextProperty();
+      textprop->ItalicOff();
+      textprop->SetFontFamilyToArial();
+      textprop->SetColor(0,0,0);
+
+      Figure::RTAddActor2D(axes);
+    }
+
+
     
   } 
   

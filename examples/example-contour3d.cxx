@@ -65,7 +65,9 @@ int main(void)
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
   vtkfig::RectContour contour;
-  contour.SetContourRGBTable(colors,255);
+//  contour.SetContourRGBTable(colors,255);
+  contour.SetSurfaceRGBTable(colors,255);
+
   contour.SetGrid(x,y,z);
   frame.AddFigure(contour);
 

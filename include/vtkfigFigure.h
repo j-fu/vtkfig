@@ -192,7 +192,7 @@ namespace vtkfig
       bool surface_rgbtab_modified=true;
       bool wireframe=false;
       int spacedim=2;
-      double contour_line_width=1;
+      double contour_line_width=2;
     } state;
 
     
