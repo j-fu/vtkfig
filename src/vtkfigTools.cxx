@@ -35,7 +35,7 @@ namespace vtkfig
     return lut;
   }
 
-  vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper)
+  vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper, const std::string title)
   {
 
 // http://public.kitware.com/pipermail/vtkusers/2016-March/094540.html :
@@ -59,6 +59,7 @@ namespace vtkfig
         colorbar->GetTitleTextProperty()->SetFontSize(80);
         colorbar->GetLabelTextProperty()->SetFontSize(80);
         colorbar->SetLabelFormat("%.2e");
+        colorbar->SetTitle(title.c_str());
 
 //        colorbar->GetAnnotationTextProperty()->SetFontSize(80);
 

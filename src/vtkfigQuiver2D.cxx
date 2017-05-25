@@ -39,6 +39,10 @@ namespace vtkfig
     gridfunc->GetPointData()->SetScalars(colors);
     gridfunc->GetPointData()->SetVectors(vectors);
 
+
+    double  bounds[6];
+    gridfunc->GetBounds(bounds);
+    Figure::SetModelTransform(renderer,bounds);
     // filter to geometry primitive
     vtkSmartPointer<vtkRectilinearGridGeometryFilter> geometry =
       vtkSmartPointer<vtkRectilinearGridGeometryFilter>::New();

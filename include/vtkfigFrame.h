@@ -39,7 +39,7 @@ namespace vtkfig
 
     ///
     /// Create frame with single subframe 
-    ///
+    ///+
     Frame(): Frame(1,1){};
     
     static std::shared_ptr<Frame> New(int nvpx, int nvpy) 

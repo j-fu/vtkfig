@@ -58,7 +58,7 @@ int main(void)
   double i0=ii;
   auto contour=vtkfig::RectContour::New();
   contour->SetSurfaceRGBTable(colors,255);
-  contour->ShowContour(false);
+  contour->ShowIsocontours(false);
   
   auto quiver=vtkfig::Quiver2D::New();
   quiver->ShowColorbar(false);

@@ -11,11 +11,10 @@
 
 #include <vtkMath.h>
 
-
-inline double G(double x,double y, double z, double t) 
+inline double G(double x,double y, double t) 
 {
   
-  return exp(-(x*x+y*y+z*z))*sin(t+x)*cos(y-t)*sin(0.5*z-0.5*t);
+  return exp(-(x*x+y*y))*sin(t+3.*x)*cos(4.*y-t);
 }
 
 
@@ -24,27 +23,25 @@ int main(void)
   size_t nspin=vtkfig::NSpin();
   std::vector<double> inpoints;
 
+  for(double x = -2; x < 2; x+=0.03)
+  {
+    for(double y = -2; y < 2; y+=0.03)
+    {
+      inpoints.push_back(x + vtkMath::Random(-.1, .1));
+      inpoints.push_back(y + vtkMath::Random(-.1, .1));
+    }
+  }
   
-  for(double x = -2; x < 2; x+=0.2)
-    for(double y = -2; y < 2; y+=0.2)
-      for(double z = -2; z < 2; z+=0.2)
-      {
-        inpoints.push_back(x + vtkMath::Random(-.1, .1));
-        inpoints.push_back(y + vtkMath::Random(-.1, .1));
-        inpoints.push_back(z + vtkMath::Random(-.1, .1));
-      }
-  
-  
-  
-  
-  
+
+
+
   std::vector<double>points;
   std::vector<int>cells;
   
-  vtkfig::Delaunay3D(inpoints,points,cells);
-  
+  vtkfig::Delaunay2D(inpoints,points,cells);
 
-  int npoints=points.size()/3;
+
+  int npoints=points.size()/2;
   std::vector<double>values(npoints);
 
   auto frame=vtkfig::Frame::New();
@@ -64,22 +61,20 @@ int main(void)
 
   auto contour=vtkfig::SimplexContour::New();
   contour->SetSurfaceRGBTable(colors,255);
-  contour->SetGrid(3,points,cells);
+  contour->SetGrid(2,points,cells);
   contour->SetValueRange(-1,1);
   frame->AddFigure(contour);
 
   while (ii<nspin)
   {
-    for (int ipoint=0, ival=0;ipoint<points.size(); ipoint+=3,ival++)
-      values[ival]=G(points[ipoint+0],points[ipoint+1],points[ipoint+2],t);
+    for (int ipoint=0, ival=0;ipoint<points.size(); ipoint+=2,ival++)
+      values[ival]=G(points[ipoint+0],points[ipoint+1],t);
 
     contour->UpdateValues(values);
     frame->Show();
      if (ii==3) 
-     {
-      frame->Dump("example-tetcontour3d.png");
-      contour->WriteVTK("example-tetcontour3d.vtk");
-     }
+      frame->Dump("example-tricontour2d.png");
+   
     t+=dt;
     auto t1=std::chrono::system_clock::now();
     double xdt=std::chrono::duration_cast<std::chrono::duration<double>>(t1-t0).count();

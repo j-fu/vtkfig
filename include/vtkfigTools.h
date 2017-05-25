@@ -38,8 +38,11 @@ namespace vtkfig
   }
 
   size_t NSpin();
+
   vtkSmartPointer<vtkLookupTable>  BuildLookupTable(RGBTable & xrgb, int size);
-  vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper);
+
+  vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper, const std::string title="");
+
   template <class V, class IV>
     inline  void Delaunay2D(const V & points_in,  V & points, IV & cells);
 

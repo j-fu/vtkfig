@@ -13,6 +13,7 @@
 #include "vtkfigRectContour.h"
 #include "vtkfigSimplexContour.h"
 #include "vtkfigRectContour.h"
+#include "vtkfigSurfaceContour.h"
 #include "vtkfigXYPlot.h"
 #include "vtkfigMainThread.h"
 
@@ -316,6 +317,13 @@ namespace vtkfig
             frame->AddFigure(figure,iX,iY);
             if (debug_level>0)
               cout << "Add RectContour" << endl;
+          }
+          else if (figtype=="SurfaceContour")
+          {
+            figure=new vtkfig::SurfaceContour();
+            frame->AddFigure(figure,iX,iY);
+            if (debug_level>0)
+              cout << "Add SurfaceContour" << endl;
           }
           else if (figtype=="XYPlot")
           {

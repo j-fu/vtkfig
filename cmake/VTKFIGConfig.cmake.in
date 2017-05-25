@@ -6,7 +6,7 @@
  
 # Compute paths
 get_filename_component(VTKFIG_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-message(STATUS "confdir:" ${VTKFIG_CMAKE_DIR})
+message(STATUS "VTKFIG Configuration:" ${VTKFIG_CMAKE_DIR})
 set(VTKFIG_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@;@VTK_INCLUDE_DIRS@")
 
 set(CMAKE_CXX_STANDARD 11)
@@ -17,6 +17,8 @@ set(CMAKE_CXX_STANDARD 11)
 
 find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
+get_filename_component(VTK_CMAKE_DIR "${VTK_USE_FILE}" PATH)
+message(STATUS "VTK Configuration:" ${VTK_CMAKE_DIR})
 
 
  

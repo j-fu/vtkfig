@@ -6,6 +6,7 @@
 #include "vtkPointData.h"
 #include "vtkCellArray.h"
 #include "vtkUnstructuredGrid.h"
+#include "vtkUnstructuredGridWriter.h"
 
 #include "vtkfigContourBase.h"
 #include "vtkfigTools.h"
@@ -34,6 +35,17 @@ namespace vtkfig
     
     template <class V>
       void UpdateValues(const V&values);
+
+
+    void WriteVTK(std::string fname)
+    {
+      auto writer=vtkSmartPointer<vtkUnstructuredGridWriter>::New();
+      writer->SetFileTypeToBinary();
+      writer->SetFileName(fname.c_str());
+      writer->SetInputData(gridfunc);
+      writer->Write();
+    }
+
     
   private:
 

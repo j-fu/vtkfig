@@ -2,9 +2,6 @@
 #include "vtkProperty2D.h"
 #include "vtkAlgorithmOutput.h"
 #include "vtkTextProperty.h"
-#include "vtkTransform.h"
-#include "vtkTransformFilter.h"
-#include "vtkTransformPolyDataFilter.h"
 #include "vtkRectilinearGrid.h"
 #include "vtkGeometryFilter.h"
 #include "vtkRectilinearGridGeometryFilter.h"
@@ -105,45 +102,10 @@ namespace vtkfig
 
     auto geometry=vtkSmartPointer<FILTER>::New();
     geometry->SetInputDataObject(gridfunc);
-
-    // transform everything to [0,1]x[0,1]
-    // 
-    auto transform =  vtkSmartPointer<vtkTransform>::New();
-   
-    double xsize=bounds[1]-bounds[0];
-    double ysize=bounds[3]-bounds[2];
-
-    double xysize=std::max(xsize,ysize);
-
-    if (state.keep_aspect)
-    {
-      if (xsize>ysize)
-        transform->Translate(0,0.5*(xsize-ysize)/xysize,0);
-      else
-        transform->Translate(0.5*(ysize-xsize)/xysize,0,0);
-      
-      transform->Scale(1.0/xysize, 1.0/xysize,1);
-    }
-    else
-    {
-      if (state.aspect>1.0)
-      {
-        transform->Translate(0,0.5-0.5/state.aspect,0);
-        transform->Scale(1.0/xsize, 1.0/(state.aspect*ysize),1);
-      }
-      else
-      {
-        transform->Translate(0.5-0.5*state.aspect,0,0);
-        transform->Scale(state.aspect/xsize, 1.0/ysize,1);
-      }
-    }
     
-    transform->Translate(-bounds[0],-bounds[2],0);
+    SetModelTransform(renderer,bounds);
 
-    
-    renderer->GetActiveCamera()->SetModelTransformMatrix(transform->GetMatrix());
-    
-    
+        
     if (state.show_surface)
     {
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -162,7 +124,7 @@ namespace vtkfig
     }
     
     
-    if (state.show_contour)
+    if (state.show_isocontours)
     {
       
       isocontours->SetInputConnection(geometry->GetOutputPort());
@@ -226,49 +188,11 @@ namespace vtkfig
     gridfunc->GetBounds(bounds);
     double center[3];
     gridfunc->GetCenter(center);
-    
-    auto transform =  vtkSmartPointer<vtkTransform>::New();
-    double xsize=bounds[1]-bounds[0];
-    double ysize=bounds[3]-bounds[2];
-    double zsize=bounds[5]-bounds[4];
-    
-    double xysize=std::max(xsize,ysize);
-    double xyzsize=std::max(xysize,zsize);
-
-    // transform everything to [0,1]x[0,1]x[0,1]
-    
-    if (state.keep_aspect)
-    {
-      if (xsize>ysize)
-        transform->Translate(0,0.5*(xsize-ysize)/xyzsize,0);
-      else
-        transform->Translate(0.5*(ysize-xsize)/xyzsize,0,0);
-      
-      transform->Scale(1.0/xyzsize, 1.0/xyzsize,1.0/xyzsize);
-    }
-    else
-    {
-      if (state.aspect>1.0)
-      {
-        transform->Translate(0,0.5-0.5/state.aspect,0);
-        transform->Scale(1.0/xsize, 1.0/(state.aspect*ysize),1);
-      }
-      else
-      {
-        transform->Translate(0.5-0.5*state.aspect,0,0);
-        transform->Scale(state.aspect/xsize, 1.0/ysize,1);
-      }
-    }
-    
-    transform->Translate(-bounds[0],-bounds[2],-bounds[4]);
-
-    renderer->GetActiveCamera()->SetModelTransformMatrix(transform->GetMatrix());
-    
-
+    Figure::SetModelTransform(renderer,bounds);
 
 
     auto planeX= vtkSmartPointer<vtkPlane>::New();
-    planeX->SetOrigin(center);
+    planeX->SetOrigin(bounds[0],0,0);
     planeX->SetNormal(1,0,0);
       
     auto planeY= vtkSmartPointer<vtkPlane>::New();
@@ -283,6 +207,7 @@ namespace vtkfig
     auto planecutX= vtkSmartPointer<vtkCutter>::New();
     planecutX->SetInputDataObject(gridfunc);
     planecutX->SetCutFunction(planeX);
+
       
     auto planecutY= vtkSmartPointer<vtkCutter>::New();
     planecutY->SetInputDataObject(gridfunc);
@@ -294,17 +219,13 @@ namespace vtkfig
       
 
     auto xyz =    vtkSmartPointer<vtkAppendPolyData>::New();
-    xyz->SetUserManagedInputs (1);
+    xyz->SetUserManagedInputs(1);
     xyz->SetNumberOfInputs(3);
 
     xyz->SetInputConnectionByNumber(0,planecutX->GetOutputPort());
     xyz->SetInputConnectionByNumber(1,planecutY->GetOutputPort());
     xyz->SetInputConnectionByNumber(2,planecutZ->GetOutputPort());
 
-//      planecut->SetValue(0,0);
-//      planecut->SetValue(1,0.25*zsize);
-//      planecut->SetValue(2,-0.25*zsize);
-      
 
 
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -324,11 +245,14 @@ namespace vtkfig
 
     
     
-    if (true)
+    if (state.show_isocontours)
     {
       
-//      isocontours->SetInputDataObject(gridfunc);
-      isocontours->SetInputConnection(xyz->GetOutputPort());
+
+      if (state.show_isocontours_on_cutplanes)
+        isocontours->SetInputConnection(xyz->GetOutputPort());
+      else
+        isocontours->SetInputDataObject(gridfunc);
       
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       mapper->SetInputConnection(isocontours->GetOutputPort());
@@ -336,7 +260,10 @@ namespace vtkfig
       mapper->SetLookupTable(contour_lut);
       
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
-      plot->GetProperty()->SetOpacity(0.4);
+      if (state.show_isocontours_on_cutplanes)
+        plot->GetProperty()->SetOpacity(1.0);
+      else
+        plot->GetProperty()->SetOpacity(0.4);
       plot->GetProperty()->SetLineWidth(state.contour_line_width);
       plot->SetMapper(mapper);
       Figure::RTAddActor(plot);

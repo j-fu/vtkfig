@@ -17,6 +17,9 @@
 #include "vtkfigTools.h"
 #include "vtkContourFilter.h"
 #include "vtkPolyDataAlgorithm.h"
+#include "vtkTransform.h"
+#include "vtkCamera.h"
+#include "vtkRenderer.h"
 
 
 namespace vtkfig
@@ -82,16 +85,61 @@ namespace vtkfig
       contour_lut=BuildLookupTable(tab,tabsize);
     }
 
+    void SetModelTransform(vtkSmartPointer<vtkRenderer> renderer, double bounds[6])
+    {
+      auto transform =  vtkSmartPointer<vtkTransform>::New();
+      double xsize=bounds[1]-bounds[0];
+      double ysize=bounds[3]-bounds[2];
+      double zsize=bounds[5]-bounds[4];
+      
+      double xysize=std::max(xsize,ysize);
+      double xyzsize=std::max(xysize,zsize);
+      
+      // transform everything to [0,1]x[0,1]x[0,1]
+      
+      if (state.keep_aspect)
+      {
+        if (xsize>ysize)
+          transform->Translate(0,0.5*(xsize-ysize)/xyzsize,0);
+        else
+          transform->Translate(0.5*(ysize-xsize)/xyzsize,0,0);
+        
+        transform->Scale(1.0/xyzsize, 1.0/xyzsize,1.0/xyzsize);
+      }
+      else
+      {
+        if (state.aspect>1.0)
+        {
+          transform->Translate(0,0.5-0.5/state.aspect,0);
+          transform->Scale(1.0/xsize, 1.0/(state.aspect*ysize),1);
+        }
+        else
+        {
+          transform->Translate(0.5-0.5*state.aspect,0,0);
+          transform->Scale(state.aspect/xsize, 1.0/ysize,1);
+        }
+      }
+      
+      transform->Translate(-bounds[0],-bounds[2],-bounds[4]);
+      
+      renderer->GetActiveCamera()->SetModelTransformMatrix(transform->GetMatrix());
+    }
+
+
+
+
     void ShowSurface(bool b) {state.show_surface=b;}
-    void ShowContour(bool b) {state.show_contour=b;}
+    void ShowIsocontours(bool b) {state.show_isocontours=b;}
     void ShowSlider(bool b) {state.show_slider=b;}
     void ShowSurfaceColorbar(bool b) {state.show_surface_colorbar=b;}
     void ShowContourColorbar(bool b) {state.show_contour_colorbar=b;}
     void ShowElevation(bool b) {state.show_elevation=b;}
-    void SetValueRange(double vmin, double vmax){state.vmin_set=vmin; state.vmax_set=vmax;}
+    void SetValueRange(double vmin, double vmax){state.vmin_set=vmin; state.vmax_set=vmax; SetVMinMax(vmin,vmax);}
     void SetNumberOfIsocontours(int n) {state.num_contours=n; state.max_num_contours= std::max(n,state.max_num_contours);}
     void SetIsoContourLineWidth(double w) {state.contour_line_width=w;}
-    void SetMaxNumberOfIsocontours(int n) {state.max_num_contours=n;}
+
+    void SetMaxNumberOfIsoContours(int n) {state.max_num_contours=n;}
+    void ShowIsoContoursOnCutplanes(bool b) {state.show_isocontours_on_cutplanes=b;}
     void SetXYAspect(double a) {state.aspect=a;}
     void KeepXYAspect(bool b) {state.keep_aspect=b;}
 
@@ -179,7 +227,7 @@ namespace vtkfig
       double aspect=1.0;
       
       bool show_surface=true;
-      bool show_contour=true;
+      bool show_isocontours=true;
       bool show_slider=false;
       bool show_surface_colorbar=true;
       bool show_contour_colorbar=false;
@@ -193,6 +241,7 @@ namespace vtkfig
       bool wireframe=false;
       int spacedim=2;
       double contour_line_width=2;
+      bool show_isocontours_on_cutplanes=true;
     } state;
 
     
