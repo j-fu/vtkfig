@@ -1,5 +1,5 @@
 #include "vtkfigFrame.h"
-#include "vtkfigRectContour.h"
+#include "vtkfigSurfaceContour.h"
 #include "vtkfigQuiver2D.h"
 #include "vtkfigTools.h"
 
@@ -56,7 +56,13 @@ int main(void)
   int ii=0;
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
-  auto contour=vtkfig::RectContour::New();
+
+  auto griddata=vtkfig::RectilinearGridData::New();
+  griddata->SetGrid(x,y);
+  griddata->SetPointScalar(z ,"V");
+
+  auto contour=vtkfig::SurfaceContour::New();
+  contour->SetData(griddata,"V");
   contour->SetSurfaceRGBTable(colors,255);
   contour->ShowIsocontours(false);
   
@@ -65,7 +71,6 @@ int main(void)
   quiver->SetRGBTable(qcolors, 2);
   quiver->SetArrowScale(0.5);
 
-  contour->SetGrid(x,y);
   frame->AddFigure(contour);
 
   quiver->SetGrid(x,y);
@@ -101,7 +106,7 @@ int main(void)
 
       }
 
-    contour->UpdateValues(z);
+    griddata->SetPointScalar(z ,"V");
     quiver->UpdateValues(u,v);
 
     frame->Show();

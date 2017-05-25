@@ -29,8 +29,8 @@ namespace vtkfig
     }
     
     template<typename V>
-    inline
-    void SetGrid(const V &x, const V &y)
+      inline
+      void SetGrid(const V &x, const V &y)
     {
       vtkSmartPointer<vtkFloatArray> xcoord;
       vtkSmartPointer<vtkFloatArray> ycoord;
@@ -42,8 +42,8 @@ namespace vtkfig
         griddata=vtkSmartPointer<vtkRectilinearGrid>::New();
         xcoord = vtkSmartPointer<vtkFloatArray>::New();
         ycoord = vtkSmartPointer<vtkFloatArray>::New();
-      griddata->SetXCoordinates(xcoord);
-      griddata->SetYCoordinates(ycoord);
+        griddata->SetXCoordinates(xcoord);
+        griddata->SetYCoordinates(ycoord);
       }
       else
       {
@@ -67,6 +67,60 @@ namespace vtkfig
         ycoord->InsertComponent(i, 0, y[i]);
       
       griddata->SetDimensions(Nx, Ny, 1);
+      griddata->Modified();
+    }
+    
+    
+    template<typename V>
+      inline
+      void SetGrid(const V &x, const V &y, const V &z)
+    {
+      vtkSmartPointer<vtkFloatArray> xcoord;
+      vtkSmartPointer<vtkFloatArray> ycoord;
+      vtkSmartPointer<vtkFloatArray> zcoord;
+      assert(spacedim!=2);
+      spacedim=3;
+      
+      if (griddata==NULL)
+      {
+        griddata=vtkSmartPointer<vtkRectilinearGrid>::New();
+        xcoord = vtkSmartPointer<vtkFloatArray>::New();
+        ycoord = vtkSmartPointer<vtkFloatArray>::New();
+        zcoord = vtkSmartPointer<vtkFloatArray>::New();
+        griddata->SetXCoordinates(xcoord);
+        griddata->SetYCoordinates(ycoord);
+        griddata->SetZCoordinates(zcoord);
+      }
+      else
+      {
+        xcoord=vtkFloatArray::SafeDownCast(griddata->GetXCoordinates());
+        ycoord=vtkFloatArray::SafeDownCast(griddata->GetYCoordinates());
+        zcoord=vtkFloatArray::SafeDownCast(griddata->GetZCoordinates());
+        xcoord->Initialize();
+        ycoord->Initialize();
+        zcoord->Initialize();
+      }
+      int Nx = x.size();
+      int Ny = y.size();
+      int Nz = z.size();
+      
+      xcoord->SetNumberOfComponents(1);
+      xcoord->SetNumberOfTuples(Nx);
+      
+      ycoord->SetNumberOfComponents(1);
+      ycoord->SetNumberOfTuples(Ny);
+
+      zcoord->SetNumberOfComponents(1);
+      zcoord->SetNumberOfTuples(Nz);
+      
+      for (int i=0; i<Nx; i++)
+        xcoord->InsertComponent(i, 0, x[i]);
+      for (int i=0; i<Ny; i++)
+        ycoord->InsertComponent(i, 0, y[i]);
+      for (int i=0; i<Nz; i++)
+        zcoord->InsertComponent(i, 0, z[i]);
+      
+      griddata->SetDimensions(Nx, Ny, Nz );
       griddata->Modified();
     }
     

@@ -2,15 +2,11 @@
 
 #include "vtkfigFrame.h"
 #include "vtkfigTools.h"
-#include "vtkfigSimplexContour.h"
+#include "vtkfigUnstructuredGridData.h"
+#include "vtkfigSurfaceContour.h"
 #include "vtkfigTools.h"
 
-
-
-
-
 #include <vtkMath.h>
-
 
 inline double G(double x,double y, double z, double t) 
 {
@@ -47,7 +43,6 @@ int main(void)
   int npoints=points.size()/3;
   std::vector<double>values(npoints);
 
-  auto frame=vtkfig::Frame::New();
 
   auto colors=vtkfig::RGBTable
     { 
@@ -62,24 +57,32 @@ int main(void)
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
 
-  auto contour=vtkfig::SimplexContour::New();
+
+  auto griddata=vtkfig::UnstructuredGridData::New();
+  griddata->SetSimplexVolumeGrid(3,points,cells);
+  griddata->SetPointScalar(values,"V");
+
+  auto frame=vtkfig::Frame::New();
+  auto contour=vtkfig::SurfaceContour::New();
+  contour->SetData(griddata,"V");
   contour->SetSurfaceRGBTable(colors,255);
-  contour->SetGrid(3,points,cells);
   contour->SetValueRange(-1,1);
   frame->AddFigure(contour);
+
+
 
   while (ii<nspin)
   {
     for (int ipoint=0, ival=0;ipoint<points.size(); ipoint+=3,ival++)
       values[ival]=G(points[ipoint+0],points[ipoint+1],points[ipoint+2],t);
 
-    contour->UpdateValues(values);
+
+    griddata->SetPointScalar(values,"V");
+
     frame->Show();
      if (ii==3) 
-     {
-      frame->Dump("example-tetcontour3d.png");
-      contour->WriteVTK("example-tetcontour3d.vtk");
-     }
+      frame->Dump("example-simplexcontour3d.png");
+   
     t+=dt;
     auto t1=std::chrono::system_clock::now();
     double xdt=std::chrono::duration_cast<std::chrono::duration<double>>(t1-t0).count();

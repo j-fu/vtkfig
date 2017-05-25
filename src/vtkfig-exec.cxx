@@ -10,9 +10,6 @@
 #include "vtkfigFrame.h"
 #include "vtkfigCommunicator.h"
 #include "vtkfigSurf2D.h"
-#include "vtkfigRectContour.h"
-#include "vtkfigSimplexContour.h"
-#include "vtkfigRectContour.h"
 #include "vtkfigSurfaceContour.h"
 #include "vtkfigXYPlot.h"
 #include "vtkfigMainThread.h"
@@ -303,20 +300,6 @@ namespace vtkfig
             frame->AddFigure(figure,iX,iY);
             if (debug_level>0)
               cout << "Add Surf2d" << endl;
-          }
-          else if (figtype=="SimplexContour")
-          {
-            figure=new vtkfig::SimplexContour();
-            frame->AddFigure(figure,iX,iY);
-            if (debug_level>0)
-              cout << "Add SimplexContour" << endl;
-          }
-          else if (figtype=="RectContour")
-          {
-            figure=new vtkfig::RectContour();
-            frame->AddFigure(figure,iX,iY);
-            if (debug_level>0)
-              cout << "Add RectContour" << endl;
           }
           else if (figtype=="SurfaceContour")
           {

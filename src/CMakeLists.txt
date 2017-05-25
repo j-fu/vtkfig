@@ -4,11 +4,9 @@ add_library(vtkfig
   vtkfigMainThread.cxx
   vtkfigCommunicator.cxx
   vtkfigTools.cxx
-  vtkfigContourBase.cxx  
-
   vtkfigSurfaceContour.cxx  
- 
   vtkfigXYPlot.cxx
+  
   vtkfigChartXY.cxx
   vtkfigSurf2D.cxx
   vtkfigQuiver2D.cxx
