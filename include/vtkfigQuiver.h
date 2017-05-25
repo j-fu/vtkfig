@@ -19,14 +19,8 @@ namespace vtkfig
 
       void SetArrowScale(double scale) {arrow_scale=scale;}
 
-      template< class G> void SetData(G& xgriddata, const std::string xdataname);
-      
-      template< class G> void SetData(std::shared_ptr<G> xgriddata, const std::string xdataname);
 
     private:
-
-      vtkSmartPointer<vtkDataSet> data=NULL;
-      std::string dataname;
      
       virtual void RTBuild(
         vtkSmartPointer<vtkRenderWindow> window,
@@ -38,23 +32,6 @@ namespace vtkfig
       double arrow_scale=0.333;
     };  
   
-  template< class G> inline void Quiver::SetData(G& xgriddata, const std::string xdataname)
-  {
-    state.spacedim=xgriddata.spacedim;
-    data=xgriddata.griddata;
-    dataname=xdataname;
-    if (data->IsA("vtkUnstructuredGrid"))
-      state.datatype=Figure::DataType::UnstructuredGrid;
-    else  if (data->IsA("vtkRectilinearGrid"))
-      state.datatype=Figure::DataType::RectilinearGrid;
-  }
-  
-  
-  template< class G> inline void Quiver::SetData(std::shared_ptr<G> xgriddata, const std::string xdataname)
-  {
-    SetData(*xgriddata,xdataname);
-  }
-
   
 }
 

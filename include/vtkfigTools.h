@@ -28,7 +28,7 @@ namespace vtkfig
     communicator->SendInt(rgbtab.size());
     communicator->SendFloatBuffer((float*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(float));
   }
-
+  
   static void ReceiveRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab)
   {
     int tabsize;
@@ -36,20 +36,18 @@ namespace vtkfig
     rgbtab.resize(tabsize);
     communicator->ReceiveFloatBuffer((float*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(float));
   }
-
+  
   size_t NSpin();
 
   vtkSmartPointer<vtkLookupTable>  BuildLookupTable(RGBTable & xrgb, int size);
-
+  
   vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper, const std::string title="");
 
-  template <class V, class IV>
-    inline  void Delaunay2D(const V & points_in,  V & points, IV & cells);
+  template <class V, class IV> inline  void Delaunay2D(const V & points_in,  V & points, IV & cells);
 
 
 
-  template <class V, class IV>
-    inline void Delaunay2D(const V & points_in,  V & points, IV & cells)
+  template <class V, class IV> inline void Delaunay2D(const V & points_in,  V & points, IV & cells)
   {
     assert(points.size()==0);
     assert(cells.size()==0);
@@ -58,7 +56,6 @@ namespace vtkfig
     
     for (int i=0; i<points_in.size(); i+=2)
       inpoints->InsertNextPoint(points_in[i], points_in[i+1],0);
-    
     
     
     auto aPolyData=   vtkSmartPointer<vtkPolyData>::New();

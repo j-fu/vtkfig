@@ -1,24 +1,19 @@
 #ifndef VTKFIG_SURFACE_CONTOUR_H
 #define VTKFIG_SURFACE_CONTOUR_H
 
-
 #include "vtkSliderWidget.h"
 #include "vtkSliderRepresentation.h"
 #include "vtkRenderer.h"
 #include "vtkCommand.h"
 
-
 #include "vtkDataSetAttributes.h"
 #include "vtkGeometryFilter.h"
 #include "vtkRectilinearGridGeometryFilter.h"
-
 
 #include "vtkfigUnstructuredGridData.h"
 #include "vtkfigRectilinearGridData.h"
 #include "vtkfigTools.h"
 #include "vtkfigFigure.h"
-
-
 
 
 
@@ -34,14 +29,7 @@ namespace vtkfig
     virtual std::string SubClassName() {return std::string("SurfaceContour");}
     
     
-    template< class G> void SetData(G& xgriddata, const std::string xdataname);
-    
-    template< class G> void SetData(std::shared_ptr<G> xgriddata, const std::string xdataname);
-    
   private:
-    
-    vtkSmartPointer<vtkDataSet> data=NULL;
-    std::string dataname;
     
     virtual void RTBuild(
       vtkSmartPointer<vtkRenderWindow> window,
@@ -50,10 +38,10 @@ namespace vtkfig
     
     
     void ServerRTSend(vtkSmartPointer<Communicator> communicator);
-
+    
     void ClientMTReceive(vtkSmartPointer<Communicator> communicator);
-
-
+    
+    
     template <class GRIDFUNC, class FILTER>
       void RTBuild2D(vtkSmartPointer<vtkRenderWindow> window,
                      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
@@ -66,31 +54,14 @@ namespace vtkfig
                      vtkSmartPointer<vtkRenderer> renderer,
                      vtkSmartPointer<GRIDFUNC> gridfunc);
     
-    
     vtkSmartPointer<vtkSliderWidget> sliderWidget;
     
-    void AddSlider(vtkSmartPointer<vtkRenderWindowInteractor> i,vtkSmartPointer<vtkRenderer> r);
+    void AddSlider(vtkSmartPointer<vtkRenderWindowInteractor> i,
+                   vtkSmartPointer<vtkRenderer> r);
     
     friend class mySliderCallback;
    
   };
-  
-  template< class G> inline void SurfaceContour::SetData(G& xgriddata, const std::string xdataname)
-  {
-    state.spacedim=xgriddata.spacedim;
-    data=xgriddata.griddata;
-    dataname=xdataname;
-    if (data->IsA("vtkUnstructuredGrid"))
-      state.datatype=Figure::DataType::UnstructuredGrid;
-    else  if (data->IsA("vtkRectilinearGrid"))
-      state.datatype=Figure::DataType::RectilinearGrid;
-  }
-  
-  
-  template< class G> inline void SurfaceContour::SetData(std::shared_ptr<G> xgriddata, const std::string xdataname)
-  {
-    SetData(*xgriddata,xdataname);
-  }
   
 }
 

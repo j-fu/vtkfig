@@ -14,6 +14,7 @@
 #include "vtkCubeAxesActor2D.h"
 #include "vtkAppendPolyData.h"
 #include "vtkAssignAttribute.h"
+#include "vtkCamera.h"
 
 
 #include "vtkfigSurfaceContour.h"
@@ -39,7 +40,9 @@ namespace vtkfig
       this->contour2d->SetVMinMax(this->contour2d->state.real_vmin, this->contour2d->state.real_vmax);
     }
     mySliderCallback():contour2d(0) {}
+
     SurfaceContour *contour2d;
+
   };
 
 
@@ -159,7 +162,8 @@ namespace vtkfig
       if (state.show_contour_colorbar)
         Figure::RTAddActor2D(BuildColorBar(mapper));
       
-      AddSlider(interactor,renderer);
+      if (state.show_slider)
+        AddSlider(interactor,renderer);
       
     } 
 
@@ -219,7 +223,7 @@ namespace vtkfig
 
 
     auto planeX= vtkSmartPointer<vtkPlane>::New();
-    planeX->SetOrigin(bounds[0],0,0);
+    planeX->SetOrigin(center);
     planeX->SetNormal(1,0,0);
       
     auto planeY= vtkSmartPointer<vtkPlane>::New();
@@ -254,7 +258,6 @@ namespace vtkfig
     xyz->SetInputConnectionByNumber(2,planecutZ->GetOutputPort());
 
 
-
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(xyz->GetOutputPort());
     mapper->UseLookupTableScalarRangeOn();
@@ -265,11 +268,7 @@ namespace vtkfig
     plot->SetMapper(mapper);
     Figure::RTAddActor(plot);
     
-    //if (show_slice_colorbar)
-    //   Figure::RTAddActor2D(BuildColorBar(mapper));
-    
     Figure::RTAddActor2D(BuildColorBar(mapper));
-    
     
     
     if (state.show_isocontours)
@@ -288,14 +287,20 @@ namespace vtkfig
       
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
       if (state.show_isocontours_on_cutplanes)
+      {
         plot->GetProperty()->SetOpacity(1.0);
+        plot->GetProperty()->SetLineWidth(state.contour_line_width);
+      }
       else
         plot->GetProperty()->SetOpacity(0.4);
-      plot->GetProperty()->SetLineWidth(state.contour_line_width);
+
+
       plot->SetMapper(mapper);
       Figure::RTAddActor(plot);
+
       
-      AddSlider(interactor,renderer);
+      if (state.show_slider)
+        AddSlider(interactor,renderer);
     }
 
 
@@ -351,7 +356,8 @@ namespace vtkfig
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer)
   {
-    
+    SetNumberOfIsocontours(state.num_contours);
+
     if (state.datatype==Figure::DataType::UnstructuredGrid)
     {
       auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
