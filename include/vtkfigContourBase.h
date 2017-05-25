@@ -1,8 +1,8 @@
 #ifndef VTKFIG_CONTOURBASE_H
 #define VTKFIG_CONTOURBASE_H
 #include "vtkSliderWidget.h"
-#include "vtkRenderer.h"
 #include "vtkSliderRepresentation.h"
+#include "vtkRenderer.h"
 #include "vtkCommand.h"
 #include "vtkFloatArray.h"
 

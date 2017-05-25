@@ -1,5 +1,13 @@
 #ifndef VTKFIG_SURFACE_CONTOUR_H
 #define VTKFIG_SURFACE_CONTOUR_H
+
+
+#include "vtkSliderWidget.h"
+#include "vtkSliderRepresentation.h"
+#include "vtkRenderer.h"
+#include "vtkCommand.h"
+
+
 #include "vtkDataSetAttributes.h"
 #include "vtkGeometryFilter.h"
 #include "vtkRectilinearGridGeometryFilter.h"
@@ -7,8 +15,8 @@
 
 #include "vtkfigUnstructuredGridData.h"
 #include "vtkfigRectilinearGridData.h"
-#include "vtkfigContourBase.h"
 #include "vtkfigTools.h"
+#include "vtkfigFigure.h"
 
 
 
@@ -18,67 +26,69 @@ namespace vtkfig
 {
 
   
-  class SurfaceContour: public ContourBase
+  class SurfaceContour: public Figure
   {
 
 
   public:
-    SurfaceContour(): ContourBase(){};
+    SurfaceContour(): Figure()
+    {
+      sliderWidget = vtkSmartPointer<vtkSliderWidget>::New();
+    }
+
     
     static std::shared_ptr<SurfaceContour> New() { return std::make_shared<SurfaceContour>();}
     
     virtual std::string SubClassName() {return std::string("SurfaceContour");}
 
-    template< class G> void SetData(std::shared_ptr<G> xgriddata, const std::string xname)
+    template< class G> void SetData(std::shared_ptr<G> xgriddata, const std::string xdataname)
     {
       state.spacedim=xgriddata->spacedim;
       data=xgriddata->griddata;
-      name=xname;
+      dataname=xdataname;
+      if (data->IsA("vtkUnstructuredGrid"))
+        state.datatype=Figure::DataType::UnstructuredGrid;
+      else  if (data->IsA("vtkRectilinearGrid"))
+        state.datatype=Figure::DataType::RectilinearGrid;
     }
    
     
   private:
-    vtkSmartPointer<vtkDataSet> data;
-    std::string(name);
+
+    vtkSmartPointer<vtkDataSet> data=NULL;
+    std::string(dataname);
 
     virtual void RTBuild(
       vtkSmartPointer<vtkRenderWindow> window,
       vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-      vtkSmartPointer<vtkRenderer> renderer)
-    {
-      
-      if (data->IsA("vtkUnstructuredGrid"))
-      {
-        auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
-        
-        griddata->GetPointData()->SetActiveAttribute(name.c_str(),vtkDataSetAttributes::SCALARS);
-        if (state.spacedim==2)
-          ContourBase::RTBuild2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,griddata);
-        else
-          ContourBase::RTBuild3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,griddata); 
-      }
-      else if (data->IsA("vtkRectilinearGrid"))
-      {
-        auto griddata=vtkRectilinearGrid::SafeDownCast(data);
-        
-        griddata->GetPointData()->SetActiveAttribute(name.c_str(),vtkDataSetAttributes::SCALARS);
-
-        if (state.spacedim==2)
-          ContourBase::RTBuild2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
-        else
-          ContourBase::RTBuild3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
-      }
-    }
+      vtkSmartPointer<vtkRenderer> renderer);
     
-    // void ServerRTSend(vtkSmartPointer<Communicator> communicator)
-    // {
-    //   ContourBase::ServerRTSend(communicator, gridfunc, gridvalues);
-    // }
+    
+    void ServerRTSend(vtkSmartPointer<Communicator> communicator);
 
-    // void ClientMTReceive(vtkSmartPointer<Communicator> communicator)
-    // {
-    //   ContourBase::ClientMTReceive(communicator, gridfunc, gridvalues);
-    // }
+    void ClientMTReceive(vtkSmartPointer<Communicator> communicator);
+
+
+  
+
+    template <class GRIDFUNC, class FILTER>
+      void RTBuild2D(vtkSmartPointer<vtkRenderWindow> window,
+                     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+                     vtkSmartPointer<vtkRenderer> renderer,
+                     vtkSmartPointer<GRIDFUNC> gridfunc);
+    
+    template <class GRIDFUNC, class FILTER>
+      void RTBuild3D(vtkSmartPointer<vtkRenderWindow> window,
+                     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+                     vtkSmartPointer<vtkRenderer> renderer,
+                     vtkSmartPointer<GRIDFUNC> gridfunc);
+    
+    
+    vtkSmartPointer<vtkSliderWidget> sliderWidget;
+    
+    void AddSlider(vtkSmartPointer<vtkRenderWindowInteractor> i,vtkSmartPointer<vtkRenderer> r);
+    
+    friend class mySliderCallback;
    
   };
   

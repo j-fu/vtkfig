@@ -213,6 +213,14 @@ namespace vtkfig
       for (auto actor: actors2d){auto m=actor->GetMapper(); if (m) m->Update();}
     }
 
+    enum class DataType
+    {
+      None=0,
+        RectilinearGrid=1,
+        UnstructuredGrid=2
+    };
+
+
     struct
     {
       double vmin_set=1.0e100;
@@ -242,6 +250,7 @@ namespace vtkfig
       int spacedim=2;
       double contour_line_width=2;
       bool show_isocontours_on_cutplanes=true;
+      DataType datatype;
     } state;
 
     

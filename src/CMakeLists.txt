@@ -5,6 +5,8 @@ add_library(vtkfig
   vtkfigCommunicator.cxx
   vtkfigTools.cxx
   vtkfigContourBase.cxx  
+
+  vtkfigSurfaceContour.cxx  
  
   vtkfigXYPlot.cxx
   vtkfigChartXY.cxx

@@ -1,9 +1,13 @@
 #ifndef VTKFIG_UNSTRUCTURED_GRID_DATA_H
 #define VTKFIG_UNSTRUCTURED_GRID_DATA_H
 
+#include <memory>
+
+#include "vtkSmartPointer.h"
 #include "vtkUnstructuredGrid.h"
 #include "vtkUnstructuredGridWriter.h"
 #include "vtkFloatArray.h"
+#include "vtkPointData.h"
 
 namespace vtkfig
 {
