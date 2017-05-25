@@ -62,7 +62,9 @@ namespace vtkfig
         colorbar->GetTitleTextProperty()->SetFontSize(10);
         colorbar->GetLabelTextProperty()->SetFontSize(80);
         colorbar->SetLabelFormat("%.2e");
-        colorbar->SetTitle(title.c_str());
+        char xtitle[12];
+        snprintf(xtitle,12,"%-12s",title.c_str());
+        colorbar->SetTitle(xtitle);
 
 //        colorbar->GetAnnotationTextProperty()->SetFontSize(80);
 
