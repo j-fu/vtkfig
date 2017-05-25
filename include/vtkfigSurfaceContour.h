@@ -24,47 +24,25 @@
 
 namespace vtkfig
 {
-
   
   class SurfaceContour: public Figure
   {
-
-
+    
   public:
-    SurfaceContour(): Figure()
-    {
-      sliderWidget = vtkSmartPointer<vtkSliderWidget>::New();
-    }
-
-    
+    SurfaceContour();
     static std::shared_ptr<SurfaceContour> New() { return std::make_shared<SurfaceContour>();}
-    
     virtual std::string SubClassName() {return std::string("SurfaceContour");}
-
-
-    template< class G> void SetData(G& xgriddata, const std::string xdataname)
-    {
-      state.spacedim=xgriddata.spacedim;
-      data=xgriddata.griddata;
-      dataname=xdataname;
-      if (data->IsA("vtkUnstructuredGrid"))
-        state.datatype=Figure::DataType::UnstructuredGrid;
-      else  if (data->IsA("vtkRectilinearGrid"))
-        state.datatype=Figure::DataType::RectilinearGrid;
-    }
-
-    template< class G> void SetData(std::shared_ptr<G> xgriddata, const std::string xdataname)
-    {
-      SetData(*xgriddata,xdataname);
-    }
-
-
+    
+    
+    template< class G> void SetData(G& xgriddata, const std::string xdataname);
+    
+    template< class G> void SetData(std::shared_ptr<G> xgriddata, const std::string xdataname);
     
   private:
-
+    
     vtkSmartPointer<vtkDataSet> data=NULL;
     std::string dataname;
-
+    
     virtual void RTBuild(
       vtkSmartPointer<vtkRenderWindow> window,
       vtkSmartPointer<vtkRenderWindowInteractor> interactor,
@@ -97,7 +75,23 @@ namespace vtkfig
    
   };
   
-
+  template< class G> inline void SurfaceContour::SetData(G& xgriddata, const std::string xdataname)
+  {
+    state.spacedim=xgriddata.spacedim;
+    data=xgriddata.griddata;
+    dataname=xdataname;
+    if (data->IsA("vtkUnstructuredGrid"))
+      state.datatype=Figure::DataType::UnstructuredGrid;
+    else  if (data->IsA("vtkRectilinearGrid"))
+      state.datatype=Figure::DataType::RectilinearGrid;
+  }
+  
+  
+  template< class G> inline void SurfaceContour::SetData(std::shared_ptr<G> xgriddata, const std::string xdataname)
+  {
+    SetData(*xgriddata,xdataname);
+  }
+  
 }
 
 #endif

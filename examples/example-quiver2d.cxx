@@ -1,6 +1,6 @@
 #include "vtkfigFrame.h"
 #include "vtkfigSurfaceContour.h"
-#include "vtkfigQuiver2D.h"
+#include "vtkfigQuiver.h"
 #include "vtkfigTools.h"
 
 inline double G(double x,double y, double t) 
@@ -59,21 +59,19 @@ int main(void)
 
   auto griddata=vtkfig::RectilinearGridData::New();
   griddata->SetGrid(x,y);
-  griddata->SetPointScalar(z ,"V");
+  griddata->SetPointScalar(z ,"v");
+  griddata->SetPointVector(u,v ,"grad");
 
   auto contour=vtkfig::SurfaceContour::New();
-  contour->SetData(griddata,"V");
+  contour->SetData(griddata,"v");
   contour->SetSurfaceRGBTable(colors,255);
   contour->ShowIsocontours(false);
   
-  auto quiver=vtkfig::Quiver2D::New();
-  quiver->ShowColorbar(false);
-  quiver->SetRGBTable(qcolors, 2);
+  auto quiver=vtkfig::Quiver::New();
   quiver->SetArrowScale(0.5);
+  quiver->SetData(griddata,"grad");
 
   frame->AddFigure(contour);
-
-  quiver->SetGrid(x,y);
   frame->AddFigure(quiver);
 
   while (ii<nspin)
@@ -106,8 +104,8 @@ int main(void)
 
       }
 
-    griddata->SetPointScalar(z ,"V");
-    quiver->UpdateValues(u,v);
+    griddata->SetPointScalar(z ,"v");
+    griddata->SetPointVector(u,v ,"grad");
 
     frame->Show();
 

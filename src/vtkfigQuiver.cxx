@@ -9,9 +9,10 @@
 #include "vtkGlyph3D.h"
 #include "vtkRectilinearGrid.h"
 #include "vtkGlyphSource2D.h"
+#include "vtkAssignAttribute.h"
 
 
-#include "vtkfigQuiver2D.h"
+#include "vtkfigQuiver.h"
 
 namespace vtkfig
 {
@@ -19,49 +20,52 @@ namespace vtkfig
 
 
   ////////////////////////////////////////////////////////////
-  Quiver2D::Quiver2D(): Figure()  
+  Quiver::Quiver(): Figure()  
   {  
-    RGBTable quiver_rgb={{0,0,0,1},{1,1,0,0}};
-    lut=BuildLookupTable(quiver_rgb,255);
+    RGBTable quiver_rgb={{0,0,0,0},{1,0,0,0}};
+    lut=BuildLookupTable(quiver_rgb,2);
   }
   
-  void  Quiver2D::RTBuild(
+  void  Quiver::RTBuild(
         vtkSmartPointer<vtkRenderWindow> window,
         vtkSmartPointer<vtkRenderWindowInteractor> interactor,
         vtkSmartPointer<vtkRenderer> renderer)
   {
-    vtkSmartPointer<vtkRectilinearGrid> gridfunc= vtkSmartPointer<vtkRectilinearGrid>::New();
-    int Nx = xcoord->GetNumberOfTuples();
-    int Ny = ycoord->GetNumberOfTuples();
-    gridfunc->SetDimensions(Nx, Ny, 1);
-    gridfunc->SetXCoordinates(xcoord);
-    gridfunc->SetYCoordinates(ycoord);
-    gridfunc->GetPointData()->SetScalars(colors);
-    gridfunc->GetPointData()->SetVectors(vectors);
+    
+    if (state.datatype!=Figure::DataType::RectilinearGrid) return;
+    auto gridfunc=vtkRectilinearGrid::SafeDownCast(data);
+
 
 
     double  bounds[6];
     gridfunc->GetBounds(bounds);
     Figure::SetModelTransform(renderer,bounds);
+    
+    auto vector = vtkSmartPointer<vtkAssignAttribute>::New();
+    vector->Assign(dataname.c_str(),vtkDataSetAttributes::VECTORS,vtkAssignAttribute::POINT_DATA);
+    vector->SetInputDataObject(gridfunc);
+
+
+
     // filter to geometry primitive
-    vtkSmartPointer<vtkRectilinearGridGeometryFilter> geometry =
-      vtkSmartPointer<vtkRectilinearGridGeometryFilter>::New();
-    geometry->SetInputDataObject(gridfunc);
+    auto geometry = vtkSmartPointer<vtkRectilinearGridGeometryFilter>::New();
+    geometry->SetInputConnection(vector->GetOutputPort());
 
     // make a vector glyph
-    vtkSmartPointer<vtkGlyphSource2D> vec = vtkSmartPointer<vtkGlyphSource2D>::New();
-    vec->SetGlyphTypeToArrow();
+    auto arrow = vtkSmartPointer<vtkGlyphSource2D>::New();
+    arrow->SetGlyphTypeToArrow();
+    arrow->SetScale(arrow_scale);
+    arrow->FilledOff();
 
-    vec->SetScale(arrow_scale);
-    vec->FilledOff();
-
-    vtkSmartPointer<vtkGlyph3D> glyph = vtkSmartPointer<vtkGlyph3D>::New();
+    auto glyph = vtkSmartPointer<vtkGlyph3D>::New();
     glyph->SetInputConnection(geometry->GetOutputPort());
-    glyph->SetSourceConnection(vec->GetOutputPort());
-    glyph->SetColorModeToColorByScalar();
+    glyph->SetSourceConnection(arrow->GetOutputPort());
+    glyph->SetColorModeToColorByVector();
+    glyph->SetScaleModeToScaleByVector();
+
 
     // map gridfunction
-    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    auto  mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(glyph->GetOutputPort());
     mapper->SetLookupTable(lut);
     mapper->UseLookupTableScalarRangeOn();

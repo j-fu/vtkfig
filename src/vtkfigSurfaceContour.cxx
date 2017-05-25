@@ -12,7 +12,6 @@
 #include "vtkImplicitBoolean.h"
 #include "vtkOutlineFilter.h"
 #include "vtkCubeAxesActor2D.h"
-#include "vtkCamera.h"
 #include "vtkAppendPolyData.h"
 #include "vtkAssignAttribute.h"
 
@@ -22,6 +21,8 @@
 
 namespace vtkfig
 {
+  /////////////////////////////////////////////////////////////////////
+  /// Slider callback class
 
   class mySliderCallback : public vtkCommand
   {
@@ -43,6 +44,16 @@ namespace vtkfig
 
 
 
+  /////////////////////////////////////////////////////////////////////
+  /// Constructor
+  SurfaceContour::SurfaceContour(): Figure()
+  {
+    sliderWidget = vtkSmartPointer<vtkSliderWidget>::New();
+  }
+  
+
+  /////////////////////////////////////////////////////////////////////
+  /// Slider handling
   void SurfaceContour::AddSlider(vtkSmartPointer<vtkRenderWindowInteractor> interactor,
                                 vtkSmartPointer<vtkRenderer> renderer)
   {
@@ -88,6 +99,9 @@ namespace vtkfig
       }
 
   }
+
+  /////////////////////////////////////////////////////////////////////
+  /// 2D Filter
 
   template <class DATA, class FILTER>
   void SurfaceContour::RTBuild2D(
@@ -180,6 +194,9 @@ namespace vtkfig
   }
   
  
+  /////////////////////////////////////////////////////////////////////
+  /// 3D Filter
+
   template <class DATA,class FILTER>
   void SurfaceContour::RTBuild3D(
     vtkSmartPointer<vtkRenderWindow> window,
@@ -327,6 +344,8 @@ namespace vtkfig
   } 
   
   
+  /////////////////////////////////////////////////////////////////////
+  /// Generic access to filter
   void  SurfaceContour::RTBuild(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
@@ -356,6 +375,9 @@ namespace vtkfig
   
   
 
+
+  /////////////////////////////////////////////////////////////////////
+  /// Client-Server communication
 
   void SurfaceContour::ServerRTSend(vtkSmartPointer<Communicator> communicator)
   {
@@ -412,6 +434,5 @@ namespace vtkfig
     data->GetPointData()->GetScalars()->Modified();
 
   }
-  
   
 }

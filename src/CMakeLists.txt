@@ -5,11 +5,11 @@ add_library(vtkfig
   vtkfigCommunicator.cxx
   vtkfigTools.cxx
   vtkfigSurfaceContour.cxx  
+  vtkfigQuiver.cxx  
   vtkfigXYPlot.cxx
   
   vtkfigChartXY.cxx
   vtkfigSurf2D.cxx
-  vtkfigQuiver2D.cxx
 )
 
 ###### target_link_libraries(vtkfig PUBLIC ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})

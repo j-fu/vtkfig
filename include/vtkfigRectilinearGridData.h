@@ -127,7 +127,7 @@ namespace vtkfig
     
     
     template <class V>
-    void SetPointScalar(const V&values, std::string name)
+      void SetPointScalar(const V&values, std::string name)
     {
       assert(griddata!=NULL);
       int dimensions[3];
@@ -154,7 +154,39 @@ namespace vtkfig
         gridvalues->InsertComponent(i,0,v);
       }
       gridvalues->Modified();
-    }    
+    }  
+
+
+    template <class V>
+      void SetPointVector(const V&u, const V& v, std::string name)
+    {
+      assert(griddata!=NULL);
+      int dimensions[3];
+      griddata->GetDimensions(dimensions);
+      int npoints=dimensions[0]*dimensions[1]*dimensions[2];
+      assert(npoints==u.size());
+      assert(npoints==v.size());
+      vtkSmartPointer<vtkFloatArray>gridvalues;
+      
+      if  (griddata->GetPointData()->HasArray(name.c_str()))
+      {
+        gridvalues=vtkFloatArray::SafeDownCast(griddata->GetPointData()->GetAbstractArray(name.c_str()));
+      }
+      else
+      {
+        gridvalues=vtkSmartPointer<vtkFloatArray>::New();
+        gridvalues->SetNumberOfComponents(3);
+        gridvalues->SetNumberOfTuples(npoints);
+        gridvalues->SetName(name.c_str());
+        griddata->GetPointData()->AddArray(gridvalues);
+      }
+      for (int i=0;i<npoints; i++)
+      {
+        gridvalues->InsertTuple3(i,u[i],v[i],0);
+      }
+      gridvalues->Modified();
+    }  
+  
   };    
 }
 #endif

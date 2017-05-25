@@ -15,8 +15,6 @@ namespace vtkfig
   
   class UnstructuredGridData
   {
-
-    friend class SimplexContour2;
   public:    
     
     vtkSmartPointer<vtkUnstructuredGrid> griddata=NULL;
@@ -104,6 +102,68 @@ namespace vtkfig
       }
       gridvalues->Modified();
     }    
+
+    template <class V>
+      void SetPointVector(const V&u, const V& v, const std::string name)
+    {
+      assert(spacedim==2);
+      assert(griddata!=NULL);
+      int npoints=griddata->GetPoints()->GetNumberOfPoints();
+      assert(npoints==u.size());
+      assert(npoints==v.size());
+      vtkSmartPointer<vtkFloatArray>gridvalues;
+      
+      if  (griddata->GetPointData()->HasArray(name.c_str()))
+      {
+        gridvalues=vtkFloatArray::SafeDownCast(griddata->GetPointData()->GetAbstractArray(name.c_str()));
+      }
+      else
+      {
+        gridvalues=vtkSmartPointer<vtkFloatArray>::New();
+        gridvalues->SetNumberOfComponents(3);
+        gridvalues->SetNumberOfTuples(npoints);
+        gridvalues->SetName(name.c_str());
+        griddata->GetPointData()->AddArray(gridvalues);
+      }
+      
+      for (int i=0;i<npoints; i++)
+      {
+        gridvalues->InsertTuple3(i,u[i],v[i],0);
+      }
+      gridvalues->Modified();
+    }    
+
+    template <class V>
+      void SetPointVector(const V&u, const V& v, const V& w, const std::string name)
+    {
+      assert(spacedim==2);
+      assert(griddata!=NULL);
+      int npoints=griddata->GetPoints()->GetNumberOfPoints();
+      assert(npoints==u.size());
+      assert(npoints==v.size());
+      assert(npoints==w.size());
+      vtkSmartPointer<vtkFloatArray>gridvalues;
+      
+      if  (griddata->GetPointData()->HasArray(name.c_str()))
+      {
+        gridvalues=vtkFloatArray::SafeDownCast(griddata->GetPointData()->GetAbstractArray(name.c_str()));
+      }
+      else
+      {
+        gridvalues=vtkSmartPointer<vtkFloatArray>::New();
+        gridvalues->SetNumberOfComponents(3);
+        gridvalues->SetNumberOfTuples(npoints);
+        gridvalues->SetName(name.c_str());
+        griddata->GetPointData()->AddArray(gridvalues);
+      }
+      
+      for (int i=0;i<npoints; i++)
+      {
+        gridvalues->InsertTuple3(i,u[i],v[i],w[i]);
+      }
+      gridvalues->Modified();
+    }    
+    
   };    
 }
 #endif
