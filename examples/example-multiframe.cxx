@@ -1,33 +1,25 @@
-// This example does not work
-// as vtk is not thread safe.
-//
-// we need to modify the architecture:
-// vtkfig::Thread() instead of vtkfig::ServerConnection
-// vtkfigFrame(thread)
-
-
 #include <chrono>
-// For Multithreading with X11
-//extern "C" void XInitThreads(void); 
-
-
 #include "vtkfigFrame.h"
-#include "vtkfigSurf2D.h"
+#include "vtkfigRectilinearGridData.h"
+#include "vtkfigSurfaceContour.h"
 #include "vtkfigXYPlot.h"
-#include "vtkfigRectContour.h"
 #include "vtkfigTools.h"
 
-
-inline double G(double x,double y, double t) 
+inline double GU(double x,double y, double t) 
 {
   
   return exp(-(x*x+y*y))*sin(t+x)*cos(y-t);
 }
 
+inline double GV(double x,double y, double t) 
+{
+  
+  return exp(-(x*x+y*y))*sin(1.0-(2*t+2*x))*cos(1.0-(2*y-2*t));
+}
+
 
 int main(void)
 {
-
   cout.sync_with_stdio(true);
   size_t nspin=vtkfig::NSpin();
 
@@ -36,7 +28,8 @@ int main(void)
   
   std::vector<double> x(Nx);
   std::vector<double> y(Ny);
-  std::vector<double> z(Nx*Ny);
+  std::vector<double> u(Nx*Ny);
+  std::vector<double> v(Nx*Ny);
   
   std::vector<double> fx(Nx);
   std::vector<double> fy(Ny);
@@ -67,63 +60,69 @@ int main(void)
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
 
-
   auto frame1=vtkfig::Frame::New();
   auto frame2=vtkfig::Frame::New();
   auto frame3=vtkfig::Frame::New();
-
 
   frame1->Size(400,400);
   frame2->Size(400,400);
   frame2->Position(500,0);
   frame3->Size(400,400);
   frame3->Position(1000,0);
-
-  auto surf=vtkfig::Surf2D::New();
-  surf->SetRGBTable(colors,255);
-  surf->SetGrid(x,y);
-  frame1->AddFigure(surf);
-
-
-  auto contour=vtkfig::RectContour::New();
-  contour->SetGrid(x,y);
-  frame2->AddFigure(contour);
-
   frame2->LinkCamera(frame1);
 
-  auto xyplot=vtkfig::XYPlot::New();
-  frame3->AddFigure(xyplot);
 
+  auto griddata=vtkfig::RectilinearGridData::New();
+  griddata->SetGrid(x,y);
+  griddata->SetPointScalar(u ,"u");
+  griddata->SetPointScalar(v ,"v");
+
+
+  auto contour_u=vtkfig::SurfaceContour::New();
+  contour_u->SetData(griddata,"u");
+  contour_u->SetSurfaceRGBTable(colors,255);
+  frame1->AddFigure(contour_u);
+
+  auto contour_v=vtkfig::SurfaceContour::New();
+  contour_v->SetData(griddata,"v");
+  contour_v->SetSurfaceRGBTable(colors,255);
+  frame2->AddFigure(contour_v);
+
+  auto xyplot=vtkfig::XYPlot::New();
+  xyplot->SetYRange(-0.5,0.5);
+  frame3->AddFigure(xyplot);
 
   while (ii<nspin)
   {
     for (int i=0; i<Nx; i++)
       for (int j=0; j<Ny; j++)
       {
-        double f=G(x[i],y[j],t);
-        z[j*Nx+i] = f;
+        double f=GU(x[i],y[j],t);
+        u[j*Nx+i] = f;
         if (i==Nx/2) fy[j]=f;
         if (j==Ny/2) fx[i]=f;
+
+        f=GV(x[i],y[j],t);
+        v[j*Nx+i] = f;
       }
 
-    surf->UpdateValues(z);
-    contour->UpdateValues(z);
+    griddata->SetPointScalar(u ,"u");
+    griddata->SetPointScalar(v ,"v");
+
     xyplot->Clear();
     xyplot->LineColorRGB(0,0,1);
     xyplot->LineType("-");
+    xyplot->Legend("y=0.5");
     xyplot->AddPlot(x, fx);
     xyplot->LineColorRGB(1,0,0);
     xyplot->LineType("-");
+    xyplot->Legend("x=0.5");
     xyplot->AddPlot(y, fy);
     frame1->Show();
+    frame2->Show();
+    frame3->Show();
 
-   
 
-    if (ii==3) 
-    {
-      frame1->Dump("example-multiframe1.png");
-      frame2->Dump("example-multiframe2.png");
-    }
     t+=dt;
     auto t1=std::chrono::system_clock::now();
     double dt=std::chrono::duration_cast<std::chrono::duration<double>>(t1-t0).count();
@@ -139,3 +138,5 @@ int main(void)
   }
 
 }
+
+

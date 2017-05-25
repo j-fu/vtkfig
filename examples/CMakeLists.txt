@@ -13,12 +13,10 @@ add_vtkfig_example(example-simplexcontour2d)
 add_vtkfig_example(example-simplexcontour3d)
 add_vtkfig_example(example-rectcontour2d)
 add_vtkfig_example(example-rectcontour3d)
+add_vtkfig_example(example-multifig)
+add_vtkfig_example(example-multiframe)
 add_vtkfig_example(example-chartxy)
 add_vtkfig_example(example-comm-client-server-vtk)
 add_vtkfig_example(example-comm-client-server-vtkfig)
 
-
-# re-establish
-# add_vtkfig_example(example-multifig)
-# add_vtkfig_example(example-multiframe)
 

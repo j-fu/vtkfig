@@ -71,7 +71,7 @@ int main(void)
     frame->Show();
 
     if (ii==3) 
-      frame->Dump("example-contour2d.png");
+      frame->Dump("example-rectcontour2d.png");
 
     t+=dt;
     auto t1=std::chrono::system_clock::now();

@@ -203,9 +203,6 @@ namespace vtkfig
 
     virtual void ClientMTReceive(vtkSmartPointer<Communicator> communicator) {};
 
-
-
-
     void RTUpdateActors()
     {
       for (auto actor: actors) {auto m=actor->GetMapper(); if (m) m->Update();}

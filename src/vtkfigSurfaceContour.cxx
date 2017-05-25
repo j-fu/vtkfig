@@ -14,6 +14,7 @@
 #include "vtkCubeAxesActor2D.h"
 #include "vtkCamera.h"
 #include "vtkAppendPolyData.h"
+#include "vtkAssignAttribute.h"
 
 
 #include "vtkfigSurfaceContour.h"
@@ -86,7 +87,6 @@ namespace vtkfig
         sliderWidget->EnabledOn();
       }
 
-
   }
 
   template <class DATA, class FILTER>
@@ -100,9 +100,13 @@ namespace vtkfig
     gridfunc->GetBounds(bounds);
     renderer->GetActiveCamera()->SetParallelProjection(1);
 
+    auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
+    scalar->Assign(dataname.c_str(),vtkDataSetAttributes::SCALARS,vtkAssignAttribute::POINT_DATA);
+    scalar->SetInputDataObject(gridfunc);
+
     auto geometry=vtkSmartPointer<FILTER>::New();
-    geometry->SetInputDataObject(gridfunc);
-    
+    geometry->SetInputConnection(scalar->GetOutputPort());
+
     SetModelTransform(renderer,bounds);
 
         
@@ -120,7 +124,7 @@ namespace vtkfig
       Figure::RTAddActor(plot);
       
       if (state.show_surface_colorbar)
-        Figure::RTAddActor2D(BuildColorBar(mapper));
+        Figure::RTAddActor2D(BuildColorBar(mapper,dataname));
     }
     
     
@@ -190,6 +194,12 @@ namespace vtkfig
     gridfunc->GetCenter(center);
     Figure::SetModelTransform(renderer,bounds);
 
+    auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
+    scalar->Assign(dataname.c_str(),vtkDataSetAttributes::SCALARS,vtkAssignAttribute::POINT_DATA);
+    scalar->SetInputDataObject(gridfunc);
+
+
+
 
     auto planeX= vtkSmartPointer<vtkPlane>::New();
     planeX->SetOrigin(bounds[0],0,0);
@@ -205,16 +215,16 @@ namespace vtkfig
     
     
     auto planecutX= vtkSmartPointer<vtkCutter>::New();
-    planecutX->SetInputDataObject(gridfunc);
+    planecutX->SetInputConnection(scalar->GetOutputPort());
     planecutX->SetCutFunction(planeX);
 
       
     auto planecutY= vtkSmartPointer<vtkCutter>::New();
-    planecutY->SetInputDataObject(gridfunc);
+    planecutY->SetInputConnection(scalar->GetOutputPort());
     planecutY->SetCutFunction(planeY);
       
     auto planecutZ= vtkSmartPointer<vtkCutter>::New();
-    planecutZ->SetInputDataObject(gridfunc);
+    planecutZ->SetInputConnection(scalar->GetOutputPort());
     planecutZ->SetCutFunction(planeZ);
       
 
@@ -228,21 +238,21 @@ namespace vtkfig
 
 
 
-      vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      mapper->SetInputConnection(xyz->GetOutputPort());
-      mapper->UseLookupTableScalarRangeOn();
-      mapper->SetLookupTable(surface_lut);
-      
-      vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
-      plot->GetProperty()->SetOpacity(1);
-      plot->SetMapper(mapper);
-      Figure::RTAddActor(plot);
-      
-      //if (show_slice_colorbar)
-      //   Figure::RTAddActor2D(BuildColorBar(mapper));
-      
-      Figure::RTAddActor2D(BuildColorBar(mapper));
-
+    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    mapper->SetInputConnection(xyz->GetOutputPort());
+    mapper->UseLookupTableScalarRangeOn();
+    mapper->SetLookupTable(surface_lut);
+    
+    vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
+    plot->GetProperty()->SetOpacity(1);
+    plot->SetMapper(mapper);
+    Figure::RTAddActor(plot);
+    
+    //if (show_slice_colorbar)
+    //   Figure::RTAddActor2D(BuildColorBar(mapper));
+    
+    Figure::RTAddActor2D(BuildColorBar(mapper));
+    
     
     
     if (state.show_isocontours)
@@ -252,7 +262,7 @@ namespace vtkfig
       if (state.show_isocontours_on_cutplanes)
         isocontours->SetInputConnection(xyz->GetOutputPort());
       else
-        isocontours->SetInputDataObject(gridfunc);
+        isocontours->SetInputConnection(scalar->GetOutputPort());
       
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       mapper->SetInputConnection(isocontours->GetOutputPort());
@@ -278,7 +288,7 @@ namespace vtkfig
     {
       // create outline
       vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
-      outlinefilter->SetInputDataObject(gridfunc);;
+      outlinefilter->SetInputConnection(scalar->GetOutputPort());;
       vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
       vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
@@ -311,41 +321,40 @@ namespace vtkfig
       textprop->ItalicOff();
       textprop->SetFontFamilyToArial();
       textprop->SetColor(0,0,0);
-
+      
       Figure::RTAddActor2D(axes);
     }
   } 
   
-
+  
   void  SurfaceContour::RTBuild(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer)
   {
-    data->GetPointData()->SetActiveAttribute(dataname.c_str(),vtkDataSetAttributes::SCALARS);
     
     if (state.datatype==Figure::DataType::UnstructuredGrid)
-      {
-        auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
-        
-        if (state.spacedim==2)
-          this->RTBuild2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,griddata);
-        else
-          this->RTBuild3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,griddata); 
-      }
-      else if (state.datatype==Figure::DataType::RectilinearGrid)
-      {
-        auto griddata=vtkRectilinearGrid::SafeDownCast(data);
-        
-     
-        if (state.spacedim==2)
-          this->RTBuild2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
-        else
-          this->RTBuild3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
-      }
+    {
+      auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
+      
+      if (state.spacedim==2)
+        this->RTBuild2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,griddata);
+      else
+        this->RTBuild3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,griddata); 
     }
-
-
+    else if (state.datatype==Figure::DataType::RectilinearGrid)
+    {
+      auto griddata=vtkRectilinearGrid::SafeDownCast(data);
+      
+      
+      if (state.spacedim==2)
+        this->RTBuild2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
+      else
+        this->RTBuild3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
+    }
+  }
+  
+  
 
 
   void SurfaceContour::ServerRTSend(vtkSmartPointer<Communicator> communicator)
@@ -400,7 +409,6 @@ namespace vtkfig
     SetVMinMax(state.real_vmin,state.real_vmax);
 
     data->Modified();
-    data->GetPointData()->SetActiveAttribute(dataname.c_str(),vtkDataSetAttributes::SCALARS);
     data->GetPointData()->GetScalars()->Modified();
 
   }

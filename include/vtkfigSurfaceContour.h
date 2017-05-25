@@ -52,6 +52,8 @@ namespace vtkfig
         state.datatype=Figure::DataType::RectilinearGrid;
     }
    
+
+
     
   private:
 
@@ -68,8 +70,6 @@ namespace vtkfig
 
     void ClientMTReceive(vtkSmartPointer<Communicator> communicator);
 
-
-  
 
     template <class GRIDFUNC, class FILTER>
       void RTBuild2D(vtkSmartPointer<vtkRenderWindow> window,

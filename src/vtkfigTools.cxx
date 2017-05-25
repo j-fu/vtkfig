@@ -48,15 +48,18 @@ namespace vtkfig
 
         vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
 
-        // 7.1 ?colorbar->SetUnconstrainedFontSize(true);
+        //colorbar->UnconstrainedFontSizeOn();
+        //colorbar->AnnotationTextScalingOff();
         colorbar->SetLookupTable(mapper->GetLookupTable());
         colorbar->SetWidth(0.175);
         colorbar->SetHeight(0.8);
         colorbar->SetMaximumWidthInPixels(150);
         colorbar->SetBarRatio(0.1);
+        colorbar->SetVerticalTitleSeparation(0);
+        colorbar->SetTitleRatio(0.1);
         colorbar->SetNumberOfLabels(11);
         colorbar->SetPosition(0.8, 0.1);
-        colorbar->GetTitleTextProperty()->SetFontSize(80);
+        colorbar->GetTitleTextProperty()->SetFontSize(10);
         colorbar->GetLabelTextProperty()->SetFontSize(80);
         colorbar->SetLabelFormat("%.2e");
         colorbar->SetTitle(title.c_str());

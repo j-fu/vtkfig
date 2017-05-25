@@ -1,14 +1,20 @@
 #include <chrono>
 #include "vtkfigFrame.h"
-#include "vtkfigSurf2D.h"
-#include "vtkfigRectContour.h"
+#include "vtkfigRectilinearGridData.h"
+#include "vtkfigSurfaceContour.h"
 #include "vtkfigXYPlot.h"
 #include "vtkfigTools.h"
 
-inline double G(double x,double y, double t) 
+inline double GU(double x,double y, double t) 
 {
   
   return exp(-(x*x+y*y))*sin(t+x)*cos(y-t);
+}
+
+inline double GV(double x,double y, double t) 
+{
+  
+  return exp(-(x*x+y*y))*sin(1.0-(2*t+2*x))*cos(1.0-(2*y-2*t));
 }
 
 
@@ -22,7 +28,8 @@ int main(void)
   
   std::vector<double> x(Nx);
   std::vector<double> y(Ny);
-  std::vector<double> z(Nx*Ny);
+  std::vector<double> u(Nx*Ny);
+  std::vector<double> v(Nx*Ny);
   
   std::vector<double> fx(Nx);
   std::vector<double> fy(Ny);
@@ -60,14 +67,21 @@ int main(void)
 
   frame->Size(800,400);
 
-  auto surf=vtkfig::Surf2D::New();
-  surf->SetRGBTable(colors,255);
-  surf->SetGrid(x,y);
-  frame->AddFigure(surf,0,0);
+  auto griddata=vtkfig::RectilinearGridData::New();
+  griddata->SetGrid(x,y);
+  griddata->SetPointScalar(u ,"u");
+  griddata->SetPointScalar(v ,"v");
 
-  auto contour=vtkfig::RectContour::New();
-  contour->SetGrid(x,y);
-  frame->AddFigure(contour,1,0);
+
+  auto contour_u=vtkfig::SurfaceContour::New();
+  contour_u->SetData(griddata,"u");
+  contour_u->SetSurfaceRGBTable(colors,255);
+  frame->AddFigure(contour_u,0,0);
+
+  auto contour_v=vtkfig::SurfaceContour::New();
+  contour_v->SetData(griddata,"v");
+  contour_v->SetSurfaceRGBTable(colors,255);
+  frame->AddFigure(contour_v,1,0);
 
   auto xyplot=vtkfig::XYPlot::New();
   xyplot->SetYRange(-0.5,0.5);
@@ -78,14 +92,17 @@ int main(void)
     for (int i=0; i<Nx; i++)
       for (int j=0; j<Ny; j++)
       {
-        double f=G(x[i],y[j],t);
-        z[j*Nx+i] = f;
+        double f=GU(x[i],y[j],t);
+        u[j*Nx+i] = f;
         if (i==Nx/2) fy[j]=f;
         if (j==Ny/2) fx[i]=f;
+
+        f=GV(x[i],y[j],t);
+        v[j*Nx+i] = f;
       }
 
-    surf->UpdateValues(z);
-    contour->UpdateValues(z);
+    griddata->SetPointScalar(u ,"u");
+    griddata->SetPointScalar(v ,"v");
 
     xyplot->Clear();
     xyplot->LineColorRGB(0,0,1);
