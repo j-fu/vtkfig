@@ -8,6 +8,7 @@
 #include "vtkUnstructuredGridWriter.h"
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
+#include "vtkCellType.h"
 
 namespace vtkfig
 {
@@ -44,7 +45,6 @@ namespace vtkfig
         griddata->Reset();
 
       spacedim=dim;
-      int npoints=points.size()/spacedim;
       auto gridpoints = vtkSmartPointer<vtkPoints>::New();
       griddata->SetPoints(gridpoints);
       
@@ -77,7 +77,7 @@ namespace vtkfig
     }
     
     template <class V>
-    void SetPointScalar(const V&values, std::string name)
+    void SetPointScalar(const V&values, const std::string name)
     {
       assert(griddata!=NULL);
       auto gridpoints=griddata->GetPoints();

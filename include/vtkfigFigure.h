@@ -212,7 +212,7 @@ namespace vtkfig
 
     enum class DataType
     {
-      None=0,
+      Notype=0,
         RectilinearGrid=1,
         UnstructuredGrid=2
     };

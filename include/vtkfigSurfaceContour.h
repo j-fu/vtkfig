@@ -41,24 +41,29 @@ namespace vtkfig
     
     virtual std::string SubClassName() {return std::string("SurfaceContour");}
 
-    template< class G> void SetData(std::shared_ptr<G> xgriddata, const std::string xdataname)
+
+    template< class G> void SetData(G& xgriddata, const std::string xdataname)
     {
-      state.spacedim=xgriddata->spacedim;
-      data=xgriddata->griddata;
+      state.spacedim=xgriddata.spacedim;
+      data=xgriddata.griddata;
       dataname=xdataname;
       if (data->IsA("vtkUnstructuredGrid"))
         state.datatype=Figure::DataType::UnstructuredGrid;
       else  if (data->IsA("vtkRectilinearGrid"))
         state.datatype=Figure::DataType::RectilinearGrid;
     }
-   
+
+    template< class G> void SetData(std::shared_ptr<G> xgriddata, const std::string xdataname)
+    {
+      SetData(*xgriddata,xdataname);
+    }
 
 
     
   private:
 
     vtkSmartPointer<vtkDataSet> data=NULL;
-    std::string(dataname);
+    std::string dataname;
 
     virtual void RTBuild(
       vtkSmartPointer<vtkRenderWindow> window,
