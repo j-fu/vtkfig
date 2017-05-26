@@ -5,6 +5,7 @@ add_library(vtkfig
   vtkfigCommunicator.cxx
   vtkfigTools.cxx
   vtkfigSurfaceContour.cxx  
+  vtkfigGridView.cxx  
   vtkfigQuiver.cxx  
   vtkfigXYPlot.cxx
   

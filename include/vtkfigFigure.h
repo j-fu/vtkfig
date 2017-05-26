@@ -227,7 +227,7 @@ namespace vtkfig
     int framepos=0;
   };
 
-  template< class G> inline void Figure::SetData(G& xgriddata, const std::string xdataname)
+  template< class G> inline void Figure::SetData(G& xgriddata, const std::string xdataname="")
   {
     state.spacedim=xgriddata.spacedim;
     data=xgriddata.griddata;
@@ -240,7 +240,7 @@ namespace vtkfig
   }
   
   
-  template< class G> inline void Figure::SetData(std::shared_ptr<G> xgriddata, const std::string xdataname)
+  template< class G> inline void Figure::SetData(std::shared_ptr<G> xgriddata, const std::string xdataname="")
   {
     SetData(*xgriddata,xdataname);
   }
