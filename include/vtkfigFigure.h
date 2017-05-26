@@ -112,7 +112,7 @@ namespace vtkfig
     friend class MainThread;
     friend class TimerCallback;
     friend class Client;
-    friend class InteractorStyleTrackballCamera;
+    friend class MyInteractorStyle;
 
 
     vtkSmartPointer<vtkDataSet> data=NULL;
@@ -208,7 +208,9 @@ namespace vtkfig
       double contour_line_width=2;
       
       bool show_isocontours_on_cutplanes=true;
-      
+
+      double panscale=1.0;
+
       DataType datatype;
 
     } state;

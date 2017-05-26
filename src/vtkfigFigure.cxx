@@ -41,11 +41,10 @@ namespace vtkfig
     double xsize=bounds[1]-bounds[0];
     double ysize=bounds[3]-bounds[2];
     double zsize=bounds[5]-bounds[4];
-
+    if (dim==2) zsize=0;
     double xysize=std::max(xsize,ysize);
     double xyzsize=std::max(xysize,zsize);
     
-      
     // transform everything to [0,1]x[0,1]x[0,1]
     if (state.keep_aspect)
     {
@@ -72,6 +71,7 @@ namespace vtkfig
     
     transform->Translate(-bounds[0],-bounds[2],-bounds[4]);
     
+    this->state.panscale=0.25/xyzsize;
     renderer->GetActiveCamera()->SetModelTransformMatrix(transform->GetMatrix());
   }
   

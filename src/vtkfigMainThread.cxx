@@ -239,17 +239,94 @@ namespace vtkfig
   ////////////////////////////////////////////////////////////////
   /// Rendering 
   
-  class InteractorStyleTrackballCamera : public vtkInteractorStyleTrackballCamera
+  class MyInteractorStyle : public vtkInteractorStyleTrackballCamera
   {
   public:
     Frame* frame;
     
-    static InteractorStyleTrackballCamera* New()
+    static MyInteractorStyle* New()
     {
-      return new InteractorStyleTrackballCamera();
+      return new MyInteractorStyle();
     }
-    InteractorStyleTrackballCamera(): vtkInteractorStyleTrackballCamera() {};
-    
+    MyInteractorStyle(): vtkInteractorStyleTrackballCamera() {};
+
+    /// overwrite original pan function in  order to take into account
+    /// the panscale.   Probably there  is a better  way to  solve the
+    /// underlying  problem,  but I  (JF)  wasn't  able to  find  this
+    /// solution.  
+
+    void Pan() 
+    {
+      if (this->CurrentRenderer == NULL)
+      {
+        return;
+      }
+      
+      vtkRenderWindowInteractor *rwi = this->Interactor;
+      
+      double viewFocus[4], focalDepth, viewPoint[3];
+      double newPickPoint[4], oldPickPoint[4], motionVector[3];
+      
+      // Calculate the focal depth since we'll be using it a lot
+      
+      vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
+      camera->GetFocalPoint(viewFocus);
+      this->ComputeWorldToDisplay(viewFocus[0], viewFocus[1], viewFocus[2],
+                                  viewFocus);
+      focalDepth = viewFocus[2];
+      
+      this->ComputeDisplayToWorld(rwi->GetEventPosition()[0],
+                                  rwi->GetEventPosition()[1],
+                                  focalDepth,
+                                  newPickPoint);
+      
+      // Has to recalc old mouse point since the viewport has moved,
+      // so can't move it outside the loop
+      
+      this->ComputeDisplayToWorld(rwi->GetLastEventPosition()[0],
+                                  rwi->GetLastEventPosition()[1],
+                                  focalDepth,
+                                  oldPickPoint);
+      
+      // Camera motion is reversed
+      
+      motionVector[0] = oldPickPoint[0] - newPickPoint[0];
+      motionVector[1] = oldPickPoint[1] - newPickPoint[1];
+      motionVector[2] = oldPickPoint[2] - newPickPoint[2];
+      
+      // BEGIN VTFKIG ADDITION
+      // get motion scale.
+      double motionscale=1.0;
+      for (auto & subframe: frame->subframes)
+      {
+        if (subframe.renderer==this->CurrentRenderer)
+        {
+          motionscale=subframe.panscale;
+        }
+      }
+      // END VTFKIG ADDITION
+
+      motionVector[0]*=motionscale; 
+      motionVector[1]*=motionscale;
+      motionVector[2]*=motionscale;
+
+      camera->GetFocalPoint(viewFocus);
+      camera->GetPosition(viewPoint);
+      camera->SetFocalPoint(motionVector[0] + viewFocus[0],
+                            motionVector[1] + viewFocus[1],
+                            motionVector[2] + viewFocus[2]);
+      
+      camera->SetPosition(motionVector[0] + viewPoint[0],
+                          motionVector[1] + viewPoint[1],
+                          motionVector[2] + viewPoint[2]);
+      
+      if (rwi->GetLightFollowCamera())
+      {
+        this->CurrentRenderer->UpdateLightsGeometryToFollowCamera();
+      }
+      
+      rwi->Render();
+    }    
     
     virtual void OnChar() 
     {
@@ -257,51 +334,51 @@ namespace vtkfig
       vtkRenderWindowInteractor *interactor = this->Interactor;
 
       std::string key = interactor->GetKeySym();
-      
       if(key == "e" ||  key== "f")  {}
-
       else if(key == "q")
       {
-
-
+        abort();;
       }
       else if(key == "r")
       {
         for (auto & subframe: frame->subframes)
         {
-          subframe.renderer->GetActiveCamera()->SetPosition(subframe.default_camera_position);
-          subframe.renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
-          subframe.renderer->GetActiveCamera()->OrthogonalizeViewUp();
-          subframe.renderer->GetActiveCamera()->SetRoll(0);
-          subframe.renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
-          subframe.renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
+          if (subframe.renderer==this->CurrentRenderer)
+          {
+            subframe.renderer->GetActiveCamera()->SetPosition(subframe.default_camera_position);
+            subframe.renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
+            subframe.renderer->GetActiveCamera()->OrthogonalizeViewUp();
+            subframe.renderer->GetActiveCamera()->SetRoll(0);
+            subframe.renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
+            subframe.renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
+          }
         }
         interactor->Render();
       }
-
       else if(key == "w")
       {
-        /// get figure number from mouse position
         for (auto &figure: frame->figures)
-        { 
-          figure->state.wireframe=!figure->state.wireframe;
-          if (figure->state.wireframe)
-            for (auto & actor: figure->actors)  actor->GetProperty()->SetRepresentationToWireframe();
-          else
-            for (auto&  actor: figure->actors)  actor->GetProperty()->SetRepresentationToSurface();
-        }
-        interactor->Render();
+          if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
+          {
+            figure->state.wireframe=!figure->state.wireframe;
+            if (figure->state.wireframe)
+              for (auto & actor: figure->actors)  actor->GetProperty()->SetRepresentationToWireframe();
+            else
+              for (auto&  actor: figure->actors)  actor->GetProperty()->SetRepresentationToSurface();
+            interactor->Render();
+          }
+        
       }
 
       else if(key == "l")
       {
-        /// get figure number from mouse position
         for (auto &figure: frame->figures)
-        {
-          figure->state.num_contours=(figure->state.num_contours+1)%figure->state.max_num_contours;
-          figure->SetVMinMax(figure->state.real_vmin, figure->state.real_vmax);
-        }
-        interactor->Render();
+          if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
+          {
+            figure->state.num_contours=(figure->state.num_contours+1)%figure->state.max_num_contours;
+            figure->SetVMinMax(figure->state.real_vmin, figure->state.real_vmax);
+            interactor->Render();
+          }
       }
 
       
@@ -317,6 +394,7 @@ namespace vtkfig
 
       else
       {
+        cout << key << endl;
         vtkInteractorStyleTrackballCamera::OnChar();
       }
     }
@@ -385,7 +463,8 @@ namespace vtkfig
               if (figure->IsEmpty()  || renderer->GetActors()->GetNumberOfItems()==0)
               {
                 figure->RTBuild(window,interactor,renderer);
-                
+                framepair.second->subframes[figure->framepos].panscale=figure->state.panscale;
+
                 for (auto & actor: figure->actors) 
                   renderer->AddActor(actor);
   
@@ -515,6 +594,7 @@ namespace vtkfig
         renderer->GetActiveCamera()->OrthogonalizeViewUp();
         renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
         renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
+        renderer->GetActiveCamera()->OrthogonalizeViewUp();
         frame->window->AddRenderer(renderer);
         
       }
@@ -528,7 +608,7 @@ namespace vtkfig
     auto frame=mainthread->framemap[0];
 
     mainthread->interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
-    auto style =  vtkSmartPointer<InteractorStyleTrackballCamera>::New();
+    auto style =  vtkSmartPointer<MyInteractorStyle>::New();
     style->frame=frame;
     mainthread->interactor->SetInteractorStyle(style);
     

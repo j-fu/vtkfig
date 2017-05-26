@@ -134,6 +134,7 @@ w      Wireframe modus
       double default_camera_position[3]={0.65,0.5,10};
       double default_camera_zoom={1};
       double default_camera_view_angle={15};
+      double panscale=1.0;
       vtkSmartPointer<vtkRenderer>    renderer;
       double viewport[4]={0,0,1,1};
     };

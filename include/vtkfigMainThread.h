@@ -17,7 +17,7 @@ namespace vtkfig
     friend class Frame;
     friend class Client;
     friend class TimerCallback;
-    friend class InteractorStyleTrackballCamera;
+    friend class MyInteractorStyle;
 
 
   public:
