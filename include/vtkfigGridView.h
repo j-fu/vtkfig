@@ -36,7 +36,14 @@ namespace vtkfig
       vtkSmartPointer<vtkRenderWindowInteractor> interactor,
       vtkSmartPointer<vtkRenderer> renderer);
     
-    
+    RGBTable grid_rgbtab{
+      {0.00,1,0,0},
+      {0.25,1,1,0},
+      {0.50,0,1,0},
+      {0.75,0,1,1},
+      {1.00,0,0,1}};
+    int grid_rgbtab_size=65;
+
     void ServerRTSend(vtkSmartPointer<Communicator> communicator);
     
     void ClientMTReceive(vtkSmartPointer<Communicator> communicator);

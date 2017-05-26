@@ -41,12 +41,10 @@ namespace vtkfig
     double xsize=bounds[1]-bounds[0];
     double ysize=bounds[3]-bounds[2];
     double zsize=bounds[5]-bounds[4];
-    
+
     double xysize=std::max(xsize,ysize);
     double xyzsize=std::max(xysize,zsize);
     
-    if (dim==2)
-      transform->Scale(1.2,1.2,0);
       
     // transform everything to [0,1]x[0,1]x[0,1]
     if (state.keep_aspect)

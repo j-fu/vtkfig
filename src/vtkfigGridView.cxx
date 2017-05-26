@@ -34,6 +34,7 @@ namespace vtkfig
   GridView::GridView(): Figure()
   {
     sliderWidget = vtkSmartPointer<vtkSliderWidget>::New();
+    surface_lut=BuildLookupTable(grid_rgbtab,grid_rgbtab_size);
   }
   
 
@@ -51,38 +52,62 @@ namespace vtkfig
     double bounds[6];
     gridfunc->GetBounds(bounds);
     renderer->GetActiveCamera()->SetParallelProjection(1);
-
+    double range[2];
+    auto cr=vtkFloatArray::SafeDownCast(gridfunc->GetCellData()->GetAbstractArray("cellregions"));
+    auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
+    if (cr)
+    {
+      scalar->Assign("cellregions",vtkDataSetAttributes::SCALARS,vtkAssignAttribute::CELL_DATA);
+      scalar->SetInputDataObject(gridfunc);
+      cr->GetRange(range);
+      SetVMinMax(range[0],range[1]);
+    }
     
-    // auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
-    // scalar->Assign(dataname.c_str(),vtkDataSetAttributes::SCALARS,vtkAssignAttribute::CELL_DATA);
-    // scalar->SetInputDataObject(gridfunc);
-    // material --> cellfunc
-    
-
     auto geometry=vtkSmartPointer<FILTER>::New();
-    /// geometry->SetInputConnection(scalar->GetOutputPort());
-    geometry->SetInputDataObject(gridfunc);
+    if (cr)
+      geometry->SetInputConnection(scalar->GetOutputPort());
+    else
+      geometry->SetInputDataObject(gridfunc);
     
-
+    
     SetModelTransform(renderer,2,bounds);
 
     auto  cells = vtkSmartPointer<vtkPolyDataMapper>::New();
     cells->SetInputConnection(geometry->GetOutputPort());
-    cells->ScalarVisibilityOff();
+
+    if (cr)
+    {
+      cells->UseLookupTableScalarRangeOn();
+      cells->SetLookupTable(surface_lut);
+    }
+    else
+      cells->ScalarVisibilityOff();
     cells->ImmediateModeRenderingOn();
     auto    cellplot = vtkSmartPointer<vtkActor>::New();
     cellplot->SetMapper(cells);
-    cellplot->GetProperty()->SetColor(0.9,0.9,0.9);
+    if (!cr)
+      cellplot->GetProperty()->SetColor(0.9,0.9,0.9);
     Figure::RTAddActor(cellplot);
 
     auto edges= vtkSmartPointer<vtkExtractEdges>::New();
     edges->SetInputConnection(geometry->GetOutputPort());
     auto  emapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     emapper->SetInputConnection(edges->GetOutputPort());
+    emapper->ScalarVisibilityOff();
     auto    edgeplot = vtkSmartPointer<vtkActor>::New();
-    edgeplot->SetMapper(emapper);
     edgeplot->GetProperty()->SetColor(0,0,0);
+    edgeplot->SetMapper(emapper);
     Figure::RTAddActor(edgeplot);
+
+
+      
+    if (state.show_surface_colorbar && cr)
+    {
+      auto cbar=BuildColorBar(cells);
+      cbar->SetLabelFormat(" %-2.0f     ");
+      cbar->SetNumberOfLabels((int)(range[1]-range[0]+1));
+      Figure::RTAddActor2D(cbar);
+    }
 
     if (true)
     {

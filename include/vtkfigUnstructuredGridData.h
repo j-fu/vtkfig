@@ -8,6 +8,7 @@
 #include "vtkUnstructuredGridWriter.h"
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
+#include "vtkCellData.h"
 #include "vtkCellType.h"
 
 namespace vtkfig
@@ -73,6 +74,41 @@ namespace vtkfig
         }
       }    
     }
+
+    template <class V>
+      void SetCellRegions(const V&values)
+    {
+      SetCellScalar(values, "cellregions");
+    }
+    
+    template <class V>
+      void SetCellScalar(const V&values, const std::string name)
+    {
+      assert(griddata!=NULL);
+      auto ncells=griddata->GetNumberOfCells();
+      assert(ncells==values.size());
+      vtkSmartPointer<vtkFloatArray>gridvalues;
+      
+      if  (griddata->GetPointData()->HasArray(name.c_str()))
+      {
+        gridvalues=vtkFloatArray::SafeDownCast(griddata->GetPointData()->GetAbstractArray(name.c_str()));
+      }
+      else
+      {
+        gridvalues=vtkSmartPointer<vtkFloatArray>::New();
+        gridvalues->SetNumberOfComponents(1);
+        gridvalues->SetNumberOfTuples(ncells);
+        gridvalues->SetName(name.c_str());
+        griddata->GetCellData()->AddArray(gridvalues);
+      }
+      for (int i=0;i<ncells; i++)
+      {
+        double v=values[i];
+        gridvalues->InsertComponent(i,0,v);
+      }
+      gridvalues->Modified();
+    }    
+    
     
     template <class V>
     void SetPointScalar(const V&values, const std::string name)
@@ -101,7 +137,7 @@ namespace vtkfig
         gridvalues->InsertComponent(i,0,v);
       }
       gridvalues->Modified();
-    }    
+    }
 
     template <class V>
       void SetPointVector(const V&u, const V& v, const std::string name)
