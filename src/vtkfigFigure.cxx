@@ -35,7 +35,7 @@ namespace vtkfig
     contour_lut=BuildLookupTable(tab,tabsize);
   }
   
-  void Figure::SetModelTransform(vtkSmartPointer<vtkRenderer> renderer, double bounds[6])
+  void Figure::SetModelTransform(vtkSmartPointer<vtkRenderer> renderer, int dim, double bounds[6])
   {
     auto transform =  vtkSmartPointer<vtkTransform>::New();
     double xsize=bounds[1]-bounds[0];
@@ -45,8 +45,10 @@ namespace vtkfig
     double xysize=std::max(xsize,ysize);
     double xyzsize=std::max(xysize,zsize);
     
+    if (dim==2)
+      transform->Scale(1.2,1.2,0);
+      
     // transform everything to [0,1]x[0,1]x[0,1]
-    
     if (state.keep_aspect)
     {
       if (xsize>ysize)

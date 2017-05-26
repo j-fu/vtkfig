@@ -442,6 +442,13 @@ namespace vtkfig
         }
         break;
 
+        case Communicator::Command::FrameTitle:
+        {
+          auto frame=mainthread->framemap[mainthread->iframe];
+          frame->window->SetWindowName(frame->title.c_str());
+        }
+        break;
+
         case Communicator::Command::FrameLinkCamera:
         {
           auto frame=mainthread->framemap[mainthread->iframe];
@@ -644,6 +651,13 @@ namespace vtkfig
           auto frame=mainthread->framemap[mainthread->iframe];
           mainthread->communicator->SendInt(frame->pos_x);
           mainthread->communicator->SendInt(frame->pos_y);
+        }
+        break;
+
+        case Communicator::Command::FrameTitle:
+        {
+          auto frame=mainthread->framemap[mainthread->iframe];
+          mainthread->communicator->SendString(frame->title);
         }
         break;
 

@@ -39,7 +39,7 @@ namespace vtkfig
 
     double  bounds[6];
     gridfunc->GetBounds(bounds);
-    Figure::SetModelTransform(renderer,bounds);
+    Figure::SetModelTransform(renderer,2,bounds);
     
     auto vector = vtkSmartPointer<vtkAssignAttribute>::New();
     vector->Assign(dataname.c_str(),vtkDataSetAttributes::VECTORS,vtkAssignAttribute::POINT_DATA);

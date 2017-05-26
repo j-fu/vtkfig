@@ -15,6 +15,10 @@
 #include "vtkAppendPolyData.h"
 #include "vtkAssignAttribute.h"
 #include "vtkCamera.h"
+#include "vtkTextActor.h"
+#include "vtkCornerAnnotation.h"
+#include "vtkCoordinate.h"
+
 
 
 #include "vtkfigSurfaceContour.h"
@@ -117,14 +121,24 @@ namespace vtkfig
     gridfunc->GetBounds(bounds);
     renderer->GetActiveCamera()->SetParallelProjection(1);
 
+    auto values=vtkFloatArray::SafeDownCast(gridfunc->GetPointData()->GetAbstractArray(dataname.c_str()));
+    double range[2];
+    values->GetRange(range);
+    SetVMinMax(range[0],range[1]);
+
+
+
     auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
     scalar->Assign(dataname.c_str(),vtkDataSetAttributes::SCALARS,vtkAssignAttribute::POINT_DATA);
     scalar->SetInputDataObject(gridfunc);
 
+
+
     auto geometry=vtkSmartPointer<FILTER>::New();
     geometry->SetInputConnection(scalar->GetOutputPort());
+    
 
-    SetModelTransform(renderer,bounds);
+    SetModelTransform(renderer,2,bounds);
 
         
     if (state.show_surface)
@@ -141,7 +155,7 @@ namespace vtkfig
       Figure::RTAddActor(plot);
       
       if (state.show_surface_colorbar)
-        Figure::RTAddActor2D(BuildColorBar(mapper,dataname));
+        Figure::RTAddActor2D(BuildColorBar(mapper));
     }
     
     
@@ -194,6 +208,20 @@ namespace vtkfig
       Figure::RTAddActor2D(axes);
     }
     
+    if (true)
+    {
+      auto tactor= vtkSmartPointer<vtkCornerAnnotation>::New();
+      tactor->SetText(7,title.c_str());
+      tactor->SetMinimumFontSize(8);
+      tactor->SetMaximumFontSize(16);
+      auto textprop=tactor->GetTextProperty();
+      textprop->ItalicOff();
+      textprop->BoldOn();
+      textprop->SetFontSize(8);
+      textprop->SetFontFamilyToArial();
+      textprop->SetColor(0,0,0);
+      Figure::RTAddActor2D(tactor);
+    }
 
   }
   
@@ -213,7 +241,7 @@ namespace vtkfig
     gridfunc->GetBounds(bounds);
     double center[3];
     gridfunc->GetCenter(center);
-    Figure::SetModelTransform(renderer,bounds);
+    Figure::SetModelTransform(renderer,3,bounds);
 
     auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
     scalar->Assign(dataname.c_str(),vtkDataSetAttributes::SCALARS,vtkAssignAttribute::POINT_DATA);
@@ -346,6 +374,20 @@ namespace vtkfig
       
       Figure::RTAddActor2D(axes);
     }
+
+    if (true)
+    {
+      auto tactor= vtkSmartPointer<vtkCornerAnnotation>::New();
+      tactor->SetText(7,title.c_str());
+      auto textprop=tactor->GetTextProperty();
+      textprop->ItalicOff();
+      textprop->BoldOff();
+      textprop->SetFontSize(8);
+      textprop->SetFontFamilyToArial();
+      textprop->SetColor(0,0,0);
+      Figure::RTAddActor2D(tactor);
+    }
+
   } 
   
   
@@ -434,7 +476,6 @@ namespace vtkfig
     }
     communicator->Receive(data,1,1);
 
-    SetVMinMax(state.real_vmin,state.real_vmax);
 
     data->Modified();
     data->GetPointData()->GetScalars()->Modified();

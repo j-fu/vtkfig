@@ -353,6 +353,14 @@ namespace vtkfig
           frame->Position(x,y);
         }
         break;
+
+        case vtkfig::Communicator::Command::FrameTitle:
+        {
+          std::string title;
+          communicator->ReceiveString(title);
+          frame->Title(title);
+        }
+        break;
         
         case vtkfig::Communicator::Command::FrameDump:
         {

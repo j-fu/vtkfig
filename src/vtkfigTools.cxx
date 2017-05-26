@@ -35,7 +35,7 @@ namespace vtkfig
     return lut;
   }
 
-  vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper, const std::string title)
+  vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper)
   {
 
 // http://public.kitware.com/pipermail/vtkusers/2016-March/094540.html :
@@ -59,12 +59,11 @@ namespace vtkfig
         colorbar->SetTitleRatio(0.1);
         colorbar->SetNumberOfLabels(11);
         colorbar->SetPosition(0.8, 0.1);
+        colorbar->GetTitleTextProperty()->ItalicOff();
+        colorbar->GetLabelTextProperty()->ItalicOff();
         colorbar->GetTitleTextProperty()->SetFontSize(10);
         colorbar->GetLabelTextProperty()->SetFontSize(80);
         colorbar->SetLabelFormat("%.2e");
-        char xtitle[12];
-        snprintf(xtitle,12,"%-12s",title.c_str());
-        colorbar->SetTitle(xtitle);
 
 //        colorbar->GetAnnotationTextProperty()->SetFontSize(80);
 

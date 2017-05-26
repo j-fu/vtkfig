@@ -57,6 +57,11 @@ namespace vtkfig
     SendCommand("AddFigure", Communicator::Command::FrameAddFigure);
   }
   
+  void Frame::AddFigure(Figure* fig, int ipos)
+  {
+    AddFigure(fig,ivpx(ipos),ivpy(ipos));
+  }
+
 
   void Frame::LinkCamera(int ivpx, int ivpy, Frame& frame, int livpx, int livpy)
   {
@@ -86,6 +91,13 @@ namespace vtkfig
     this->pos_y=y;
     SendCommand("Position", Communicator::Command::FramePosition);
   }
+
+  void Frame::Title(const std::string title)
+  {
+    this->title=title;
+    SendCommand("Title", Communicator::Command::FrameTitle);
+  }
+
 
   void Frame::SendCommand(std::string source, Communicator::Command comm)
   {

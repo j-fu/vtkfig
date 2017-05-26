@@ -46,12 +46,26 @@ namespace vtkfig
 
     void SetBackground(double r, double g, double b) { bgcolor[0]=r; bgcolor[1]=g; bgcolor[2]=b;}
 
+    template <class V> 
+    void  SetSurfaceRGBTable(const V & tab, int lutsize)
+    {
+      RGBTable rgbtab;
+      rgbtab.resize(tab.size()/4);
+      for (int i=0,j=0; i<tab.size(); i+=4,j++)
+      {
+        rgbtab[j].x=tab[i+0];
+        rgbtab[j].r=tab[i+1];
+        rgbtab[j].g=tab[i+2];
+        rgbtab[j].b=tab[i+3];
+      }
+      SetSurfaceRGBTable(rgbtab, lutsize);
+    }
 
-    void SetSurfaceRGBTable(RGBTable & tab, int tabsize);
+    void SetSurfaceRGBTable(RGBTable & tab, int lutsize);
 
-    void SetContourRGBTable(RGBTable & tab, int tabsize);
+    void SetContourRGBTable(RGBTable & tab, int lutsize);
 
-    void SetModelTransform(vtkSmartPointer<vtkRenderer> renderer, double bounds[6]);
+    void SetModelTransform(vtkSmartPointer<vtkRenderer> renderer, int dim, double bounds[6]);
 
     void ShowSurface(bool b) {state.show_surface=b;}
 
@@ -65,9 +79,11 @@ namespace vtkfig
 
     void ShowElevation(bool b) {state.show_elevation=b;}
 
-    void SetValueRange(double vmin, double vmax){state.vmin_set=vmin; state.vmax_set=vmax; SetVMinMax(vmin,vmax);}
+    void SetTitle(std::string xtitle) { title=xtitle;}
+    
+    void SetValueRange(double vmin, double vmax){state.vmin_set=vmin; state.vmax_set=vmax;}
 
-    void SetNumberOfIsocontours(int n) {state.num_contours=n; state.max_num_contours= std::max(n,state.max_num_contours);  SetVMinMax(state.real_vmin,state.real_vmax);}
+    void SetNumberOfIsocontours(int n) {state.num_contours=n; state.max_num_contours= std::max(n,state.max_num_contours);}
 
     void SetIsoContourLineWidth(double w) {state.contour_line_width=w;}
 
@@ -102,6 +118,8 @@ namespace vtkfig
     vtkSmartPointer<vtkDataSet> data=NULL;
 
     std::string dataname;
+
+    std::string title;
 
     vtkSmartPointer<vtkContourFilter> isocontours;
 
@@ -214,6 +232,7 @@ namespace vtkfig
     state.spacedim=xgriddata.spacedim;
     data=xgriddata.griddata;
     dataname=xdataname;
+    title=xdataname;
     if (data->IsA("vtkUnstructuredGrid"))
       state.datatype=Figure::DataType::UnstructuredGrid;
     else  if (data->IsA("vtkRectilinearGrid"))

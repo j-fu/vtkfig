@@ -39,7 +39,7 @@ namespace vtkfig
 
     ///
     /// Create frame with single subframe 
-    ///+
+    ///
     Frame(): Frame(1,1){};
     
     static std::shared_ptr<Frame> New(int nvpx, int nvpy) 
@@ -56,13 +56,18 @@ namespace vtkfig
     
     void Dump(std::string fname);
         
-    void AddFigure(Figure &figure) {AddFigure(&figure, 0,0);};
-    void AddFigure(Figure &figure, int ivpx, int ivpy) {AddFigure(&figure,ivpx, ivpy);};
-
     void AddFigure(Figure *figure) {AddFigure(figure, 0,0);};
-    void AddFigure(Figure *figure, int ivpx, int ivpy);
-    void AddFigure(std::shared_ptr<Figure> figure, int ivpx, int ivpy){AddFigure(figure.get(),ivpx,ivpy);};
+    void AddFigure(Figure &figure) {AddFigure(&figure, 0,0);};
     void AddFigure(std::shared_ptr<Figure> figure) {AddFigure(figure.get(),0,0);}
+
+    void AddFigure(Figure *figure, int ivpx, int ivpy);
+    void AddFigure(Figure &figure, int ivpx, int ivpy) {AddFigure(&figure,ivpx, ivpy);};
+    void AddFigure(std::shared_ptr<Figure> figure, int ivpx, int ivpy){AddFigure(figure.get(),ivpx,ivpy);};
+
+    void AddFigure(Figure *figure, int ipos);
+    void AddFigure(Figure &figure, int ipos) {AddFigure(&figure,ipos);};
+    void AddFigure(std::shared_ptr<Figure> figure, int ipos){AddFigure(figure.get(),ipos);};
+
 
     void LinkCamera(int ivpx, int ivpy,Frame& frame, int livpx, int livpy);
     void LinkCamera(Frame& frame)  {LinkCamera(0,0,frame,0,0);}
@@ -72,6 +77,8 @@ namespace vtkfig
 
 
     void Size(int x, int y);
+
+    void Title(const std::string title);
 
     void Position(int x, int y);
 
@@ -112,6 +119,8 @@ w      Wireframe modus
     int pos_x=0;
     int pos_y=0;
 
+    std::string title;
+
     int camlinkthisframepos;
     int camlinkframepos;
     int camlinkframenum;
@@ -138,9 +147,9 @@ w      Wireframe modus
 
     vtkSmartPointer<vtkRenderWindow> window;
     
-    int pos(const int ivpx, const int ivpy) { return ivpx*nvpy+ivpy;}
-    int ivpx(const int pos) { return pos/nvpy;}
-    int ivpy(const int pos) { return pos%nvpy;}
+    int pos(const int ivpx, const int ivpy) { return (nvpy-ivpy-1)*nvpx+ivpx;}
+    int ivpx(const int pos) { return pos%nvpx;}
+    int ivpy(const int pos) { return nvpy-pos/nvpx-1;}
 
     friend class  InteractorStyleTrackballCamera;
     friend class  TimerCallback;

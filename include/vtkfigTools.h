@@ -22,7 +22,9 @@
 namespace vtkfig
 {
   struct RGBPoint { double x,r,g,b;};
+
   typedef std::vector<RGBPoint> RGBTable;
+
   static void SendRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab)
   {
     communicator->SendInt(rgbtab.size());
@@ -41,7 +43,7 @@ namespace vtkfig
 
   vtkSmartPointer<vtkLookupTable>  BuildLookupTable(RGBTable & xrgb, int size);
   
-  vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper, const std::string title="");
+  vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper);
 
   template <class V, class IV> inline  void Delaunay2D(const V & points_in,  V & points, IV & cells);
 
