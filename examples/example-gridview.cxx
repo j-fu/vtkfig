@@ -10,7 +10,6 @@
 int main(void)
 {
   cout.sync_with_stdio(true);
-  size_t nspin=vtkfig::NSpin();
 
   const int Nx = 20;
   const int Ny = 25;

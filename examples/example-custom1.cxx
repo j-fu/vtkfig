@@ -83,20 +83,15 @@ vtkfigFrame and vtkfigFigure base class.
 
   double t=0;
   double dt=0.1;
-  int ii=0;
+  size_t ii=0;
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
 
   auto figure=vtkfig::Figure::New();
 
   int i,j,k;
-  double Lxy, Lz;
-  if (x[Nx-1]-x[0] > y[Ny-1]-y[0])
-    Lxy = x[Nx-1]-x[0];
-  else
-    Lxy = y[Ny-1]-y[0];
+
   
-  double z_low = 10000, z_upp = -10000;
   
   auto gridfunc=vtkSmartPointer<vtkStructuredGrid>::New();
   auto points=vtkSmartPointer<vtkPoints>::New();
@@ -180,7 +175,7 @@ vtkfigFrame and vtkfigFigure base class.
 
 
   interactor->Initialize();
-  int timerId = interactor->CreateRepeatingTimer(10);
+  interactor->CreateRepeatingTimer(10);
   
   
   
@@ -214,7 +209,7 @@ vtkfigFrame and vtkfigFigure base class.
     points->Modified();
     colors->Modified();
     gridfunc->Modified();
-    double Lz = vmax-vmin;
+
     lut->SetTableRange(vmin,vmax);
     lut->Modified();
     renderer->SetBackground(1,1,1);

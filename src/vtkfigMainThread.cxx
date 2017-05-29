@@ -474,7 +474,7 @@ namespace vtkfig
         edited_figures.resize(0);
         
       }
-      else if(key == "i" | key== "L")
+      else if(key == "i" || key== "L")
       {
         for (auto &figure: frame->figures)
           if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
@@ -536,7 +536,6 @@ namespace vtkfig
         {
 
           mainthread->RTAddFrame(mainthread, mainthread->iframe);
-          auto frame=mainthread->framemap[mainthread->iframe];
         }
        break;
 
@@ -723,7 +722,7 @@ namespace vtkfig
 
 
     mainthread->interactor->Initialize();
-    int timerId = mainthread->interactor->CreateRepeatingTimer(10);
+    mainthread->interactor->CreateRepeatingTimer(10);
   }
   
   void MainThread::RenderThread(MainThread* mainthread)

@@ -126,7 +126,7 @@ namespace vtkfig
     else
       state.Lxy = y[Ny-1]-y[0];
 
-    double z_low = 10000, z_upp = -10000;
+
     
     
     gridfunc->SetDimensions(Nx, Ny, 1);

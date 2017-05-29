@@ -28,8 +28,6 @@ namespace vtkfig
 
     bool do_warp=true;
     bool draw_box=true;
-    bool draw_axes=true;
-    bool draw_colorbar=true;
    
     // filter to geometry primitive
     vtkSmartPointer<vtkStructuredGridGeometryFilter>geometry =

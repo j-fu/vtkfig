@@ -53,7 +53,7 @@ int main(void)
 
   double t=0;
   double dt=0.1;
-  int ii=0;
+  size_t ii=0;
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
 
@@ -72,7 +72,7 @@ int main(void)
 
   while (ii<nspin)
   {
-    for (int ipoint=0, ival=0;ipoint<points.size(); ipoint+=2,ival++)
+    for (size_t ipoint=0, ival=0;ipoint<points.size(); ipoint+=2,ival++)
       values[ival]=G(points[ipoint+0],points[ipoint+1],t);
 
     griddata->SetPointScalar(values,"v");

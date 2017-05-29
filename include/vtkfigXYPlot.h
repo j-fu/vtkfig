@@ -106,7 +106,7 @@ namespace vtkfig
       }
     };
     
-    plot_data& get_plot_data(int nplot)
+    plot_data& get_plot_data(size_t nplot)
     {
       if (nplot>=all_plot_data.size())
         all_plot_data.emplace_back(xyplot);

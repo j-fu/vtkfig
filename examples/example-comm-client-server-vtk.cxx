@@ -181,12 +181,12 @@ int main(int argc, const char * argv[])
         points->InsertNextPoint(i, j, 100*i+j);
       }
     rc=comm->Send(points->GetData(),remoteHandle,tag);
-    printf("%s send %d points: %d\n",xname,points->GetNumberOfPoints(), rc);
+    printf("%s send %d points: %d\n",xname,static_cast<int>(points->GetNumberOfPoints()), rc);
   }
   else
   {
     rc=comm->Receive(points->GetData(),remoteHandle,tag);
-    printf("%s received %d points: %d\n",xname,points->GetNumberOfPoints(), rc);
+    printf("%s received %d points: %d\n",xname,static_cast<int>(points->GetNumberOfPoints()), rc);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
   

@@ -92,7 +92,7 @@ namespace vtkfig
 /*  106   line->SetColor(0, 255, 0, 255); */
 /*  107   line->SetWidth(2.0); */
     
-    plot_data& get_plot_data(int nplot)
+    plot_data& get_plot_data(size_t nplot)
     {
       if (nplot>=all_plot_data.size())
       {

@@ -53,7 +53,7 @@ int main(void)
 
   double t=0;
   double dt=0.1;
-  int ii=0;
+  size_t ii=0;
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
 

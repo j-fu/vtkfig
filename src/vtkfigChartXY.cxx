@@ -97,21 +97,21 @@ Use vtkfigXYPlot instead...
   {
     auto plot=get_plot_data(num_plot);
     
-    int plot_points = 0;
-    int plot_lines = 0;
-    char s[desclen];
-    for (int i=0;i<desclen;i++) s[i]=static_cast<char>(next_plot_info.line_type[i]);
-    std::string linespec(s);
-    // determine line style
-    if (linespec == "-")
-      plot_lines = 1;
-    else if (linespec == ".")
-      plot_points = 1;
-    else if (linespec == ".-" || linespec == "-.")
-    {
-      plot_points = 1;
-      plot_lines = 1;
-    }
+    // int plot_points = 0;
+    // int plot_lines = 0;
+    // char s[desclen];
+    // for (int i=0;i<desclen;i++) s[i]=static_cast<char>(next_plot_info.line_type[i]);
+    // std::string linespec(s);
+    // // determine line style
+    // if (linespec == "-")
+    //   plot_lines = 1;
+    // else if (linespec == ".")
+    //   plot_points = 1;
+    // else if (linespec == ".-" || linespec == "-.")
+    // {
+    //   plot_points = 1;
+    //   plot_lines = 1;
+    // }
 
     plot.X->Modified();
     plot.Y->Modified();

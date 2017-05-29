@@ -56,7 +56,7 @@ int main(void)
 
   double t=0;
   double dt=0.1;
-  int ii=0;
+  size_t ii=0;
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
 

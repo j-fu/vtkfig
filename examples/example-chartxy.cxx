@@ -28,7 +28,7 @@ int main()
   std::string title;
   
   double tt=0;
-  int ii=0;
+  size_t ii=0;
 
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
@@ -51,7 +51,7 @@ int main()
     
     char titlebuf[20];
   
-    snprintf(titlebuf,20,"frame %d",ii++);
+    snprintf(titlebuf,20,"frame %lu",ii++);
     chartxy->Clear();
     chartxy->Title(titlebuf);
     chartxy->LineColorRGB(0,0,1);

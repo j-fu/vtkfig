@@ -25,23 +25,13 @@ namespace vtkfig
 
   typedef std::vector<RGBPoint> RGBTable;
 
-  static void SendRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab)
-  {
-    communicator->SendInt(rgbtab.size());
-    communicator->SendFloatBuffer((float*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(float));
-  }
+  void SendRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab);
   
-  static void ReceiveRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab)
-  {
-    int tabsize;
-    communicator->ReceiveInt(tabsize);
-    rgbtab.resize(tabsize);
-    communicator->ReceiveFloatBuffer((float*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(float));
-  }
+  void ReceiveRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab);
   
   size_t NSpin();
 
-  vtkSmartPointer<vtkLookupTable>  BuildLookupTable(RGBTable & xrgb, int size);
+  vtkSmartPointer<vtkLookupTable>  BuildLookupTable(RGBTable & xrgb, size_t size);
   
   vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper);
 

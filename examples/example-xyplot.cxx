@@ -28,7 +28,7 @@ int main()
   std::string title;
   
   double tt=0;
-  int ii=0;
+  size_t ii=0;
 
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
@@ -53,7 +53,7 @@ int main()
     
     char titlebuf[20];
   
-    snprintf(titlebuf,20,"frame %d",ii++);
+    snprintf(titlebuf,20,"frame %lu",ii++);
     xyplot->Clear();
     xyplot->SetTitle(titlebuf);
     xyplot->LineColorRGB(0,0,1);

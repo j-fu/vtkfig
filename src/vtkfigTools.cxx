@@ -6,6 +6,23 @@
 #include "vtkTextProperty.h"
 namespace vtkfig
 {
+
+
+  void SendRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab)
+  {
+    communicator->SendInt(rgbtab.size());
+    communicator->SendFloatBuffer((float*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(float));
+  }
+  
+  void ReceiveRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab)
+  {
+    int tabsize;
+    communicator->ReceiveInt(tabsize);
+    rgbtab.resize(tabsize);
+    communicator->ReceiveFloatBuffer((float*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(float));
+  }
+
+
   size_t NSpin()
   {
     char *spinstr=getenv("VTKFIG_NSPIN");
@@ -15,10 +32,10 @@ namespace vtkfig
       return atoi(spinstr);
   }
 
-  vtkSmartPointer<vtkLookupTable>  BuildLookupTable(std::vector<RGBPoint> & xrgb, int size)
+  vtkSmartPointer<vtkLookupTable>  BuildLookupTable(std::vector<RGBPoint> & xrgb, size_t size)
   {
     vtkSmartPointer<vtkColorTransferFunction> ctf = vtkSmartPointer<vtkColorTransferFunction>::New();
-    for (int i=0;i<xrgb.size(); i++)
+    for (size_t i=0;i<xrgb.size(); i++)
       ctf->AddRGBPoint(xrgb[i].x,xrgb[i].r,xrgb[i].g, xrgb[i].b);
     
     vtkSmartPointer<vtkLookupTable> lut = vtkSmartPointer<vtkLookupTable>::New();
