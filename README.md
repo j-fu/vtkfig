@@ -12,6 +12,7 @@ The intention of  vtkfig is to provide a C++  graphics library with an API simil
 - Experimental client-server communication for remote execution
 
 ## News
+- v0.9: plane/isolevel edit
 - v0.8: architecture reshuffle: separate data from figures
 
 ## Build
