@@ -1,8 +1,6 @@
 #ifndef VTKFIG_SURFACE_CONTOUR_H
 #define VTKFIG_SURFACE_CONTOUR_H
 
-#include "vtkSliderWidget.h"
-#include "vtkSliderRepresentation.h"
 #include "vtkRenderer.h"
 #include "vtkCommand.h"
 
@@ -54,13 +52,6 @@ namespace vtkfig
                      vtkSmartPointer<vtkRenderer> renderer,
                      vtkSmartPointer<GRIDFUNC> gridfunc);
     
-    vtkSmartPointer<vtkSliderWidget> sliderWidget;
-    
-    void AddSlider(vtkSmartPointer<vtkRenderWindowInteractor> i,
-                   vtkSmartPointer<vtkRenderer> r);
-    
-    friend class mySliderCallback;
-   
   };
   
 }

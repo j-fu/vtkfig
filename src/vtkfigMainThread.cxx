@@ -327,6 +327,53 @@ namespace vtkfig
       
       rwi->Render();
     }    
+
+    bool bdown =false;
+    int lastx,lasty;
+    vtkfig::Figure *xfig;
+    virtual void OnLeftButtonDown()
+    {
+      xfig=0;
+      for (auto &figure: frame->figures)
+        if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
+          xfig=figure;
+
+      vtkRenderWindowInteractor *rwi = this->Interactor;
+      if (xfig && rwi->GetControlKey())
+      {
+        bdown=true;
+        lastx=rwi->GetEventPosition()[0];
+        lasty=rwi->GetEventPosition()[1];
+      }
+      else
+        vtkInteractorStyleTrackballCamera::OnLeftButtonDown();
+    }
+
+    virtual void OnLeftButtonUp()
+    {
+      if (bdown)
+        bdown=false;
+      else
+        vtkInteractorStyleTrackballCamera::OnLeftButtonUp();
+    }
+
+    virtual void OnMouseMove()
+    {
+      vtkRenderWindowInteractor *rwi = this->Interactor;
+      if (xfig && bdown)
+      {
+
+        int thisx=rwi->GetEventPosition()[0];
+        int thisy=rwi->GetEventPosition()[1];
+        int dx=thisx-lastx;
+        int dy=thisy-lasty;
+        xfig->process_move(dx,dy);
+        lastx=thisx;
+        lasty=thisy;
+      }
+      else
+        vtkInteractorStyleTrackballCamera::OnMouseMove();
+    }
     
     virtual void OnChar() 
     {
@@ -370,6 +417,12 @@ namespace vtkfig
         
       }
 
+      else if (key == "x" || key== "y" || key== "z")
+      {      
+        for (auto &figure: frame->figures)
+          if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
+            figure->process_key(key);
+      } 
       else if(key == "l")
       {
         for (auto &figure: frame->figures)
@@ -394,7 +447,6 @@ namespace vtkfig
 
       else
       {
-        cout << key << endl;
         vtkInteractorStyleTrackballCamera::OnChar();
       }
     }

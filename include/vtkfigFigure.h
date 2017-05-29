@@ -12,6 +12,8 @@
 #include "vtkActor2D.h"
 #include "vtkMapper.h"
 #include "vtkMapper2D.h"
+#include "vtkSliderWidget.h"
+#include "vtkSliderRepresentation2D.h"
 
 #include "vtkfigCommunicator.h"
 #include "vtkfigTools.h"
@@ -105,6 +107,15 @@ namespace vtkfig
 
     void RTAddActor2D(vtkSmartPointer<vtkActor2D> prop);
 
+
+    void process_key(const std::string key)
+    {
+      cout<< this << " process_key: " << key << endl;
+    }
+    void process_move(int dx, int dy)
+    {
+      cout<< this <<  " process_move: " << dx << " " << dy << endl;
+    }
     
   protected:
 
@@ -113,7 +124,15 @@ namespace vtkfig
     friend class TimerCallback;
     friend class Client;
     friend class MyInteractorStyle;
+    friend class MySliderCallback;
 
+    vtkSmartPointer<vtkSliderWidget> sliderWidget;
+    
+    void AddSlider(vtkSmartPointer<vtkRenderWindowInteractor> i,
+                   vtkSmartPointer<vtkRenderer> r);
+    
+    friend class mySliderCallback;
+   
 
     vtkSmartPointer<vtkDataSet> data=NULL;
 

@@ -63,7 +63,7 @@ int main(void)
 
   auto frame=vtkfig::Frame::New(2,2);
 
-  frame->LinkCamera(1,0,frame,0,0);
+//  frame->LinkCamera(1,0,frame,0,0);
 
   frame->Size(800,400);
 
@@ -73,15 +73,16 @@ int main(void)
   griddata->SetPointScalar(v ,"v");
 
 
+
   auto contour_u=vtkfig::SurfaceContour::New();
   contour_u->SetData(griddata,"u");
   contour_u->SetSurfaceRGBTable(colors,255);
-  frame->AddFigure(contour_u,0,0);
+  frame->AddFigure(contour_u,1,0);
 
   auto contour_v=vtkfig::SurfaceContour::New();
   contour_v->SetData(griddata,"v");
   contour_v->SetSurfaceRGBTable(colors,255);
-  frame->AddFigure(contour_v,1,0);
+  frame->AddFigure(contour_v,0,0);
 
   auto xyplot=vtkfig::XYPlot::New();
   xyplot->SetYRange(-0.5,0.5);

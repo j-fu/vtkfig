@@ -33,7 +33,6 @@ namespace vtkfig
   /// Constructor
   GridView::GridView(): Figure()
   {
-    sliderWidget = vtkSmartPointer<vtkSliderWidget>::New();
     surface_lut=BuildLookupTable(grid_rgbtab,grid_rgbtab_size);
   }
   

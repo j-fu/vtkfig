@@ -26,28 +26,6 @@
 
 namespace vtkfig
 {
-  /////////////////////////////////////////////////////////////////////
-  /// Slider callback class
-
-  class mySliderCallback : public vtkCommand
-  {
-  public:
-    static mySliderCallback *New() 
-    {
-      return new mySliderCallback;
-    }
-    virtual void Execute(vtkObject *caller, unsigned long, void*)
-    {
-      vtkSliderWidget *sliderWidget =         reinterpret_cast<vtkSliderWidget*>(caller);
-      this->contour2d->state.num_contours=static_cast<vtkSliderRepresentation *>(sliderWidget->GetRepresentation())->GetValue();
-      
-      this->contour2d->SetVMinMax(this->contour2d->state.real_vmin, this->contour2d->state.real_vmax);
-    }
-    mySliderCallback():contour2d(0) {}
-
-    SurfaceContour *contour2d;
-
-  };
 
 
 
@@ -55,57 +33,9 @@ namespace vtkfig
   /// Constructor
   SurfaceContour::SurfaceContour(): Figure()
   {
-    sliderWidget = vtkSmartPointer<vtkSliderWidget>::New();
   }
   
 
-  /////////////////////////////////////////////////////////////////////
-  /// Slider handling
-  void SurfaceContour::AddSlider(vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-                                vtkSmartPointer<vtkRenderer> renderer)
-  {
-      if (true)
-      {
-
-        auto sliderRep = vtkSmartPointer<vtkSliderRepresentation2D>::New();
-        
-        
-        sliderRep->SetMinimumValue(0.0);
-        sliderRep->SetMaximumValue(state.max_num_contours);
-        sliderRep->SetLabelFormat("%.0f");
-        sliderRep->SetValue(state.num_contours);
-        
-        sliderRep->SetTitleText("Number of Isolines");
-        sliderRep->GetSliderProperty()->SetColor(0.5,0.5,0.5);
-        sliderRep->GetTitleProperty()->SetColor(0.5,0.5,0.5);
-        sliderRep->GetLabelProperty()->SetColor(0.5,0.5,0.5);
-        sliderRep->GetSelectedProperty()->SetColor(0,0,0);
-        sliderRep->GetTubeProperty()->SetColor(0.5,0.5,0.5);
-        sliderRep->GetCapProperty()->SetColor(0.5,0.5,0.5);
-        
-        
-        sliderRep->GetPoint1Coordinate()->SetCoordinateSystemToNormalizedViewport();
-        sliderRep->GetPoint1Coordinate()->SetValue(0.2,0.1);
-        sliderRep->GetPoint2Coordinate()->SetCoordinateSystemToNormalizedViewport();
-        sliderRep->GetPoint2Coordinate()->SetValue(0.8,0.1);
-        
-        sliderRep->SetSliderLength(0.02);
-        sliderRep->SetSliderWidth(0.02);
-        sliderRep->SetEndCapLength(0.01);
-        
-        sliderWidget->SetRepresentation(sliderRep);
-        
-        auto callback =   vtkSmartPointer<mySliderCallback>::New();
-        callback->contour2d = this;
-        sliderWidget->AddObserver(vtkCommand::InteractionEvent,callback);
-        sliderWidget->SetDefaultRenderer(renderer);
-        sliderWidget->SetCurrentRenderer(renderer);
-        sliderWidget->SetInteractor(interactor);
-        sliderWidget->SetAnimationModeToAnimate();
-        sliderWidget->EnabledOn();
-      }
-
-  }
 
   /////////////////////////////////////////////////////////////////////
   /// 2D Filter
@@ -443,7 +373,6 @@ namespace vtkfig
       SendRGBTable(communicator, contour_rgbtab);
       state.contour_rgbtab_modified=false;
     }
-
     communicator->Send(data,1,1);
   }
 
@@ -475,11 +404,6 @@ namespace vtkfig
         data=vtkSmartPointer<vtkUnstructuredGrid>::New();
     }
     communicator->Receive(data,1,1);
-
-
-    data->Modified();
-    data->GetPointData()->GetScalars()->Modified();
-
   }
   
 }
