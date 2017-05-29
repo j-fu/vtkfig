@@ -14,6 +14,29 @@ namespace vtkfig
     contour_lut=BuildLookupTable(contour_rgbtab,state.contour_rgbtab_size);
     isocontours = vtkSmartPointer<vtkContourFilter>::New();
     sliderWidget = vtkSmartPointer<vtkSliderWidget>::New();
+
+
+    planecutX= vtkSmartPointer<vtkCutter>::New();
+    planecutY= vtkSmartPointer<vtkCutter>::New();
+    planecutZ= vtkSmartPointer<vtkCutter>::New();
+
+    
+    planeX= vtkSmartPointer<vtkPlane>::New();
+    planeX->SetNormal(1,0,0);
+    planeY= vtkSmartPointer<vtkPlane>::New();
+    planeY->SetNormal(0,1,0);
+    planeZ= vtkSmartPointer<vtkPlane>::New();
+    planeZ->SetNormal(0,0,1);
+
+
+
+    tactor= vtkSmartPointer<vtkCornerAnnotation>::New();
+    auto textprop=tactor->GetTextProperty();
+    textprop->ItalicOff();
+    textprop->BoldOff();
+    textprop->SetFontSize(8);
+    textprop->SetFontFamilyToArial();
+    textprop->SetColor(0,0,0);
   };
 
 
@@ -95,6 +118,94 @@ namespace vtkfig
   void Figure::RTAddContextActor(vtkSmartPointer<vtkContextActor> prop) {ctxactors.push_back(prop);}
   bool Figure::IsEmpty(void) {return (actors.size()==0 && actors2d.size()==0&& ctxactors.size()==0);}
   
+
+
+
+
+  
+  void Figure::RTProcessPlaneKey(
+    const std::string plane,
+    int idim,
+    const std::string key,  
+    bool & edit, 
+    vtkSmartPointer<vtkCutter> planecut)
+  {
+    
+    if (!edit && key==plane)
+    {
+      edit=true;        
+      int i=planecut->GetNumberOfContours();
+      if (i>0)
+      {
+        double planepos=planecut->GetValue(i-1)+center[idim];
+        RTMessage("plane "+plane+"="+std::to_string(planepos));
+      }
+      else
+      {
+        RTMessage("[Return] for plane "+plane+"="+std::to_string(center[idim]));
+      }
+      return;
+    }
+
+    if (edit && key=="Return")
+    {
+      double planepos;
+      int i=planecut->GetNumberOfContours();
+      if (i>0)
+        planepos=planecut->GetValue(i);
+      else
+        planepos=center[idim];
+      planecut->SetValue(i,planepos);
+    }
+
+    if (edit&& key=="BackSpace")
+    {
+      int i=planecut->GetNumberOfContours();
+      if (i>0)
+        planecut->SetNumberOfContours(i-1);
+    }
+    
+    if (edit&& key=="Escape")
+    {
+      edit=false;
+    }
+    
+  }
+  
+  void Figure::RTProcessKey(const std::string key)
+  {
+    RTProcessPlaneKey("x",0,key,edit.x_plane, planecutX);
+    RTProcessPlaneKey("y",1,key,edit.y_plane, planecutY);
+    RTProcessPlaneKey("z",2,key,edit.z_plane, planecutZ);
+  }
+  
+
+  void Figure::RTProcessPlaneMove(const std::string plane,int idim, int dx, int dy, bool & edit, 
+                                  vtkSmartPointer<vtkCutter> planecut )
+  {
+    if (edit)
+    {
+      int i=planecut->GetNumberOfContours()-1;
+      if (i>=0)
+      {
+        double planepos=planecut->GetValue(i)+center[idim];
+        planepos+=(0.01)*((double)dx)*(bounds[2*idim+1]-bounds[2*idim+0]);
+        planepos=std::min(planepos,bounds[2*idim+1]);
+        planepos=std::max(planepos,bounds[2*idim+0]);
+        RTMessage("plane "+plane +"="+std::to_string(planepos));
+        planecut->SetValue(i,planepos-center[idim+0]);
+        planecut->Modified();
+      }
+    }
+  }
+  
+  void Figure::RTProcessMove(int dx, int dy)
+  {
+    RTProcessPlaneMove("x",0,dx,dy,edit.x_plane, planecutX);
+    RTProcessPlaneMove("y",1,dx,dy,edit.y_plane, planecutY);
+    RTProcessPlaneMove("z",2,dx,dy,edit.z_plane, planecutZ);
+  }
+
   
   
   void Figure::SetSurfaceRGBTable(RGBTable & tab, int tabsize)
@@ -176,6 +287,23 @@ namespace vtkfig
     isocontours->Modified();
     
   }
+
+
+
+  void Figure::RTAddAnnotations()
+  {
+    tactor->SetText(7,title.c_str());
+    tactor->SetText(4,"aaa");
+    Figure::RTAddActor2D(tactor);
+  }
+
+  void Figure::RTMessage(std::string msg)
+  {
+    cout << msg << endl;
+    tactor->SetText(4,msg.c_str());
+    tactor->Modified();
+  }
+      
   
   void Figure::RTUpdateActors()
   {

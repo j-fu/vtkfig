@@ -7,7 +7,7 @@
 inline double G(double x,double y, double z, double t) 
 {
   
-  return exp(-(x*x+y*y+z*z))*sin(t+x)*cos(y-t)*sin(0.5*z-0.5*t);
+  return exp(-0.5*(x*x+y*y+z*z))*sin(t+x)*cos(y-t)*sin(0.5*z-0.5*t);
 }
 
 
@@ -73,6 +73,7 @@ int main(void)
   auto contour=vtkfig::SurfaceContour::New();
   contour->SetData(griddata,"V");
   contour->SetSurfaceRGBTable(colors,255);
+  contour->SetValueRange(-1,1);
   frame->AddFigure(contour);
 
   while (ii<nspin)

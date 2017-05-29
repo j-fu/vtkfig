@@ -328,18 +328,17 @@ namespace vtkfig
       rwi->Render();
     }    
 
-    bool bdown =false;
+
+    std::vector<Figure*>edited_figures;
+    bool edit_mode =false;
+    bool bdown=false;
+
     int lastx,lasty;
-    vtkfig::Figure *xfig;
     virtual void OnLeftButtonDown()
     {
-      xfig=0;
-      for (auto &figure: frame->figures)
-        if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
-          xfig=figure;
 
       vtkRenderWindowInteractor *rwi = this->Interactor;
-      if (xfig && rwi->GetControlKey())
+      if (edit_mode)
       {
         bdown=true;
         lastx=rwi->GetEventPosition()[0];
@@ -360,17 +359,17 @@ namespace vtkfig
     virtual void OnMouseMove()
     {
       vtkRenderWindowInteractor *rwi = this->Interactor;
-      if (xfig && bdown)
-      {
-
-        int thisx=rwi->GetEventPosition()[0];
-        int thisy=rwi->GetEventPosition()[1];
-        int dx=thisx-lastx;
-        int dy=thisy-lasty;
-        xfig->process_move(dx,dy);
-        lastx=thisx;
-        lasty=thisy;
-      }
+      if (bdown)
+        {
+          int thisx=rwi->GetEventPosition()[0];
+          int thisy=rwi->GetEventPosition()[1];
+          int dx=thisx-lastx;
+          int dy=thisy-lasty;
+          for (auto figure:edited_figures) figure->RTProcessMove(dx,dy);
+          lastx=thisx;
+          lasty=thisy;
+          rwi->Render();
+        }
       else
         vtkInteractorStyleTrackballCamera::OnMouseMove();
     }
@@ -380,11 +379,14 @@ namespace vtkfig
       // Get the keypress
       vtkRenderWindowInteractor *interactor = this->Interactor;
 
+
       std::string key = interactor->GetKeySym();
+      cout << key << endl;
       if(key == "e" ||  key== "f")  {}
+
       else if(key == "q")
       {
-        abort();;
+        abort();
       }
       else if(key == "r")
       {
@@ -419,10 +421,60 @@ namespace vtkfig
 
       else if (key == "x" || key== "y" || key== "z")
       {      
-        for (auto &figure: frame->figures)
-          if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
-            figure->process_key(key);
-      } 
+        if (!edit_mode)
+        {
+
+          for (auto &figure: frame->figures)
+            if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
+              edited_figures.push_back(figure);
+          
+          for (auto figure : edited_figures)
+            figure->RTProcessKey(key);
+          
+          interactor->Render();
+          edit_mode=true;
+        } 
+
+      }
+      else if(key == "Left")
+      {
+        if (edit_mode)
+        {
+          for (auto figure : edited_figures)
+            figure->RTProcessMove(-1,0);
+          interactor->Render();
+        }
+      }
+      else if(key == "Right")
+      {
+        if (edit_mode)
+        {
+          for (auto figure : edited_figures)
+            figure->RTProcessMove(1,0);
+          interactor->Render();
+        }
+      }
+      else if(key == "Return" || key=="BackSpace")
+      {
+        if (edit_mode)
+        {
+          for (auto figure : edited_figures)
+            figure->RTProcessKey(key);
+          interactor->Render();
+        }
+      }
+      else if(key == "Escape")
+      {
+        edit_mode=false;
+        for (auto figure : edited_figures)
+        {
+          figure->RTProcessKey(key);
+          figure->RTMessage("");
+        }
+        interactor->Render();
+        edited_figures.resize(0);
+        
+      }
       else if(key == "l")
       {
         for (auto &figure: frame->figures)

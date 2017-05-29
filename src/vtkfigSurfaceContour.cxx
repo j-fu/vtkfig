@@ -16,7 +16,6 @@
 #include "vtkAssignAttribute.h"
 #include "vtkCamera.h"
 #include "vtkTextActor.h"
-#include "vtkCornerAnnotation.h"
 #include "vtkCoordinate.h"
 
 
@@ -47,7 +46,6 @@ namespace vtkfig
     vtkSmartPointer<vtkRenderer> renderer,
     vtkSmartPointer<DATA> gridfunc)
   {
-    double bounds[6];
     gridfunc->GetBounds(bounds);
     renderer->GetActiveCamera()->SetParallelProjection(1);
 
@@ -137,21 +135,8 @@ namespace vtkfig
 
       Figure::RTAddActor2D(axes);
     }
-    
-    if (true)
-    {
-      auto tactor= vtkSmartPointer<vtkCornerAnnotation>::New();
-      tactor->SetText(7,title.c_str());
-      tactor->SetMinimumFontSize(8);
-      tactor->SetMaximumFontSize(16);
-      auto textprop=tactor->GetTextProperty();
-      textprop->ItalicOff();
-      textprop->BoldOn();
-      textprop->SetFontSize(8);
-      textprop->SetFontFamilyToArial();
-      textprop->SetColor(0,0,0);
-      Figure::RTAddActor2D(tactor);
-    }
+
+    Figure::RTAddAnnotations();  
 
   }
   
@@ -167,9 +152,8 @@ namespace vtkfig
     vtkSmartPointer<DATA> gridfunc)
   {
 
-    double bounds[6];
+
     gridfunc->GetBounds(bounds);
-    double center[3];
     gridfunc->GetCenter(center);
     Figure::SetModelTransform(renderer,3,bounds);
 
@@ -180,31 +164,26 @@ namespace vtkfig
 
 
 
-    auto planeX= vtkSmartPointer<vtkPlane>::New();
+
     planeX->SetOrigin(center);
-    planeX->SetNormal(1,0,0);
-      
-    auto planeY= vtkSmartPointer<vtkPlane>::New();
     planeY->SetOrigin(center);
-    planeY->SetNormal(0,1,0);
-      
-    auto planeZ= vtkSmartPointer<vtkPlane>::New();
     planeZ->SetOrigin(center);
-    planeZ->SetNormal(0,0,1);
     
-    
-    auto planecutX= vtkSmartPointer<vtkCutter>::New();
     planecutX->SetInputConnection(scalar->GetOutputPort());
     planecutX->SetCutFunction(planeX);
+    planecutX->SetNumberOfContours(1);
+    planecutX->SetValue(0,0.0);
 
-      
-    auto planecutY= vtkSmartPointer<vtkCutter>::New();
+
     planecutY->SetInputConnection(scalar->GetOutputPort());
     planecutY->SetCutFunction(planeY);
+    planecutY->SetNumberOfContours(1);
+    planecutY->SetValue(0,0.0);
       
-    auto planecutZ= vtkSmartPointer<vtkCutter>::New();
     planecutZ->SetInputConnection(scalar->GetOutputPort());
     planecutZ->SetCutFunction(planeZ);
+    planecutZ->SetNumberOfContours(1);
+    planecutZ->SetValue(0,0.0);
       
 
     auto xyz =    vtkSmartPointer<vtkAppendPolyData>::New();
@@ -304,20 +283,8 @@ namespace vtkfig
       
       Figure::RTAddActor2D(axes);
     }
-
-    if (true)
-    {
-      auto tactor= vtkSmartPointer<vtkCornerAnnotation>::New();
-      tactor->SetText(7,title.c_str());
-      auto textprop=tactor->GetTextProperty();
-      textprop->ItalicOff();
-      textprop->BoldOff();
-      textprop->SetFontSize(8);
-      textprop->SetFontFamilyToArial();
-      textprop->SetColor(0,0,0);
-      Figure::RTAddActor2D(tactor);
-    }
-
+    Figure::RTAddAnnotations();  
+    
   } 
   
   
