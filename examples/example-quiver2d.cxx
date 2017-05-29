@@ -65,7 +65,7 @@ int main(void)
   auto contour=vtkfig::SurfaceContour::New();
   contour->SetData(griddata,"v");
   contour->SetSurfaceRGBTable(colors,255);
-  contour->ShowIsocontours(false);
+  contour->ShowIsolines(false);
   
   auto quiver=vtkfig::Quiver::New();
   quiver->SetArrowScale(0.5);

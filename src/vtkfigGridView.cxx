@@ -228,37 +228,6 @@ namespace vtkfig
     Figure::RTAddActor2D(BuildColorBar(mapper));
     
     
-    if (state.show_isocontours)
-    {
-      
-
-      if (state.show_isocontours_on_cutplanes)
-        isocontours->SetInputConnection(xyz->GetOutputPort());
-      else
-        isocontours->SetInputConnection(scalar->GetOutputPort());
-      
-      vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      mapper->SetInputConnection(isocontours->GetOutputPort());
-      mapper->UseLookupTableScalarRangeOn();
-      mapper->SetLookupTable(contour_lut);
-      
-      vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
-      if (state.show_isocontours_on_cutplanes)
-      {
-        plot->GetProperty()->SetOpacity(1.0);
-        plot->GetProperty()->SetLineWidth(state.contour_line_width);
-      }
-      else
-        plot->GetProperty()->SetOpacity(0.4);
-
-
-      plot->SetMapper(mapper);
-      Figure::RTAddActor(plot);
-    }
-
-
-
-    
     if (true)
     {
       // create outline

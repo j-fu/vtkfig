@@ -12,8 +12,13 @@ namespace vtkfig
   {
     surface_lut=BuildLookupTable(surface_rgbtab,state.surface_rgbtab_size);
     contour_lut=BuildLookupTable(contour_rgbtab,state.contour_rgbtab_size);
-    isocontours = vtkSmartPointer<vtkContourFilter>::New();
+    isoline_filter = vtkSmartPointer<vtkContourFilter>::New();
+    isosurface_filter = vtkSmartPointer<vtkContourFilter>::New();
     sliderWidget = vtkSmartPointer<vtkSliderWidget>::New();
+
+
+    isosurface_plot = vtkSmartPointer<vtkActor>::New();
+    isoline_plot = vtkSmartPointer<vtkActor>::New();
 
 
     planecutX= vtkSmartPointer<vtkCutter>::New();
@@ -27,6 +32,10 @@ namespace vtkfig
     planeY->SetNormal(0,1,0);
     planeZ= vtkSmartPointer<vtkPlane>::New();
     planeZ->SetNormal(0,0,1);
+
+
+    
+    
 
 
 
@@ -121,9 +130,35 @@ namespace vtkfig
 
 
 
+  void Figure::RTShowPlanePos(vtkSmartPointer<vtkCutter> planecut, const std::string plane, int idim)
+  {
+    int i=planecut->GetNumberOfContours();
+    if (i>0)
+    {
+      double planepos=planecut->GetValue(i-1)+center[idim];
+      RTMessage("plane_" + plane +"[" + std::to_string(i-1) + "]=" + std::to_string(planepos));
+    }
+    else
+    {
+      RTMessage("[Return] for plane_"+plane+"[0]="+std::to_string(center[idim]));
+    }
+  }
 
+  void Figure::RTShowIsolevel()
+  {
+    int i=isoline_filter->GetNumberOfContours();
+    if (i>0)
+    {
+      double isolevel=isoline_filter->GetValue(i-1);
+      RTMessage("isolevel["+ std::to_string(i-1)+ "]="+std::to_string(isolevel));
+    }
+    else
+    {
+      RTMessage("[Return] for isolevel[0]="+std::to_string(0.5*(state.real_vmin+state.real_vmax)));
+    }
+  }
   
-  void Figure::RTProcessPlaneKey(
+  int Figure::RTProcessPlaneKey(
     const std::string plane,
     int idim,
     const std::string key,  
@@ -133,18 +168,9 @@ namespace vtkfig
     
     if (!edit && key==plane)
     {
-      edit=true;        
-      int i=planecut->GetNumberOfContours();
-      if (i>0)
-      {
-        double planepos=planecut->GetValue(i-1)+center[idim];
-        RTMessage("plane "+plane+"="+std::to_string(planepos));
-      }
-      else
-      {
-        RTMessage("[Return] for plane "+plane+"="+std::to_string(center[idim]));
-      }
-      return;
+      edit=true;     
+      RTShowPlanePos(planecut,plane,idim);
+      return 1;
     }
 
     if (edit && key=="Return")
@@ -155,7 +181,9 @@ namespace vtkfig
         planepos=planecut->GetValue(i);
       else
         planepos=center[idim];
-      planecut->SetValue(i,planepos);
+      planecut->SetValue(i,planepos-center[idim]);
+      RTShowPlanePos(planecut,plane,idim);
+      return 1;
     }
 
     if (edit&& key=="BackSpace")
@@ -163,24 +191,106 @@ namespace vtkfig
       int i=planecut->GetNumberOfContours();
       if (i>0)
         planecut->SetNumberOfContours(i-1);
+
+      RTShowPlanePos(planecut,plane,idim);
+      return 1;
     }
     
     if (edit&& key=="Escape")
     {
       edit=false;
+      return 1;
     }
     
+    return 0;
+  }
+
+  int Figure::RTProcessIsoKey(const std::string key,bool & edit)
+  {
+    if (!edit && key=="l")
+    {
+      edit=true;        
+      RTShowIsolevel();
+      return 1;
+    }
+    
+    if (edit && key=="Return")
+    {
+      double isolevel;
+      int i=isoline_filter->GetNumberOfContours();
+      if (i>0)
+        isolevel=isoline_filter->GetValue(i);
+      else
+        isolevel=0.5*(state.real_vmin+state.real_vmax);
+
+      isoline_filter->SetValue(i,isolevel);
+      RTShowIsolevel();
+      RTUpdateIsoSurfaceFilter();
+      return 1;
+    }
+    
+    if (edit&& key=="BackSpace")
+    {
+      int i=isoline_filter->GetNumberOfContours();
+      if (i>0)
+        isoline_filter->SetNumberOfContours(i-1);
+      RTShowIsolevel();
+      RTUpdateIsoSurfaceFilter();
+      return 1;
+    }
+    
+    if (edit&& key=="Escape")
+    {
+      edit=false;
+      return 1;
+    }
+    
+    return 0;
   }
   
   void Figure::RTProcessKey(const std::string key)
   {
-    RTProcessPlaneKey("x",0,key,edit.x_plane, planecutX);
-    RTProcessPlaneKey("y",1,key,edit.y_plane, planecutY);
-    RTProcessPlaneKey("z",2,key,edit.z_plane, planecutZ);
+
+    if (key=="i" && state.spacedim==3)
+    {
+//      state.show_isolines=!state.show_isolines;
+      state.show_isosurfaces=!state.show_isosurfaces;
+      //      isoline_plot->SetVisibility(state.show_isolines);
+      isosurface_plot->SetVisibility(state.show_isosurfaces);
+      RTUpdateIsoSurfaceFilter();
+      isosurface_plot->Modified();
+      return;
+    }
+
+    if (key=="L")
+    {
+      state.num_contours=11;
+      GenIsolevels();
+      if (edit.l_iso)
+        RTShowIsolevel();
+      return;
+    }
+
+    if (
+      (edit.x_plane||edit.y_plane|| edit.z_plane|| edit.l_iso)
+      &&(key=="x"|| key=="y"|| key=="z"|| key=="l")
+      )
+    {
+      edit.x_plane=false;
+      edit.y_plane=false;
+      edit.z_plane=false;
+      edit.l_iso=false;
+    }
+
+
+    if (RTProcessIsoKey(key,edit.l_iso)) return;
+    if (RTProcessPlaneKey("x",0,key,edit.x_plane, planecutX)) return;
+    if (RTProcessPlaneKey("y",1,key,edit.y_plane, planecutY)) return;
+    if (RTProcessPlaneKey("z",2,key,edit.z_plane, planecutZ)) return;
   }
   
 
-  void Figure::RTProcessPlaneMove(const std::string plane,int idim, int dx, int dy, bool & edit, 
+  int Figure::RTProcessPlaneMove(const std::string plane,int idim, int dx, int dy, bool & edit, 
                                   vtkSmartPointer<vtkCutter> planecut )
   {
     if (edit)
@@ -192,18 +302,53 @@ namespace vtkfig
         planepos+=(0.01)*((double)dx)*(bounds[2*idim+1]-bounds[2*idim+0]);
         planepos=std::min(planepos,bounds[2*idim+1]);
         planepos=std::max(planepos,bounds[2*idim+0]);
-        RTMessage("plane "+plane +"="+std::to_string(planepos));
         planecut->SetValue(i,planepos-center[idim+0]);
+        RTShowPlanePos(planecut,plane,idim);
         planecut->Modified();
       }
+      return 1;
     }
+    return 0;
+  }
+
+  int Figure::RTProcessIsoMove(int dx, int dy, bool & edit)
+  {
+    if (edit)
+    {
+      int i=isoline_filter->GetNumberOfContours()-1;
+      if (i>=0)
+      {
+        double isolevel=isoline_filter->GetValue(i);
+        isolevel+=(0.01)*((double)dx)*(state.real_vmax-state.real_vmin);
+        isolevel=std::min(isolevel,state.real_vmax);
+        isolevel=std::max(isolevel,state.real_vmin);
+        isoline_filter->SetValue(i,isolevel);
+        isoline_filter->Modified();
+        RTShowIsolevel();
+        RTUpdateIsoSurfaceFilter();
+      }
+      return 1;
+    }
+    return 0;
   }
   
+  void Figure::RTUpdateIsoSurfaceFilter()
+  {
+    if (state.spacedim==3) 
+    {
+      int n=isoline_filter->GetNumberOfContours();
+      isosurface_filter->SetNumberOfContours(n);
+      for (int i=0;i<n;i++)
+        isosurface_filter->SetValue(i,isoline_filter->GetValue(i));
+    }
+  }
+
   void Figure::RTProcessMove(int dx, int dy)
   {
-    RTProcessPlaneMove("x",0,dx,dy,edit.x_plane, planecutX);
-    RTProcessPlaneMove("y",1,dx,dy,edit.y_plane, planecutY);
-    RTProcessPlaneMove("z",2,dx,dy,edit.z_plane, planecutZ);
+    if (RTProcessIsoMove(dx,dy,edit.l_iso)) return;
+    if (RTProcessPlaneMove("x",0,dx,dy,edit.x_plane, planecutX)) return;
+    if (RTProcessPlaneMove("y",1,dx,dy,edit.y_plane, planecutY)) return;
+    if (RTProcessPlaneMove("z",2,dx,dy,edit.z_plane, planecutZ)) return;
   }
 
   
@@ -281,25 +426,26 @@ namespace vtkfig
     surface_lut->Modified();
     contour_lut->SetTableRange(state.real_vmin,state.real_vmax);
     contour_lut->Modified();
-    
-    double tempdiff = (state.real_vmax-state.real_vmin)/(1.0e8*state.num_contours);
-    isocontours->GenerateValues(state.num_contours, state.real_vmin+tempdiff, state.real_vmax-tempdiff);
-    isocontours->Modified();
-    
   }
 
+  void Figure::GenIsolevels()
+  {
+    double tempdiff = (state.real_vmax-state.real_vmin)/(1.0e8*state.num_contours);
+    isoline_filter->GenerateValues(state.num_contours, state.real_vmin+tempdiff, state.real_vmax-tempdiff);
+    isoline_filter->Modified();
+    RTUpdateIsoSurfaceFilter();
+  }
 
 
   void Figure::RTAddAnnotations()
   {
     tactor->SetText(7,title.c_str());
-    tactor->SetText(4,"aaa");
+    tactor->SetText(4,"");
     Figure::RTAddActor2D(tactor);
   }
 
   void Figure::RTMessage(std::string msg)
   {
-    cout << msg << endl;
     tactor->SetText(4,msg.c_str());
     tactor->Modified();
   }

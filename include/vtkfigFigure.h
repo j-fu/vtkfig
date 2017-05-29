@@ -24,6 +24,7 @@
 #include "vtkPlane.h"
 #include "vtkCornerAnnotation.h"
 
+
 namespace vtkfig
 {
 
@@ -73,7 +74,9 @@ namespace vtkfig
 
     void ShowSurface(bool b) {state.show_surface=b;}
 
-    void ShowIsocontours(bool b) {state.show_isocontours=b;}
+    void ShowIsolines(bool b) {state.show_isolines=b;}
+
+    void ShowIsosurfaces(bool b) {state.show_isosurfaces=b;}
 
     void ShowSlider(bool b) {state.show_slider=b;}
 
@@ -89,12 +92,10 @@ namespace vtkfig
 
     void SetNumberOfIsocontours(int n) {state.num_contours=n; state.max_num_contours= std::max(n,state.max_num_contours);}
 
-    void SetIsoContourLineWidth(double w) {state.contour_line_width=w;}
+    void SetIsolineWidth(double w) {state.isoline_width=w;}
 
     void SetMaxNumberOfIsoContours(int n) {state.max_num_contours=n;}
-
-    void ShowIsoContoursOnCutplanes(bool b) {state.show_isocontours_on_cutplanes=b;}
-
+    
     void SetXYAspect(double a) {state.aspect=a;}
 
     void KeepXYAspect(bool b) {state.keep_aspect=b;}
@@ -134,6 +135,8 @@ namespace vtkfig
     vtkSmartPointer<vtkPlane> planeY;
     vtkSmartPointer<vtkPlane> planeZ;
     
+
+
     void AddSlider(vtkSmartPointer<vtkRenderWindowInteractor> i,
                    vtkSmartPointer<vtkRenderer> r);
     
@@ -146,8 +149,10 @@ namespace vtkfig
 
     std::string title;
 
-    vtkSmartPointer<vtkContourFilter> isocontours;
-
+    vtkSmartPointer<vtkContourFilter> isoline_filter;
+    vtkSmartPointer<vtkContourFilter> isosurface_filter;
+    vtkSmartPointer<vtkActor>     isoline_plot;
+    vtkSmartPointer<vtkActor>     isosurface_plot;
 
     vtkSmartPointer<vtkLookupTable> surface_lut;
     
@@ -158,12 +163,19 @@ namespace vtkfig
     RGBTable contour_rgbtab{{0,0,0,0},{1,0,0,0}};
     
     void SetVMinMax(double vmin, double vmax);
+    void GenIsolevels();
 
 
     virtual void RTProcessKey(const std::string key);
     virtual void RTProcessMove(int dx, int dy);
-    void RTProcessPlaneMove(const std::string plane,int idim, int dx, int dy, bool & edit, vtkSmartPointer<vtkCutter> planecut );
-    void RTProcessPlaneKey(const std::string plane,int idim, const std::string key, bool & edit, vtkSmartPointer<vtkCutter> planecut);
+    
+    int RTProcessPlaneMove(const std::string plane,int idim, int dx, int dy, bool & edit, vtkSmartPointer<vtkCutter> planecut );
+    int RTProcessPlaneKey(const std::string plane,int idim, const std::string key, bool & edit, vtkSmartPointer<vtkCutter> planecut);
+    int RTProcessIsoMove(int dx, int dy, bool & edit);
+    int RTProcessIsoKey(const std::string key, bool & edit);
+    void RTUpdateIsoSurfaceFilter();
+    void RTShowIsolevel();
+    void RTShowPlanePos(vtkSmartPointer<vtkCutter> planecut,const std::string plane,  int idim);
 
 
     
@@ -206,9 +218,9 @@ namespace vtkfig
       
       double real_vmax=1;
       
-      int num_contours=10;
+      int num_contours=11;
       
-      int max_num_contours=10;
+      int max_num_contours=11;
       
       bool keep_aspect=true;
       
@@ -216,7 +228,9 @@ namespace vtkfig
       
       bool show_surface=true;
       
-      bool show_isocontours=true;
+      bool show_isolines=true;
+
+      bool show_isosurfaces=false;
       
       bool show_slider=false;
       
@@ -238,10 +252,8 @@ namespace vtkfig
       
       int spacedim=2;
       
-      double contour_line_width=2;
+      double isoline_width=2;
       
-      bool show_isocontours_on_cutplanes=true;
-
       double panscale=1.0;
 
       DataType datatype;

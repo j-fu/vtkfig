@@ -381,7 +381,7 @@ namespace vtkfig
 
 
       std::string key = interactor->GetKeySym();
-      cout << key << endl;
+//      cout << key << endl;
       if(key == "e" ||  key== "f")  {}
 
       else if(key == "q")
@@ -419,24 +419,23 @@ namespace vtkfig
         
       }
 
-      else if (key == "x" || key== "y" || key== "z")
+      else if (key == "x" || key== "y" || key== "z" || key== "l")
       {      
         if (!edit_mode)
         {
-
+          
           for (auto &figure: frame->figures)
             if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
               edited_figures.push_back(figure);
-          
-          for (auto figure : edited_figures)
-            figure->RTProcessKey(key);
-          
-          interactor->Render();
           edit_mode=true;
         } 
+        for (auto figure : edited_figures)
+          figure->RTProcessKey(key);
+        interactor->Render();
+
 
       }
-      else if(key == "Left")
+      else if(key == "Left" || key== "Down")
       {
         if (edit_mode)
         {
@@ -445,7 +444,7 @@ namespace vtkfig
           interactor->Render();
         }
       }
-      else if(key == "Right")
+      else if(key == "Right" || key== "Up")
       {
         if (edit_mode)
         {
@@ -475,24 +474,21 @@ namespace vtkfig
         edited_figures.resize(0);
         
       }
-      else if(key == "l")
+      else if(key == "i" | key== "L")
       {
         for (auto &figure: frame->figures)
           if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
           {
-            figure->state.num_contours=(figure->state.num_contours+1)%figure->state.max_num_contours;
-            figure->SetVMinMax(figure->state.real_vmin, figure->state.real_vmax);
-            interactor->Render();
+            figure->RTProcessKey(key);
           }
+        interactor->Render();
       }
-
-      
       else if (key=="space")
       {
         frame->mainthread->communication_blocked=!frame->mainthread->communication_blocked;
       }
 
-      else if(key == "h" or key == "?")
+      else if(key == "h" or key == "question")
       {
         cout << Frame::keyboard_help;
       }

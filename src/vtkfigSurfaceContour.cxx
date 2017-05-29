@@ -53,7 +53,7 @@ namespace vtkfig
     double range[2];
     values->GetRange(range);
     SetVMinMax(range[0],range[1]);
-
+    GenIsolevels();
 
 
     auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
@@ -77,7 +77,7 @@ namespace vtkfig
       mapper->UseLookupTableScalarRangeOn();
       mapper->SetLookupTable(surface_lut);
       mapper->ImmediateModeRenderingOn();
-      
+
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
       plot->SetMapper(mapper);
       Figure::RTAddActor(plot);
@@ -87,19 +87,19 @@ namespace vtkfig
     }
     
     
-    if (state.show_isocontours)
+    if (state.show_isolines)
     {
       
-      isocontours->SetInputConnection(geometry->GetOutputPort());
+      isoline_filter->SetInputConnection(geometry->GetOutputPort());
       
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      mapper->SetInputConnection(isocontours->GetOutputPort());
+      mapper->SetInputConnection(isoline_filter->GetOutputPort());
       mapper->UseLookupTableScalarRangeOn();
       mapper->SetLookupTable(contour_lut);
       
       vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
       plot->SetMapper(mapper);
-      plot->GetProperty()->SetLineWidth(state.contour_line_width);
+      plot->GetProperty()->SetLineWidth(state.isoline_width);
       Figure::RTAddActor(plot);
       if (state.show_contour_colorbar)
         Figure::RTAddActor2D(BuildColorBar(mapper));
@@ -161,6 +161,12 @@ namespace vtkfig
     scalar->Assign(dataname.c_str(),vtkDataSetAttributes::SCALARS,vtkAssignAttribute::POINT_DATA);
     scalar->SetInputDataObject(gridfunc);
 
+    auto values=vtkFloatArray::SafeDownCast(gridfunc->GetPointData()->GetAbstractArray(dataname.c_str()));
+    double range[2];
+    values->GetRange(range);
+    SetVMinMax(range[0],range[1]);
+    GenIsolevels();
+
 
 
 
@@ -171,14 +177,12 @@ namespace vtkfig
     
     planecutX->SetInputConnection(scalar->GetOutputPort());
     planecutX->SetCutFunction(planeX);
-    planecutX->SetNumberOfContours(1);
-    planecutX->SetValue(0,0.0);
+    planecutX->SetNumberOfContours(0);
 
 
     planecutY->SetInputConnection(scalar->GetOutputPort());
     planecutY->SetCutFunction(planeY);
-    planecutY->SetNumberOfContours(1);
-    planecutY->SetValue(0,0.0);
+    planecutY->SetNumberOfContours(0);
       
     planecutZ->SetInputConnection(scalar->GetOutputPort());
     planecutZ->SetCutFunction(planeZ);
@@ -208,36 +212,40 @@ namespace vtkfig
     Figure::RTAddActor2D(BuildColorBar(mapper));
     
     
-    if (state.show_isocontours)
+    if (true)
     {
       
-
-      if (state.show_isocontours_on_cutplanes)
-        isocontours->SetInputConnection(xyz->GetOutputPort());
-      else
-        isocontours->SetInputConnection(scalar->GetOutputPort());
-      
+      isoline_filter->SetInputConnection(xyz->GetOutputPort());
+        
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      mapper->SetInputConnection(isocontours->GetOutputPort());
+      mapper->SetInputConnection(isoline_filter->GetOutputPort());
       mapper->UseLookupTableScalarRangeOn();
       mapper->SetLookupTable(contour_lut);
       
-      vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
-      if (state.show_isocontours_on_cutplanes)
-      {
-        plot->GetProperty()->SetOpacity(1.0);
-        plot->GetProperty()->SetLineWidth(state.contour_line_width);
-      }
-      else
-        plot->GetProperty()->SetOpacity(0.4);
+      isoline_plot->GetProperty()->SetOpacity(1.0);
+      isoline_plot->GetProperty()->SetLineWidth(state.isoline_width);
+      isoline_plot->SetMapper(mapper);
+      isoline_plot->SetVisibility(state.show_isolines);
+      Figure::RTAddActor(isoline_plot);
+    }
 
 
-      plot->SetMapper(mapper);
-      Figure::RTAddActor(plot);
-
+    if (true)
+    {
       
-      if (state.show_slider)
-        AddSlider(interactor,renderer);
+      isosurface_filter->SetInputConnection(scalar->GetOutputPort());
+        
+      vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+      mapper->SetInputConnection(isosurface_filter->GetOutputPort());
+      mapper->UseLookupTableScalarRangeOn();
+      mapper->SetLookupTable(surface_lut);
+      
+      isosurface_plot->GetProperty()->SetOpacity(0.3);
+      
+      isosurface_plot->SetMapper(mapper);
+      isosurface_plot->SetVisibility(state.show_isosurfaces);
+      Figure::RTAddActor(isosurface_plot);
+      
     }
 
 

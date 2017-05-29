@@ -96,11 +96,23 @@ namespace vtkfig
     static constexpr const char* keyboard_help=
 R"(
 --------------------------------------
-Key     Action
+   Key     Action
 
-space  Interrupt/continue calculation
-r      Reset camera
-w      Wireframe modus
+    Space  Interrupt/continue calculation
+   Escape  Finish plane/level editing
+   Return  Store edited plane/level value
+BackSpace  Delete last plane/level value
+        l  Start isolevel editing
+        L  Generate 11 equally spaced isolevels.
+        i  Toggle isosurface view (3D only)
+        r  Reset camera
+        w  Toggle wireframe mode 
+        x  Start x plane editing (3D only)
+        y  Start y plane editing (3D only)
+        z  Start z plane editing (3D only)
+
+In edit mode, left mouse, as well as
+cursor keys move value of plane/isolevel.
 --------------------------------------
 )";
 
