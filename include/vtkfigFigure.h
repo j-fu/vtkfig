@@ -92,6 +92,10 @@ namespace vtkfig
 
     void SetNumberOfIsocontours(int n) {state.num_contours=n; state.max_num_contours= std::max(n,state.max_num_contours);}
 
+    void SetQuiverGridSize(int nx, int ny) { state.qv_nx=nx; state.qv_ny=ny;}
+
+    void SetQuiverArrowScale(double scale) { state.qv_arrow_scale=scale;}
+
     void SetIsolineWidth(double w) {state.isoline_width=w;}
 
     void SetMaxNumberOfIsoContours(int n) {state.max_num_contours=n;}
@@ -124,6 +128,7 @@ namespace vtkfig
     friend class Client;
     friend class MyInteractorStyle;
     friend class MySliderCallback;
+    friend class Quiver;
 
     vtkSmartPointer<vtkSliderWidget> sliderWidget;
     vtkSmartPointer<vtkCornerAnnotation> tactor;
@@ -255,6 +260,11 @@ namespace vtkfig
       double isoline_width=2;
       
       double panscale=1.0;
+
+      int qv_nx=15;
+      int qv_ny=15;
+      int qv_nz=15;
+      double qv_arrow_scale=0.333;
 
       DataType datatype;
 

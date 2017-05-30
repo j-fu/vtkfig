@@ -6,10 +6,12 @@
 #include "vtkContourFilter.h"
 #include "vtkOutlineFilter.h"
 #include "vtkRectilinearGridGeometryFilter.h"
+#include "vtkGeometryFilter.h"
 #include "vtkGlyph3D.h"
 #include "vtkRectilinearGrid.h"
 #include "vtkGlyphSource2D.h"
 #include "vtkAssignAttribute.h"
+#include "vtkProbeFilter.h"
 
 
 #include "vtkfigQuiver.h"
@@ -26,16 +28,15 @@ namespace vtkfig
     lut=BuildLookupTable(quiver_rgb,2);
   }
   
-  void  Quiver::RTBuild(
+
+  template <class DATA, class FILTER>
+  void  Quiver::RTBuild2D(
         vtkSmartPointer<vtkRenderWindow> window,
         vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-        vtkSmartPointer<vtkRenderer> renderer)
+        vtkSmartPointer<vtkRenderer> renderer,
+        vtkSmartPointer<DATA> gridfunc)
   {
     
-    if (state.datatype!=Figure::DataType::RectilinearGrid) return;
-    auto gridfunc=vtkRectilinearGrid::SafeDownCast(data);
-
-
 
     double  bounds[6];
     gridfunc->GetBounds(bounds);
@@ -45,20 +46,46 @@ namespace vtkfig
     vector->Assign(dataname.c_str(),vtkDataSetAttributes::VECTORS,vtkAssignAttribute::POINT_DATA);
     vector->SetInputDataObject(gridfunc);
 
-
-
     // filter to geometry primitive
-    auto geometry = vtkSmartPointer<vtkRectilinearGridGeometryFilter>::New();
+    auto geometry = vtkSmartPointer<FILTER>::New();
     geometry->SetInputConnection(vector->GetOutputPort());
+
+
+    auto probePoints =  vtkSmartPointer<vtkPoints>::New();
+    
+    double dx=(bounds[1]-bounds[0])/( (int)state.qv_nx);
+    double dy=(bounds[3]-bounds[2])/( (int)state.qv_ny);
+
+    double x,y;
+    x=bounds[0];
+    for (int ix=0; ix<state.qv_nx;ix++,x+=dx )
+    {
+      y=bounds[2];
+      for ( int iy=0;iy<state.qv_ny;iy++,y+=dy )
+      {
+        probePoints->InsertNextPoint ( x, y, 0);
+      }
+    }
+
+    auto probePolyData =vtkSmartPointer<vtkPolyData>::New();
+    probePolyData->SetPoints(probePoints);
+    
+
+    auto probeFilter = vtkSmartPointer<vtkProbeFilter>::New();
+    probeFilter->SetSourceConnection(geometry->GetOutputPort());
+    probeFilter->SetInputData(probePolyData);
+    probeFilter->PassPointArraysOn();
+
+
 
     // make a vector glyph
     auto arrow = vtkSmartPointer<vtkGlyphSource2D>::New();
     arrow->SetGlyphTypeToArrow();
-    arrow->SetScale(arrow_scale);
+    arrow->SetScale(state.qv_arrow_scale);
     arrow->FilledOff();
 
     auto glyph = vtkSmartPointer<vtkGlyph3D>::New();
-    glyph->SetInputConnection(geometry->GetOutputPort());
+    glyph->SetInputConnection(probeFilter->GetOutputPort());
     glyph->SetSourceConnection(arrow->GetOutputPort());
     glyph->SetColorModeToColorByVector();
     glyph->SetScaleModeToScaleByVector();
@@ -93,4 +120,39 @@ namespace vtkfig
       Figure::RTAddActor2D(BuildColorBar(mapper));
   }
 
+
+
+  /////////////////////////////////////////////////////////////////////
+  /// Generic access to filter
+  void  Quiver::RTBuild(
+    vtkSmartPointer<vtkRenderWindow> window,
+    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+    vtkSmartPointer<vtkRenderer> renderer)
+  {
+
+    if (state.datatype==Figure::DataType::UnstructuredGrid)
+    {
+      auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
+      
+      if (state.spacedim==2)
+        this->RTBuild2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,griddata);
+
+      // else
+      //   this->RTBuild3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,griddata); 
+    }
+    else if (state.datatype==Figure::DataType::RectilinearGrid)
+    {
+      auto griddata=vtkRectilinearGrid::SafeDownCast(data);
+      
+      
+      if (state.spacedim==2)
+        this->RTBuild2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
+      // else
+      //   this->RTBuild3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
+    }
+  }
+
+
+
 }
+

@@ -1,3 +1,4 @@
+#include "vtkMath.h"
 #include "vtkfigFrame.h"
 #include "vtkfigSurfaceContour.h"
 #include "vtkfigQuiver.h"
@@ -5,33 +6,49 @@
 
 inline double G(double x,double y, double t) 
 {
-  
   return exp(-(x*x+y*y))*sin(t+x)*cos(y-t);
+}
+
+inline double dGdx(double x,double y, double t) 
+{
+  return cos(y-t)*exp(-(x*x+y*y))*(cos(t+x)-2*x*sin(t+x));
+}
+
+
+inline double dGdy(double x,double y, double t) 
+{
+  return sin(t+x)*exp(-(x*x+y*y))*(-2*y*cos(y-t) -sin(y-t));
 }
 
 
 int main(void)
 {
   size_t nspin=vtkfig::NSpin();
-  const int Nx = 20;
-  const int Ny = 25;
   
-  std::vector<double> x(Nx);
-  std::vector<double> y(Ny);
-  std::vector<double> z(Nx*Ny);
-  std::vector<double> u(Nx*Ny);
-  std::vector<double> v(Nx*Ny);
-
+  std::vector<double> inpoints;
+  for(double x = -2; x < 2; x+=0.03)
+  {
+    for(double y = -2; y < 2; y+=0.03)
+    {
+      inpoints.push_back(x + vtkMath::Random(-.1, .1));
+      inpoints.push_back(y + vtkMath::Random(-.1, .1));
+    }
+  }
   
-  const double x_low = -2.5;
-  const double x_upp = 1.5;
-  const double y_low = -2.5;
-  const double y_upp = 4;
-  const double dx = (x_upp-x_low)/(Nx-1);
-  const double dy = (y_upp-y_low)/(Ny-1);
-
+  
+  
+  
+  std::vector<double>points;
+  std::vector<int>cells;
+  
+  vtkfig::Delaunay2D(inpoints,points,cells);
+  
+  
+  int npoints=points.size()/2;
+  std::vector<double>values(npoints);
+  
   auto frame=vtkfig::Frame::New();
-
+  
   auto colors=vtkfig::RGBTable
     { 
       {0.0, 0.3, 0.3, 1.0},
@@ -44,73 +61,50 @@ int main(void)
       {1.0, 0.0, 0.0, 0.0}
     };
   
-  for (int i=0; i<Nx; i++)
-    x[i] = x_low+i*dx;
+  std::vector<double> z(npoints);
+  std::vector<double> u(npoints);
+  std::vector<double> v(npoints);
   
-  for (int i=0; i<Ny; i++)
-    y[i] = y_low + i*dy;
-
-
+  
   double t=0;
   double dt=0.1;
   size_t ii=0;
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
-
-  auto griddata=vtkfig::RectilinearGridData::New();
-  griddata->SetGrid(x,y);
+  
+  auto griddata=vtkfig::UnstructuredGridData::New();
+  griddata->SetSimplexVolumeGrid(2,points,cells);
   griddata->SetPointScalar(z ,"v");
   griddata->SetPointVector(u,v ,"grad");
-
+  
   auto contour=vtkfig::SurfaceContour::New();
   contour->SetData(griddata,"v");
   contour->SetSurfaceRGBTable(colors,255);
   contour->ShowIsolines(false);
   
   auto quiver=vtkfig::Quiver::New();
-  quiver->SetArrowScale(0.5);
+  quiver->SetQuiverArrowScale(0.3);
   quiver->SetData(griddata,"grad");
-
+  
   frame->AddFigure(contour);
   frame->AddFigure(quiver);
-
+  
   while (ii<nspin)
   {
-
-    for (int i=0; i<Nx; i++)
-      for (int j=0; j<Ny; j++)
-      {
-        z[j*Nx+i] = G(x[i],y[j],t);
-      }
-
-    for (int i=0; i<Nx; i++)
-      for (int j=0; j<Ny; j++)
-      {
-        int ij=j*Nx+i;
-
-        if (i==0) 
-          u[ij]=(z[ij+1]-z[ij])/(x[i+1]-x[i]);
-        else if (i==(Nx-1))
-          u[ij]=(z[ij]-z[ij-1])/(x[i]-x[i-1]);
-        else
-          u[ij]=(z[ij+1]-z[ij-1])/(x[i+1]-x[i-1]);
-
-        if (j==0) 
-          v[ij]=(z[ij+Nx]-z[ij])/(y[j+1]-y[j]);
-        else if (j==(Ny-1))
-          v[ij]=(z[ij]-z[ij-Nx])/(y[j]-y[j-1]);
-        else
-          v[ij]=(z[ij+Nx]-z[ij-Nx])/(y[j+1]-y[j-1]);
-
-      }
-
+    
+    for (size_t ipoint=0, ival=0;ipoint<points.size(); ipoint+=2,ival++)
+    {
+      z[ival]=G(points[ipoint+0],points[ipoint+1],t);
+      u[ival]=dGdx(points[ipoint+0],points[ipoint+1],t);
+      v[ival]=dGdy(points[ipoint+0],points[ipoint+1],t);
+    }
     griddata->SetPointScalar(z ,"v");
     griddata->SetPointVector(u,v ,"grad");
 
     frame->Show();
 
     if (ii==3) 
-      frame->Dump("example-quiver2d.png");
+      frame->Dump("example-simplexquiver2d.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

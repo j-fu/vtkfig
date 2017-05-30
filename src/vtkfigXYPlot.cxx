@@ -46,7 +46,7 @@ namespace vtkfig
     xyplot->SetXTitle("x");
     xyplot->SetYTitle("y");
     
-    int fs=20;
+    int fs=30;
     xyplot->SetTitleFontSize(fs);
     xyplot->SetTitleShadow(0);
     xyplot->SetTitleItalic(0);

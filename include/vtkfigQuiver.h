@@ -17,19 +17,23 @@ namespace vtkfig
       Quiver();
       static std::shared_ptr<Quiver> New() { return std::make_shared<Quiver>(); }
 
-      void SetArrowScale(double scale) {arrow_scale=scale;}
-
-
     private:
      
       virtual void RTBuild(
         vtkSmartPointer<vtkRenderWindow> window,
         vtkSmartPointer<vtkRenderWindowInteractor> interactor,
         vtkSmartPointer<vtkRenderer> renderer);
+      
+      template <class DATA, class FILTER>
+        void  RTBuild2D(
+          vtkSmartPointer<vtkRenderWindow> window,
+          vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+          vtkSmartPointer<vtkRenderer> renderer,
+          vtkSmartPointer<DATA> gridfunc);
+        
   
       vtkSmartPointer<vtkLookupTable> lut;
       bool show_colorbar=false;
-      double arrow_scale=0.333;
     };  
   
   
