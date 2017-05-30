@@ -85,7 +85,7 @@ namespace vtkfig
 
  
     static const int desclen=12;
-    std::string title="test";
+    std::string title="";
     std::string ytitle="y";
     std::string xtitle="x";
 
