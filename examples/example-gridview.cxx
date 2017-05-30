@@ -66,7 +66,7 @@ int main(void)
 
 
   auto frame=vtkfig::Frame::New(2,1);
-  frame->Size(800,400);
+  frame->SetSize(800,400);
 
   auto ugriddata=vtkfig::UnstructuredGridData::New();
   ugriddata->SetSimplexVolumeGrid(2,points,cells);

@@ -1,20 +1,25 @@
-vtkfig V0.8
+vtkfig V0.9
 ============
 
-The intention of  vtkfig is to provide a C++  graphics library with an API similar to that of matplotlib and which uses [vtk](http://vtk.org) for rendering.
+The intention of  vtkfig is to provide a C++  graphics library with an API 
+that is not more complicated than that of matplotlib
+and which uses [vtk](http://vtk.org) for rendering.
 
 ## Features
 
 - Mainly C++11
 - Separate rendering thread allowing for easy handling of changing data  handeled by the vtkfig::Frame class
-- Standard views for 2D, 3D grid
-- Easy extension by implementing derived classes from vtkfig::Figure containing standard vtk rendering pipelines
+- Standard views for 2D, 3D, grid
+- Extensible by implementing derived classes from vtkfig::Figure containing standard vtk rendering pipelines
 - Experimental client-server communication for remote execution
 
 ## News
 - v0.9: plane/isolevel edit
-- v0.8: architecture reshuffle: separate data from figures
-
+- v0.8: 
+   - architecture reshuffle: separate data from figures
+   - environment variable VTKFIG_MULTITHREADED controls single/multithread
+     rendering. On the mac 0 is the default...
+ 
 ## Build
 
 Prerequisite is an installed version of VTK, and C++11 compiler. 

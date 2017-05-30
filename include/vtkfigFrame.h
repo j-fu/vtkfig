@@ -11,6 +11,7 @@
 
 #include "vtkSmartPointer.h"
 #include "vtkRenderer.h"
+#include "vtkCornerAnnotation.h"
 #include "vtkfigCommunicator.h"
 
 namespace vtkfig
@@ -76,11 +77,13 @@ namespace vtkfig
     void LinkCamera(std::shared_ptr<Frame> frame)  {LinkCamera(0,0,*frame,0,0);}
 
 
-    void Size(int x, int y);
+    void SetSize(int x, int y);
 
-    void Title(const std::string title);
+    void SetWindowTitle(const std::string title);
 
-    void Position(int x, int y);
+    void SetFrameTitle(const std::string title);
+
+    void SetPosition(int x, int y);
 
     std::vector<Figure*>figures;
     
@@ -131,11 +134,14 @@ cursor keys move value of plane/isolevel.
     int pos_x=0;
     int pos_y=0;
 
-    std::string title;
+    std::string wintitle;
+    std::string frametitle;
 
     int camlinkthisframepos;
     int camlinkframepos;
     int camlinkframenum;
+
+    vtkSmartPointer<vtkCornerAnnotation> title_actor;
     
     /// 
     struct SubFrame

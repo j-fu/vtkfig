@@ -1,5 +1,7 @@
 #include <cassert>
 
+#include "vtkTextProperty.h"
+
 #include "vtkfigFrame.h"
 #include "vtkfigFigure.h"
 #include "vtkfigMainThread.h"
@@ -17,9 +19,9 @@ namespace vtkfig
     MainThread::CreateMainThread();
 
     figures.clear();
-    double dy= 1.0/(double)nvpy;
+    double dy= 0.925/(double)nvpy;
     double dx= 1.0/(double)nvpx;
-    subframes.resize(nvpx*nvpy);
+    subframes.resize(nvpx*nvpy+1);
     double y=0.0;
     for (int ivpy=0;ivpy<nvpy;ivpy++, y+=dy)
     {
@@ -38,6 +40,21 @@ namespace vtkfig
         subframe.viewport[3]=y+dy;
       }
     }
+    auto & subframe=subframes[nvpx*nvpy];
+    subframe.viewport[0]=0;
+    subframe.viewport[1]=0.925;
+    subframe.viewport[2]=1.0;
+    subframe.viewport[3]=1.0;
+
+    title_actor= vtkSmartPointer<vtkCornerAnnotation>::New();
+    auto textprop=title_actor->GetTextProperty();
+    textprop->ItalicOff();
+    textprop->BoldOff();
+    textprop->SetFontSize(12);
+    textprop->SetFontFamilyToArial();
+    textprop->SetColor(0,0,0);
+    
+
     MainThread::mainthread->AddFrame(this);
 
   }
@@ -78,24 +95,30 @@ namespace vtkfig
     SendCommand("Dump", Communicator::Command::FrameDump);
   }
 
-  void Frame::Size(int x, int y)
+  void Frame::SetSize(int x, int y)
   {
     this->win_x=x;
     this->win_y=y;
     SendCommand("Size", Communicator::Command::FrameSize);
   }
 
-  void Frame::Position(int x, int y)
+  void Frame::SetPosition(int x, int y)
   {
     this->pos_x=x;
     this->pos_y=y;
     SendCommand("Position", Communicator::Command::FramePosition);
   }
 
-  void Frame::Title(const std::string title)
+  void Frame::SetWindowTitle(const std::string title)
   {
-    this->title=title;
-    SendCommand("Title", Communicator::Command::FrameTitle);
+    this->wintitle=title;
+    SendCommand("WindowTitle", Communicator::Command::WindowTitle);
+  }
+
+  void Frame::SetFrameTitle(const std::string title)
+  {
+    this->frametitle=title;
+    SendCommand("FrameTitle", Communicator::Command::FrameTitle);
   }
 
 

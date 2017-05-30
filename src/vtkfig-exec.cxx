@@ -341,7 +341,7 @@ namespace vtkfig
           int x,y;
           communicator->ReceiveInt(x);
           communicator->ReceiveInt(y);
-          frame->Size(x,y);
+          frame->SetSize(x,y);
         }
         break;
         
@@ -350,7 +350,7 @@ namespace vtkfig
           int x,y;
           communicator->ReceiveInt(x);
           communicator->ReceiveInt(y);
-          frame->Position(x,y);
+          frame->SetPosition(x,y);
         }
         break;
 
@@ -358,7 +358,15 @@ namespace vtkfig
         {
           std::string title;
           communicator->ReceiveString(title);
-          frame->Title(title);
+          frame->SetFrameTitle(title);
+        }
+        break;
+        
+        case vtkfig::Communicator::Command::WindowTitle:
+        {
+          std::string title;
+          communicator->ReceiveString(title);
+          frame->SetWindowTitle(title);
         }
         break;
         

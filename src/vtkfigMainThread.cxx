@@ -623,7 +623,16 @@ namespace vtkfig
         case Communicator::Command::FrameTitle:
         {
           auto frame=mainthread->framemap[mainthread->iframe];
-          frame->window->SetWindowName(frame->title.c_str());
+          frame->title_actor->SetText(7,frame->frametitle.c_str());
+          frame->title_actor->Modified();
+                                      
+        }
+        break;
+
+        case Communicator::Command::WindowTitle:
+        {
+          auto frame=mainthread->framemap[mainthread->iframe];
+          frame->window->SetWindowName(frame->wintitle.c_str());
         }
         break;
 
@@ -698,6 +707,11 @@ namespace vtkfig
         
       }
     }
+
+    auto & subframe=frame->subframes[frame->nvpx*frame->nvpy];
+    subframe.renderer->AddActor(frame->title_actor);
+    frame->title_actor->SetText(7,frame->frametitle.c_str());
+
   }
 
 
@@ -836,7 +850,15 @@ namespace vtkfig
         case Communicator::Command::FrameTitle:
         {
           auto frame=mainthread->framemap[mainthread->iframe];
-          mainthread->communicator->SendString(frame->title);
+          mainthread->communicator->SendString(frame->frametitle);
+        }
+        break;
+
+
+        case Communicator::Command::WindowTitle:
+        {
+          auto frame=mainthread->framemap[mainthread->iframe];
+          mainthread->communicator->SendString(frame->wintitle);
         }
         break;
 

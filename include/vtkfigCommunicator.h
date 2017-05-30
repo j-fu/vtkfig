@@ -28,6 +28,7 @@ namespace vtkfig
       FramePosition,
       FrameDump,
       FrameTitle,
+      WindowTitle,
       FrameLinkCamera,
       MainThreadTerminate,
       String,

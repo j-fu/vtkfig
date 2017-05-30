@@ -65,7 +65,9 @@ int main(void)
 
 //  frame->LinkCamera(1,0,frame,0,0);
 
-  frame->Size(800,400);
+  frame->SetSize(800,400);
+  frame->SetWindowTitle("vtkfig");
+  frame->SetFrameTitle("Multiple figures in one frame");
 
   auto griddata=vtkfig::RectilinearGridData::New();
   griddata->SetGrid(x,y);

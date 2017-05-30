@@ -64,11 +64,11 @@ int main(void)
   auto frame2=vtkfig::Frame::New();
   auto frame3=vtkfig::Frame::New();
 
-  frame1->Size(400,400);
-  frame2->Size(400,400);
-  frame2->Position(500,0);
-  frame3->Size(400,400);
-  frame3->Position(1000,0);
+  frame1->SetSize(400,400);
+  frame2->SetSize(400,400);
+  frame2->SetPosition(500,0);
+  frame3->SetSize(400,400);
+  frame3->SetPosition(1000,0);
   frame2->LinkCamera(frame1);
 
 
