@@ -19,7 +19,7 @@
 #include "vtkCoordinate.h"
 #include "vtkTransformPolyDataFilter.h"
 #include "vtkTransformFilter.h"
-
+#include "vtkClipPolyData.h"
 
 
 #include "vtkfigSurfaceContour.h"
@@ -201,13 +201,44 @@ namespace vtkfig
     planecutZ->SetValue(0,0.0);
       
 
+    vtkSmartPointer<vtkClipPolyData> clipgeometry=0;
+    if (false) // plot complete outline
+    {
+      
+      clipgeometry=vtkSmartPointer<vtkClipPolyData>::New();
+      auto sfilter=vtkSmartPointer<FILTER>::New();
+      sfilter->SetInputConnection(transgeometry->GetOutputPort());
+      clipgeometry->SetInputConnection(sfilter->GetOutputPort());
+      clipgeometry->SetClipFunction(planeZ);
+      clipgeometry->SetInsideOut(1);
+
+      vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+
+
+      mapper->SetInputConnection(clipgeometry->GetOutputPort());
+      mapper->UseLookupTableScalarRangeOn();
+      mapper->SetLookupTable(surface_lut);
+      auto splot=vtkSmartPointer<vtkActor>::New();
+      splot->GetProperty()->SetOpacity(1.0);
+      splot->SetMapper(mapper);
+      Figure::RTAddActor(splot);
+      
+    }
+
+
+
     auto xyz =    vtkSmartPointer<vtkAppendPolyData>::New();
     xyz->SetUserManagedInputs(1);
-    xyz->SetNumberOfInputs(3);
+    if (clipgeometry)
+        xyz->SetNumberOfInputs(4);
+    else
+        xyz->SetNumberOfInputs(3);
 
     xyz->SetInputConnectionByNumber(0,planecutX->GetOutputPort());
     xyz->SetInputConnectionByNumber(1,planecutY->GetOutputPort());
     xyz->SetInputConnectionByNumber(2,planecutZ->GetOutputPort());
+    if (clipgeometry)
+      xyz->SetInputConnectionByNumber(3,clipgeometry->GetOutputPort());
 
 
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -221,6 +252,7 @@ namespace vtkfig
     Figure::RTAddActor(plot);
     
     Figure::RTAddActor2D(BuildColorBar(mapper));
+
     
     
     if (true)
