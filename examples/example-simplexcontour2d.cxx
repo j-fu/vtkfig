@@ -2,7 +2,7 @@
 
 #include "vtkfigFrame.h"
 #include "vtkfigTools.h"
-#include "vtkfigUnstructuredGridData.h"
+#include "vtkfigDataSet.h"
 #include "vtkfigSurfaceContour.h"
 #include "vtkfigTools.h"
 
@@ -58,8 +58,8 @@ int main(void)
   double i0=ii;
 
   for(auto &x: points) x*=scalefac;
-  auto griddata=vtkfig::UnstructuredGridData::New();
-  griddata->SetSimplexVolumeGrid(2,points,cells);
+  auto griddata=vtkfig::DataSet::New();
+  griddata->SetSimplexGrid(2,points,cells);
 
   auto frame=vtkfig::Frame::New();
   auto contour=vtkfig::SurfaceContour::New();

@@ -1,8 +1,7 @@
 #include <chrono>
 #include <vtkMath.h>
 #include "vtkfigFrame.h"
-#include "vtkfigRectilinearGridData.h"
-#include "vtkfigUnstructuredGridData.h"
+#include "vtkfigDataSet.h"
 #include "vtkfigGridView.h"
 #include "vtkfigXYPlot.h"
 #include "vtkfigTools.h"
@@ -68,12 +67,12 @@ int main(void)
   auto frame=vtkfig::Frame::New(2,1);
   frame->SetSize(800,400);
 
-  auto ugriddata=vtkfig::UnstructuredGridData::New();
-  ugriddata->SetSimplexVolumeGrid(2,points,cells);
+  auto ugriddata=vtkfig::DataSet::New();
+  ugriddata->SetSimplexGrid(2,points,cells);
 
 
-  auto rgriddata=vtkfig::RectilinearGridData::New();
-  rgriddata->SetGrid(x,y);
+  auto rgriddata=vtkfig::DataSet::New();
+  rgriddata->SetRectilinearGrid(x,y);
   auto rgview=vtkfig::GridView::New();
   rgview->SetData(rgriddata);
   auto ugview=vtkfig::GridView::New();

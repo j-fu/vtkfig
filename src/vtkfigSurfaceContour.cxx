@@ -350,7 +350,7 @@ namespace vtkfig
   {
     SetNumberOfIsocontours(state.num_contours);
 
-    if (state.datatype==Figure::DataType::UnstructuredGrid)
+    if (state.datatype==DataSet::DataType::UnstructuredGrid)
     {
       auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
       
@@ -359,7 +359,7 @@ namespace vtkfig
       else
         this->RTBuild3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,griddata); 
     }
-    else if (state.datatype==Figure::DataType::RectilinearGrid)
+    else if (state.datatype==DataSet::DataType::RectilinearGrid)
     {
       auto griddata=vtkRectilinearGrid::SafeDownCast(data);
       
@@ -418,9 +418,9 @@ namespace vtkfig
 
     if (data==NULL)
     {
-      if (state.datatype==Figure::DataType::RectilinearGrid)
+      if (state.datatype==DataSet::DataType::RectilinearGrid)
         data=vtkSmartPointer<vtkRectilinearGrid>::New();
-      else if (state.datatype==Figure::DataType::UnstructuredGrid)
+      else if (state.datatype==DataSet::DataType::UnstructuredGrid)
         data=vtkSmartPointer<vtkUnstructuredGrid>::New();
     }
     communicator->Receive(data,1,1);

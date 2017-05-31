@@ -8,8 +8,7 @@
 #include "vtkGeometryFilter.h"
 #include "vtkRectilinearGridGeometryFilter.h"
 
-#include "vtkfigUnstructuredGridData.h"
-#include "vtkfigRectilinearGridData.h"
+#include "vtkfigDataSet.h"
 #include "vtkfigTools.h"
 #include "vtkfigFigure.h"
 

@@ -2,7 +2,7 @@
 
 #include "vtkfigFrame.h"
 #include "vtkfigTools.h"
-#include "vtkfigUnstructuredGridData.h"
+#include "vtkfigDataSet.h"
 #include "vtkfigSurfaceContour.h"
 #include "vtkfigTools.h"
 
@@ -11,7 +11,7 @@
 inline double G(double x,double y, double z, double t) 
 {
   
-  return exp(-(x*x+y*y+z*z))*sin(t+x)*cos(y-t)*sin(0.5*z-0.5*t);
+  return exp(-0.01*(x*x+y*y+z*z))*sin(t+x)*cos(y-t)*sin(0.5*z-0.5*t);
 }
 
 
@@ -58,8 +58,8 @@ int main(void)
   double i0=ii;
 
 
-  auto griddata=vtkfig::UnstructuredGridData::New();
-  griddata->SetSimplexVolumeGrid(3,points,cells);
+  auto griddata=vtkfig::DataSet::New();
+  griddata->SetSimplexGrid(3,points,cells);
   griddata->SetPointScalar(values,"V");
 
   auto frame=vtkfig::Frame::New();

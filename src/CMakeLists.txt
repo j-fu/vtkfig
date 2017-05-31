@@ -1,6 +1,7 @@
 add_library(vtkfig 
   vtkfigFrame.cxx
   vtkfigFigure.cxx
+  vtkfigDataSet.cxx
   vtkfigMainThread.cxx
   vtkfigCommunicator.cxx
   vtkfigTools.cxx

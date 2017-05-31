@@ -1,6 +1,6 @@
 #include <chrono>
 #include "vtkfigFrame.h"
-#include "vtkfigRectilinearGridData.h"
+#include "vtkfigDataSet.h"
 #include "vtkfigSurfaceContour.h"
 #include "vtkfigXYPlot.h"
 #include "vtkfigTools.h"
@@ -69,8 +69,8 @@ int main(void)
   frame->SetWindowTitle("vtkfig");
   frame->SetFrameTitle("Multiple figures in one frame");
 
-  auto griddata=vtkfig::RectilinearGridData::New();
-  griddata->SetGrid(x,y);
+  auto griddata=vtkfig::DataSet::New();
+  griddata->SetRectilinearGrid(x,y);
   griddata->SetPointScalar(u ,"u");
   griddata->SetPointScalar(v ,"v");
 

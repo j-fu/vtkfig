@@ -299,24 +299,25 @@ namespace vtkfig
   {
     SetNumberOfIsocontours(state.num_contours);
 
-    if (state.datatype==Figure::DataType::UnstructuredGrid)
+    auto udata=vtkUnstructuredGrid::SafeDownCast(data);
+    if (udata)
     {
-      auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
       
       if (state.spacedim==2)
-        this->RTBuild2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,griddata);
+        this->RTBuild2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,udata);
       else
-        this->RTBuild3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,griddata); 
+        this->RTBuild3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,udata); 
+      return;
     }
-    else if (state.datatype==Figure::DataType::RectilinearGrid)
+
+    auto rdata=vtkRectilinearGrid::SafeDownCast(data);
+    if (rdata)
     {
-      auto griddata=vtkRectilinearGrid::SafeDownCast(data);
-      
-      
       if (state.spacedim==2)
-        this->RTBuild2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
+        this->RTBuild2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,rdata);
       else
-        this->RTBuild3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
+        this->RTBuild3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,rdata);
+      return;
     }
   }
   
@@ -368,9 +369,9 @@ namespace vtkfig
 
     if (data==NULL)
     {
-      if (state.datatype==Figure::DataType::RectilinearGrid)
+      if (state.datatype==DataSet::DataType::RectilinearGrid)
         data=vtkSmartPointer<vtkRectilinearGrid>::New();
-      else if (state.datatype==Figure::DataType::UnstructuredGrid)
+      else if (state.datatype==DataSet::DataType::UnstructuredGrid)
         data=vtkSmartPointer<vtkUnstructuredGrid>::New();
     }
     communicator->Receive(data,1,1);

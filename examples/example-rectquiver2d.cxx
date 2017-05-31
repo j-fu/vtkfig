@@ -68,8 +68,8 @@ int main(void)
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
 
-  auto griddata=vtkfig::RectilinearGridData::New();
-  griddata->SetGrid(x,y);
+  auto griddata=vtkfig::DataSet::New();
+  griddata->SetRectilinearGrid(x,y);
   griddata->SetPointScalar(z ,"v");
   griddata->SetPointVector(u,v ,"grad");
 

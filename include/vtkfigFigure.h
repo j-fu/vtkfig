@@ -14,9 +14,6 @@
 #include "vtkMapper2D.h"
 #include "vtkSliderWidget.h"
 #include "vtkSliderRepresentation2D.h"
-
-#include "vtkfigCommunicator.h"
-#include "vtkfigTools.h"
 #include "vtkContourFilter.h"
 #include "vtkPolyDataAlgorithm.h"
 #include "vtkRenderer.h"
@@ -25,6 +22,10 @@
 #include "vtkTransform.h"
 #include "vtkCornerAnnotation.h"
 #include "vtkGlyphSource2D.h"
+
+#include "vtkfigCommunicator.h"
+#include "vtkfigTools.h"
+#include "vtkfigDataSet.h"
 
 namespace vtkfig
 {
@@ -103,9 +104,9 @@ namespace vtkfig
 
     void KeepXYAspect(bool b) {state.keep_aspect=b;}
     
-    template< class G> void SetData(G& xgriddata, const std::string xdataname="");
+    void SetData(DataSet& xgriddata, const std::string xdataname="");
     
-    template< class G> void SetData(std::shared_ptr<G> xgriddata, const std::string xdataname="");    
+    void SetData(std::shared_ptr<DataSet> xgriddata, const std::string xdataname="");    
 
     void RTAddContextActor(vtkSmartPointer<vtkContextActor> prop);
 
@@ -202,18 +203,7 @@ namespace vtkfig
     virtual void ClientMTReceive(vtkSmartPointer<Communicator> communicator) {};
     
     void RTUpdateActors();
-    
-    
-    enum class DataType
-    {
-      Notype=0,
-        
-        RectilinearGrid=1,
-        
-        UnstructuredGrid=2
-        
-        };
-    
+           
     
     struct
     {
@@ -267,7 +257,7 @@ namespace vtkfig
       int qv_nz=15;
       double qv_arrow_scale=0.333;
 
-      DataType datatype;
+      DataSet::DataType datatype;
 
     } state;
 
@@ -299,20 +289,17 @@ namespace vtkfig
     int framepos=0;
   };
 
-  template< class G> inline void Figure::SetData(G& xgriddata, const std::string xdataname)
+  inline void Figure::SetData(DataSet& xgriddata, const std::string xdataname)
   {
-    state.spacedim=xgriddata.spacedim;
-    data=xgriddata.griddata;
+    state.spacedim=xgriddata.GetSpaceDimension();
+    data=xgriddata.GetVTKDataSet();
+    state.datatype=xgriddata.GetDataType();
     dataname=xdataname;
     title=xdataname;
-    if (data->IsA("vtkUnstructuredGrid"))
-      state.datatype=Figure::DataType::UnstructuredGrid;
-    else  if (data->IsA("vtkRectilinearGrid"))
-      state.datatype=Figure::DataType::RectilinearGrid;
   }
   
   
-  template< class G> inline void Figure::SetData(std::shared_ptr<G> xgriddata, const std::string xdataname)
+  inline void Figure::SetData(std::shared_ptr<DataSet> xgriddata, const std::string xdataname)
   {
     SetData(*xgriddata,xdataname);
   }

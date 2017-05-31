@@ -86,8 +86,8 @@ int main(void)
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
   
-  auto griddata=vtkfig::UnstructuredGridData::New();
-  griddata->SetSimplexVolumeGrid(2,points,cells);
+  auto griddata=vtkfig::DataSet::New();
+  griddata->SetSimplexGrid(2,points,cells);
   griddata->SetPointScalar(z ,"v");
   griddata->SetPointVector(u,v ,"grad");
   

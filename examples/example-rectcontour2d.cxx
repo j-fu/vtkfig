@@ -1,6 +1,6 @@
 #include <chrono>
 #include "vtkfigFrame.h"
-#include "vtkfigRectilinearGridData.h"
+#include "vtkfigDataSet.h"
 #include "vtkfigSurfaceContour.h"
 #include "vtkfigTools.h"
 
@@ -50,8 +50,8 @@ int main(void)
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
   
-  auto griddata=vtkfig::RectilinearGridData::New();
-  griddata->SetGrid(x,y);
+  auto griddata=vtkfig::DataSet::New();
+  griddata->SetRectilinearGrid(x,y);
   griddata->SetPointScalar(z ,"V");
   auto contour=vtkfig::SurfaceContour::New();
   contour->SetData(griddata,"V");
