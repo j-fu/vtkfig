@@ -105,6 +105,7 @@ R"(
    Escape  Finish plane/level editing
    Return  Store edited plane/level value
 BackSpace  Delete last plane/level value
+        a  Start arrow scale editing
         l  Start isolevel editing
         L  Generate 11 equally spaced isolevels.
         i  Toggle isosurface view (3D only)
