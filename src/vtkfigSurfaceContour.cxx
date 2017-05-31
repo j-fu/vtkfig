@@ -17,6 +17,8 @@
 #include "vtkCamera.h"
 #include "vtkTextActor.h"
 #include "vtkCoordinate.h"
+#include "vtkTransformPolyDataFilter.h"
+#include "vtkTransformFilter.h"
 
 
 
@@ -66,14 +68,17 @@ namespace vtkfig
     geometry->SetInputConnection(scalar->GetOutputPort());
     
 
-    SetModelTransform(renderer,2,bounds);
+    auto transform=CalcTransform(gridfunc);
+    auto transgeometry=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+    transgeometry->SetInputConnection(geometry->GetOutputPort());
+    transgeometry->SetTransform(transform);
 
-        
     if (state.show_surface)
     {
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      mapper->SetInputConnection(geometry->GetOutputPort());
-      
+      mapper->SetInputConnection(transgeometry->GetOutputPort());
+
+//      mapper->InterpolateScalarsBeforeMappingOn();
       mapper->UseLookupTableScalarRangeOn();
       mapper->SetLookupTable(surface_lut);
       mapper->ImmediateModeRenderingOn();
@@ -90,7 +95,7 @@ namespace vtkfig
     if (state.show_isolines)
     {
       
-      isoline_filter->SetInputConnection(geometry->GetOutputPort());
+      isoline_filter->SetInputConnection(transgeometry->GetOutputPort());
       
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       mapper->SetInputConnection(isoline_filter->GetOutputPort());
@@ -112,7 +117,9 @@ namespace vtkfig
     if (true)
     {
       auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
-      axes->SetInputConnection(geometry->GetOutputPort());
+      axes->SetRanges(bounds);
+      axes->SetUseRanges(1);
+      axes->SetInputConnection(transgeometry->GetOutputPort());
       axes->GetProperty()->SetColor(0, 0, 0);
       axes->SetFontFactor(1.25);
       axes->SetCornerOffset(0); 
@@ -155,7 +162,7 @@ namespace vtkfig
 
     gridfunc->GetBounds(bounds);
     gridfunc->GetCenter(center);
-    Figure::SetModelTransform(renderer,3,bounds);
+    Figure::CalcTransform(gridfunc);
 
     auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
     scalar->Assign(dataname.c_str(),vtkDataSetAttributes::SCALARS,vtkAssignAttribute::POINT_DATA);
@@ -168,23 +175,27 @@ namespace vtkfig
     GenIsolevels();
 
 
+    auto transform=CalcTransform(gridfunc);
+    auto transgeometry=vtkSmartPointer<vtkTransformFilter>::New();
+    transgeometry->SetInputConnection(scalar->GetOutputPort());
+    transgeometry->SetTransform(transform);
 
 
 
-    planeX->SetOrigin(center);
-    planeY->SetOrigin(center);
-    planeZ->SetOrigin(center);
+    planeX->SetOrigin(tcenter);
+    planeY->SetOrigin(tcenter);
+    planeZ->SetOrigin(tcenter);
     
-    planecutX->SetInputConnection(scalar->GetOutputPort());
+    planecutX->SetInputConnection(transgeometry->GetOutputPort());
     planecutX->SetCutFunction(planeX);
     planecutX->SetNumberOfContours(0);
 
 
-    planecutY->SetInputConnection(scalar->GetOutputPort());
+    planecutY->SetInputConnection(transgeometry->GetOutputPort());
     planecutY->SetCutFunction(planeY);
     planecutY->SetNumberOfContours(0);
       
-    planecutZ->SetInputConnection(scalar->GetOutputPort());
+    planecutZ->SetInputConnection(transgeometry->GetOutputPort());
     planecutZ->SetCutFunction(planeZ);
     planecutZ->SetNumberOfContours(1);
     planecutZ->SetValue(0,0.0);
@@ -233,7 +244,7 @@ namespace vtkfig
     if (true)
     {
       
-      isosurface_filter->SetInputConnection(scalar->GetOutputPort());
+      isosurface_filter->SetInputConnection(transgeometry->GetOutputPort());
         
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       mapper->SetInputConnection(isosurface_filter->GetOutputPort());
@@ -255,7 +266,7 @@ namespace vtkfig
     {
       // create outline
       vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
-      outlinefilter->SetInputConnection(scalar->GetOutputPort());;
+      outlinefilter->SetInputConnection(transgeometry->GetOutputPort());
       vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
       vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
@@ -267,7 +278,9 @@ namespace vtkfig
     if (true)
     {
       auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
-      axes->SetInputData(gridfunc);
+      axes->SetRanges(bounds);
+      axes->SetUseRanges(1);
+      axes->SetInputConnection(transgeometry->GetOutputPort());
       axes->GetProperty()->SetColor(0, 0, 0);
       axes->SetFontFactor(1.0);
       axes->SetCornerOffset(0); 

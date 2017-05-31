@@ -7,7 +7,7 @@
 #include "vtkfigTools.h"
 
 #include <vtkMath.h>
-double scalefac=1.0e-2;
+double scalefac=1.0;
 
 inline double G(double x,double y, double t) 
 {

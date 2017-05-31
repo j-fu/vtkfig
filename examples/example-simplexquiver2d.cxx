@@ -4,20 +4,31 @@
 #include "vtkfigQuiver.h"
 #include "vtkfigTools.h"
 
+
+double xscale=1;
+double yscale=1;
+double ascale=0.3;
+
 inline double G(double x,double y, double t) 
 {
+  x=x/xscale;
+  y=y/yscale;
   return exp(-(x*x+y*y))*sin(t+x)*cos(y-t);
 }
 
 inline double dGdx(double x,double y, double t) 
 {
-  return cos(y-t)*exp(-(x*x+y*y))*(cos(t+x)-2*x*sin(t+x));
+  x=x/xscale;
+  y=y/yscale;
+  return xscale*cos(y-t)*exp(-(x*x+y*y))*(cos(t+x)-2*x*sin(t+x));
 }
 
 
 inline double dGdy(double x,double y, double t) 
 {
-  return sin(t+x)*exp(-(x*x+y*y))*(-2*y*cos(y-t) -sin(y-t));
+  x=x/xscale;
+  y=y/yscale;
+  return yscale*sin(t+x)*exp(-(x*x+y*y))*(-2*y*cos(y-t) -sin(y-t));
 }
 
 
@@ -30,8 +41,8 @@ int main(void)
   {
     for(double y = -2; y < 2; y+=0.03)
     {
-      inpoints.push_back(x + vtkMath::Random(-.1, .1));
-      inpoints.push_back(y + vtkMath::Random(-.1, .1));
+      inpoints.push_back(xscale*(x + vtkMath::Random(-.1, .1)));
+      inpoints.push_back(yscale*(y + vtkMath::Random(-.1, .1)));
     }
   }
   
@@ -45,7 +56,10 @@ int main(void)
   
   
   int npoints=points.size()/2;
+
   std::vector<double>values(npoints);
+
+
   
   auto frame=vtkfig::Frame::New();
   
@@ -83,8 +97,11 @@ int main(void)
   contour->ShowIsolines(false);
   
   auto quiver=vtkfig::Quiver::New();
-  quiver->SetQuiverArrowScale(0.3);
+  quiver->SetQuiverArrowScale(ascale);
   quiver->SetData(griddata,"grad");
+
+  contour->KeepXYAspect(false);
+  quiver->KeepXYAspect(false);
   
   frame->AddFigure(contour);
   frame->AddFigure(quiver);

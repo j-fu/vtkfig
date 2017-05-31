@@ -1,4 +1,4 @@
-vtkfig V0.9
+vtkfig V0.10
 ============
 
 The intention of  vtkfig is to provide a C++  graphics library with an API 
@@ -14,7 +14,14 @@ and which uses [vtk](http://vtk.org) for rendering.
 - Experimental client-server communication for remote execution
 
 ## News
+
+- v0.10 quiver 2D now scales right
+   - arrow scale edit
+   - reshuffle: transform data instead of model view transform, otherwise
+     quiver wouldn't scale right in anisotropic cases
+
 - v0.9: plane/isolevel edit
+
 - v0.8: 
    - architecture reshuffle: separate data from figures
    - environment variable VTKFIG_MULTITHREADED controls single/multithread

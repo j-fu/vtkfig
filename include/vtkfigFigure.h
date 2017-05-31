@@ -22,8 +22,9 @@
 #include "vtkRenderer.h"
 #include "vtkCutter.h"
 #include "vtkPlane.h"
+#include "vtkTransform.h"
 #include "vtkCornerAnnotation.h"
-
+#include "vtkGlyphSource2D.h"
 
 namespace vtkfig
 {
@@ -69,8 +70,6 @@ namespace vtkfig
     void SetSurfaceRGBTable(RGBTable & tab, int lutsize);
 
     void SetContourRGBTable(RGBTable & tab, int lutsize);
-
-    void SetModelTransform(vtkSmartPointer<vtkRenderer> renderer, int dim, double bounds[6]);
 
     void ShowSurface(bool b) {state.show_surface=b;}
 
@@ -139,8 +138,9 @@ namespace vtkfig
     vtkSmartPointer<vtkPlane> planeX;
     vtkSmartPointer<vtkPlane> planeY;
     vtkSmartPointer<vtkPlane> planeZ;
-    
+    vtkSmartPointer<vtkGlyphSource2D> arrow;    
 
+    vtkSmartPointer<vtkTransform> CalcTransform(vtkSmartPointer<vtkDataSet> data);
 
     void AddSlider(vtkSmartPointer<vtkRenderWindowInteractor> i,
                    vtkSmartPointer<vtkRenderer> r);
@@ -181,7 +181,9 @@ namespace vtkfig
     void RTUpdateIsoSurfaceFilter();
     void RTShowIsolevel();
     void RTShowPlanePos(vtkSmartPointer<vtkCutter> planecut,const std::string plane,  int idim);
-
+    void  RTShowArrowScale();
+    int RTProcessArrowKey(const std::string key, bool & edit);
+    int RTProcessArrowMove(int dx, int dy, bool & edit);
 
     
     /// All functions here are to be called from render thread.
@@ -259,7 +261,6 @@ namespace vtkfig
       
       double isoline_width=2;
       
-      double panscale=1.0;
 
       int qv_nx=15;
       int qv_ny=15;
@@ -276,11 +277,14 @@ namespace vtkfig
       bool y_plane=false;
       bool z_plane=false;
       bool l_iso=false;
-      bool q_scale=false;
+      bool a_scale=false;
     } edit;   
 
     double bounds[6];
     double center[3];
+
+    double tbounds[6];
+    double tcenter[3];
 
   private:
 

@@ -19,6 +19,7 @@
 #include "vtkCornerAnnotation.h"
 #include "vtkCoordinate.h"
 #include "vtkExtractEdges.h"
+#include "vtkTransformPolyDataFilter.h"
 
 
 
@@ -69,10 +70,13 @@ namespace vtkfig
       geometry->SetInputDataObject(gridfunc);
     
     
-    SetModelTransform(renderer,2,bounds);
+    auto transform=CalcTransform(gridfunc);
+    auto transgeometry=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+    transgeometry->SetInputConnection(geometry->GetOutputPort());
+    transgeometry->SetTransform(transform);
 
     auto  cells = vtkSmartPointer<vtkPolyDataMapper>::New();
-    cells->SetInputConnection(geometry->GetOutputPort());
+    cells->SetInputConnection(transgeometry->GetOutputPort());
 
     if (cr)
     {
@@ -89,7 +93,7 @@ namespace vtkfig
     Figure::RTAddActor(cellplot);
 
     auto edges= vtkSmartPointer<vtkExtractEdges>::New();
-    edges->SetInputConnection(geometry->GetOutputPort());
+    edges->SetInputConnection(transgeometry->GetOutputPort());
     auto  emapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     emapper->SetInputConnection(edges->GetOutputPort());
     emapper->ScalarVisibilityOff();
@@ -111,7 +115,9 @@ namespace vtkfig
     if (true)
     {
       auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
-      axes->SetInputConnection(geometry->GetOutputPort());
+      axes->SetRanges(bounds);
+      axes->SetUseRanges(1);
+      axes->SetInputConnection(transgeometry->GetOutputPort());
       axes->GetProperty()->SetColor(0, 0, 0);
       axes->SetFontFactor(1.25);
       axes->SetCornerOffset(0); 
@@ -170,7 +176,7 @@ namespace vtkfig
     gridfunc->GetBounds(bounds);
     double center[3];
     gridfunc->GetCenter(center);
-    Figure::SetModelTransform(renderer,3,bounds);
+    Figure::CalcTransform(gridfunc);
 
     auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
     scalar->Assign(dataname.c_str(),vtkDataSetAttributes::SCALARS,vtkAssignAttribute::POINT_DATA);
@@ -244,7 +250,6 @@ namespace vtkfig
     if (true)
     {
       auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
-      axes->SetInputData(gridfunc);
       axes->GetProperty()->SetColor(0, 0, 0);
       axes->SetFontFactor(1.0);
       axes->SetCornerOffset(0); 

@@ -25,6 +25,11 @@ namespace vtkfig
     planecutY= vtkSmartPointer<vtkCutter>::New();
     planecutZ= vtkSmartPointer<vtkCutter>::New();
 
+
+    // make a vector glyph
+    arrow = vtkSmartPointer<vtkGlyphSource2D>::New();
+    arrow->SetGlyphTypeToArrow();
+
     
     planeX= vtkSmartPointer<vtkPlane>::New();
     planeX->SetNormal(1,0,0);
@@ -135,14 +140,16 @@ namespace vtkfig
     int i=planecut->GetNumberOfContours();
     if (i>0)
     {
-      double planepos=planecut->GetValue(i-1)+center[idim];
+      double planepos=bounds[2*idim]+ (bounds[2*idim+1]-bounds[2*idim])*(planecut->GetValue(i-1)+tcenter[idim]-tbounds[2*idim]);
       RTMessage("plane_" + plane +"[" + std::to_string(i-1) + "]=" + std::to_string(planepos));
     }
     else
     {
-      RTMessage("[Return] for plane_"+plane+"[0]="+std::to_string(center[idim]));
+      double planepos=bounds[2*idim]+ (bounds[2*idim+1]-bounds[2*idim])*(tcenter[idim]-tbounds[2*idim]);
+      RTMessage("[Return] for plane_"+plane+"[0]="+std::to_string(planepos));
     }
   }
+
 
   void Figure::RTShowIsolevel()
   {
@@ -157,6 +164,12 @@ namespace vtkfig
       RTMessage("[Return] for isolevel[0]="+std::to_string(0.5*(state.real_vmin+state.real_vmax)));
     }
   }
+
+  void Figure::RTShowArrowScale()
+  {
+    RTMessage("arrow_scale="+std::to_string(state.qv_arrow_scale));
+  }
+
   
   int Figure::RTProcessPlaneKey(
     const std::string plane,
@@ -178,10 +191,10 @@ namespace vtkfig
       double planepos;
       int i=planecut->GetNumberOfContours();
       if (i>0)
-        planepos=planecut->GetValue(i);
+        planepos=planecut->GetValue(i-1);
       else
-        planepos=center[idim];
-      planecut->SetValue(i,planepos-center[idim]);
+        planepos=0.0;
+      planecut->SetValue(i,planepos);
       RTShowPlanePos(planecut,plane,idim);
       return 1;
     }
@@ -247,6 +260,26 @@ namespace vtkfig
     
     return 0;
   }
+
+
+  int Figure::RTProcessArrowKey(const std::string key,bool & edit)
+  {
+    if (!edit && key=="a")
+    {
+      edit=true;        
+      RTShowArrowScale();
+      return 1;
+    }
+    
+    if (edit&& key=="Escape")
+    {
+      edit=false;
+      return 1;
+    }
+    
+    return 0;
+  }
+
   
   void Figure::RTProcessKey(const std::string key)
   {
@@ -272,17 +305,18 @@ namespace vtkfig
     }
 
     if (
-      (edit.x_plane||edit.y_plane|| edit.z_plane|| edit.l_iso)
-      &&(key=="x"|| key=="y"|| key=="z"|| key=="l")
+      (edit.x_plane||edit.y_plane|| edit.z_plane|| edit.l_iso  || edit.a_scale)
+      &&(key=="x"|| key=="y"|| key=="z"|| key=="l" || key=="a")
       )
     {
       edit.x_plane=false;
       edit.y_plane=false;
       edit.z_plane=false;
       edit.l_iso=false;
+      edit.a_scale=false;
     }
 
-
+    if (RTProcessArrowKey(key,edit.a_scale)) return;
     if (RTProcessIsoKey(key,edit.l_iso)) return;
     if (RTProcessPlaneKey("x",0,key,edit.x_plane, planecutX)) return;
     if (RTProcessPlaneKey("y",1,key,edit.y_plane, planecutY)) return;
@@ -298,11 +332,11 @@ namespace vtkfig
       int i=planecut->GetNumberOfContours()-1;
       if (i>=0)
       {
-        double planepos=planecut->GetValue(i)+center[idim];
-        planepos+=(0.01)*((double)dx)*(bounds[2*idim+1]-bounds[2*idim+0]);
-        planepos=std::min(planepos,bounds[2*idim+1]);
-        planepos=std::max(planepos,bounds[2*idim+0]);
-        planecut->SetValue(i,planepos-center[idim+0]);
+        double planepos=planecut->GetValue(i)+tcenter[idim];
+        planepos+=(0.01)*((double)dx)*(tbounds[2*idim+1]-tbounds[2*idim+0]);
+        planepos=std::min(planepos,tbounds[2*idim+1]);
+        planepos=std::max(planepos,tbounds[2*idim+0]);
+        planecut->SetValue(i,planepos-tcenter[idim+0]);
         RTShowPlanePos(planecut,plane,idim);
         planecut->Modified();
       }
@@ -332,6 +366,22 @@ namespace vtkfig
     return 0;
   }
   
+  int Figure::RTProcessArrowMove(int dx, int dy, bool & edit)
+  {
+    if (edit)
+    {
+      double ascale=state.qv_arrow_scale;
+      ascale*=pow(10.0,((double)dx)/10.0);
+      ascale=std::min(ascale,1.0e20);
+      ascale=std::max(ascale,1.0e-20);
+      state.qv_arrow_scale=ascale;
+      RTShowArrowScale();
+      arrow->SetScale(state.qv_arrow_scale);
+      return 1;
+    }
+    return 0;
+  }
+  
   void Figure::RTUpdateIsoSurfaceFilter()
   {
     if (state.spacedim==3) 
@@ -345,6 +395,7 @@ namespace vtkfig
 
   void Figure::RTProcessMove(int dx, int dy)
   {
+    if (RTProcessArrowMove(dx,dy,edit.a_scale)) return;
     if (RTProcessIsoMove(dx,dy,edit.l_iso)) return;
     if (RTProcessPlaneMove("x",0,dx,dy,edit.x_plane, planecutX)) return;
     if (RTProcessPlaneMove("y",1,dx,dy,edit.y_plane, planecutY)) return;
@@ -369,13 +420,17 @@ namespace vtkfig
     contour_lut=BuildLookupTable(tab,tabsize);
   }
   
-  void Figure::SetModelTransform(vtkSmartPointer<vtkRenderer> renderer, int dim, double bounds[6])
+  vtkSmartPointer<vtkTransform>  Figure::CalcTransform(vtkSmartPointer<vtkDataSet> data)
   {
+    data->GetBounds(bounds);
+    data->GetCenter(center);
+
     auto transform =  vtkSmartPointer<vtkTransform>::New();
+    auto glyphtransform =  vtkSmartPointer<vtkTransform>::New();
     double xsize=bounds[1]-bounds[0];
     double ysize=bounds[3]-bounds[2];
     double zsize=bounds[5]-bounds[4];
-    if (dim==2) zsize=0;
+    if (state.spacedim==2) zsize=0;
     double xysize=std::max(xsize,ysize);
     double xyzsize=std::max(xysize,zsize);
     
@@ -404,9 +459,23 @@ namespace vtkfig
     }
     
     transform->Translate(-bounds[0],-bounds[2],-bounds[4]);
-    
-    this->state.panscale=0.25/xyzsize;
-    renderer->GetActiveCamera()->SetModelTransformMatrix(transform->GetMatrix());
+  
+    double p0[3]={bounds[0],bounds[2],bounds[4]};
+    double p1[3]={bounds[1],bounds[3],bounds[5]};
+    double tp0[3],tp1[3];
+
+    transform->TransformPoint(p0,tp0);
+    transform->TransformPoint(p1,tp1);
+    tbounds[0]=tp0[0];
+    tbounds[1]=tp1[0];
+    tbounds[2]=tp0[1];
+    tbounds[3]=tp1[1];
+    tbounds[4]=tp0[2];
+    tbounds[5]=tp1[2];
+
+    transform->TransformPoint(center,tcenter);
+
+    return transform;
   }
   
   void Figure::SetVMinMax(double vmin, double vmax)

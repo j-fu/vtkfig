@@ -250,83 +250,6 @@ namespace vtkfig
     }
     MyInteractorStyle(): vtkInteractorStyleTrackballCamera() {};
 
-    /// overwrite original pan function in  order to take into account
-    /// the panscale.   Probably there  is a better  way to  solve the
-    /// underlying  problem,  but I  (JF)  wasn't  able to  find  this
-    /// solution.  
-
-    void Pan() 
-    {
-      if (this->CurrentRenderer == NULL)
-      {
-        return;
-      }
-      
-      vtkRenderWindowInteractor *rwi = this->Interactor;
-      
-      double viewFocus[4], focalDepth, viewPoint[3];
-      double newPickPoint[4], oldPickPoint[4], motionVector[3];
-      
-      // Calculate the focal depth since we'll be using it a lot
-      
-      vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
-      camera->GetFocalPoint(viewFocus);
-      this->ComputeWorldToDisplay(viewFocus[0], viewFocus[1], viewFocus[2],
-                                  viewFocus);
-      focalDepth = viewFocus[2];
-      
-      this->ComputeDisplayToWorld(rwi->GetEventPosition()[0],
-                                  rwi->GetEventPosition()[1],
-                                  focalDepth,
-                                  newPickPoint);
-      
-      // Has to recalc old mouse point since the viewport has moved,
-      // so can't move it outside the loop
-      
-      this->ComputeDisplayToWorld(rwi->GetLastEventPosition()[0],
-                                  rwi->GetLastEventPosition()[1],
-                                  focalDepth,
-                                  oldPickPoint);
-      
-      // Camera motion is reversed
-      
-      motionVector[0] = oldPickPoint[0] - newPickPoint[0];
-      motionVector[1] = oldPickPoint[1] - newPickPoint[1];
-      motionVector[2] = oldPickPoint[2] - newPickPoint[2];
-      
-      // BEGIN VTFKIG ADDITION
-      // get motion scale.
-      double motionscale=1.0;
-      for (auto & subframe: frame->subframes)
-      {
-        if (subframe.renderer==this->CurrentRenderer)
-        {
-          motionscale=subframe.panscale;
-        }
-      }
-      // END VTFKIG ADDITION
-
-      motionVector[0]*=motionscale; 
-      motionVector[1]*=motionscale;
-      motionVector[2]*=motionscale;
-
-      camera->GetFocalPoint(viewFocus);
-      camera->GetPosition(viewPoint);
-      camera->SetFocalPoint(motionVector[0] + viewFocus[0],
-                            motionVector[1] + viewFocus[1],
-                            motionVector[2] + viewFocus[2]);
-      
-      camera->SetPosition(motionVector[0] + viewPoint[0],
-                          motionVector[1] + viewPoint[1],
-                          motionVector[2] + viewPoint[2]);
-      
-      if (rwi->GetLightFollowCamera())
-      {
-        this->CurrentRenderer->UpdateLightsGeometryToFollowCamera();
-      }
-      
-      rwi->Render();
-    }    
 
 
     std::vector<Figure*>edited_figures;
@@ -419,7 +342,7 @@ namespace vtkfig
         
       }
 
-      else if (key == "x" || key== "y" || key== "z" || key== "l")
+      else if (key == "x" || key== "y" || key== "z" || key== "l" || key== "a")
       {      
         if (!edit_mode)
         {
@@ -562,7 +485,6 @@ namespace vtkfig
               if (figure->IsEmpty()  || renderer->GetActors()->GetNumberOfItems()==0)
               {
                 figure->RTBuild(window,interactor,renderer);
-                framepair.second->subframes[figure->framepos].panscale=figure->state.panscale;
 
                 for (auto & actor: figure->actors) 
                   renderer->AddActor(actor);

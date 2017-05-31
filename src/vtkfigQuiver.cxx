@@ -12,7 +12,7 @@
 #include "vtkGlyphSource2D.h"
 #include "vtkAssignAttribute.h"
 #include "vtkProbeFilter.h"
-
+#include "vtkTransformPolyDataFilter.h"
 
 #include "vtkfigQuiver.h"
 
@@ -38,10 +38,9 @@ namespace vtkfig
   {
     
 
-    double  bounds[6];
     gridfunc->GetBounds(bounds);
-    Figure::SetModelTransform(renderer,2,bounds);
     
+
     auto vector = vtkSmartPointer<vtkAssignAttribute>::New();
     vector->Assign(dataname.c_str(),vtkDataSetAttributes::VECTORS,vtkAssignAttribute::POINT_DATA);
     vector->SetInputDataObject(gridfunc);
@@ -50,17 +49,21 @@ namespace vtkfig
     auto geometry = vtkSmartPointer<FILTER>::New();
     geometry->SetInputConnection(vector->GetOutputPort());
 
+    auto transform=CalcTransform(gridfunc);
+    auto transgeometry=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+    transgeometry->SetInputConnection(geometry->GetOutputPort());
+    transgeometry->SetTransform(transform);
+
 
     auto probePoints =  vtkSmartPointer<vtkPoints>::New();
-    
-    double dx=(bounds[1]-bounds[0])/( (int)state.qv_nx);
-    double dy=(bounds[3]-bounds[2])/( (int)state.qv_ny);
+    double dx=(tbounds[1]-tbounds[0])/( (int)state.qv_nx);
+    double dy=(tbounds[3]-tbounds[2])/( (int)state.qv_ny);
 
     double x,y;
-    x=bounds[0];
+    x=tbounds[0];
     for (int ix=0; ix<state.qv_nx;ix++,x+=dx )
     {
-      y=bounds[2];
+      y=tbounds[2];
       for ( int iy=0;iy<state.qv_ny;iy++,y+=dy )
       {
         probePoints->InsertNextPoint ( x, y, 0);
@@ -72,23 +75,20 @@ namespace vtkfig
     
 
     auto probeFilter = vtkSmartPointer<vtkProbeFilter>::New();
-    probeFilter->SetSourceConnection(geometry->GetOutputPort());
+    probeFilter->SetSourceConnection(transgeometry->GetOutputPort());
     probeFilter->SetInputData(probePolyData);
     probeFilter->PassPointArraysOn();
 
 
-
-    // make a vector glyph
-    auto arrow = vtkSmartPointer<vtkGlyphSource2D>::New();
-    arrow->SetGlyphTypeToArrow();
     arrow->SetScale(state.qv_arrow_scale);
-    arrow->FilledOff();
 
     auto glyph = vtkSmartPointer<vtkGlyph3D>::New();
     glyph->SetInputConnection(probeFilter->GetOutputPort());
     glyph->SetSourceConnection(arrow->GetOutputPort());
     glyph->SetColorModeToColorByVector();
     glyph->SetScaleModeToScaleByVector();
+
+
 
 
     // map gridfunction
