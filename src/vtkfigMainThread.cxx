@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <chrono>
 
 #include "vtkRenderWindow.h"
 #include "vtkRenderWindowInteractor.h"
@@ -341,6 +342,31 @@ namespace vtkfig
           }
         
       }
+
+      else if (key=="p")
+      {
+        auto now = std::chrono::system_clock::now();
+        auto time = std::chrono::system_clock::to_time_t(now);
+        std::tm * ttm = localtime(&time);
+        char time_str[] = "yyyy-mm-ddTHH:MM:SS ";
+        strftime(time_str, strlen(time_str), "%Y-%m-%dT%H:%M:%S", ttm);
+        auto fname=frame->parameter.wintitle+"-"+time_str+".png";
+
+        auto imgfilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
+        auto pngwriter = vtkSmartPointer<vtkPNGWriter>::New();
+          
+        pngwriter->SetInputConnection(imgfilter->GetOutputPort());
+        pngwriter->SetFileName(fname.c_str());
+          
+        imgfilter->SetInput(frame->window);
+        imgfilter->Update();
+          
+        interactor->Render();
+        pngwriter->Write();
+
+        cout << "Frame written to "<< fname << endl;
+      }
+
 
       else if (key == "x" || key== "y" || key== "z" || key== "l" || key== "a")
       {      
