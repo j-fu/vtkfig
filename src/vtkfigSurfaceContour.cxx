@@ -399,7 +399,7 @@ namespace vtkfig
   /////////////////////////////////////////////////////////////////////
   /// Client-Server communication
 
-  void SurfaceContour::ServerRTSend(vtkSmartPointer<Communicator> communicator)
+  void SurfaceContour::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator)
   {
     communicator->SendCharBuffer((char*)&state,sizeof(state));
     communicator->SendString(dataname);
@@ -418,7 +418,7 @@ namespace vtkfig
     communicator->Send(data,1,1);
   }
 
-  void SurfaceContour::ClientMTReceive(vtkSmartPointer<Communicator> communicator)
+  void SurfaceContour::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator)
   {
 
     communicator->ReceiveCharBuffer((char*)&state,sizeof(state));

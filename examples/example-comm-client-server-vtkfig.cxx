@@ -34,7 +34,7 @@ int main(int argc, const char * argv[])
     }
   }
 
-  vtkSmartPointer<vtkfig::Communicator> sccomm=vtkSmartPointer<vtkfig::Communicator>::New();
+  vtkSmartPointer<vtkfig::internals::Communicator> sccomm=vtkSmartPointer<vtkfig::internals::Communicator>::New();
   if (server)
   {
 

@@ -327,7 +327,7 @@ namespace vtkfig
   /////////////////////////////////////////////////////////////////////
   /// Client-Server communication
 
-  void GridView::ServerRTSend(vtkSmartPointer<Communicator> communicator)
+  void GridView::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator)
   {
     communicator->SendCharBuffer((char*)&state,sizeof(state));
     communicator->SendString(dataname);
@@ -347,7 +347,7 @@ namespace vtkfig
     communicator->Send(data,1,1);
   }
 
-  void GridView::ClientMTReceive(vtkSmartPointer<Communicator> communicator)
+  void GridView::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator)
   {
 
     communicator->ReceiveCharBuffer((char*)&state,sizeof(state));

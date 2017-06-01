@@ -1,37 +1,7 @@
+Performance
+===========
 
-## Server-client  communication
-
-In build/src/vtkfig-exec is the  experimental driver for server-client
-communication.  The examples ``example-xyplot`` and ``example-surf2d``
-are equipped  with this  feature.  Here  is how to  use it  (we assume
-working from  the ``build``  directory, ``port``  is an  optional port
-number, ``vtkfigpath`` is  the path to the vtkfig  source directory on
-the remote host ):
-
-   - Run example locally
-
-     ````
-     $ examples/example-surf2d
-     ````
-
-   - Run example in client server mode on localhost
-
-     ````
-     $ src/vtkfig-exec -p port  localhost examples/example-surf2d
-     ````
-
-
-   - Run example on remote host ``remote``
-
-     ````
-     $ src/vtkfig-exec -p port -ssh  remote vtkfigpath/build/examples/example-surf2d
-     ````
-
-   - Run example on remote host ``remote`` with ssh tunnel via gateway  ``gate``
-
-     ````
-     $ src/vtkfig-exec -p port -via gate -ssh  remote vtkfigpath/build/examples/example-surf2d
-     ````
+## Server client performance
 
 Initial experiments (for example-surf2d) show the following perfomance comparison
 
@@ -46,6 +16,7 @@ Initial experiments (for example-surf2d) show the following perfomance compariso
 | Remote    server       laptop  Ethernet              20 fps     |
 | Remote    server       minipc  Ethernet/tunnel       20 fps     |
 | Remote    server       minipc  Ethernet              12 fps     |
+|                                                                 |
 | Remote    vnc/direct   laptop  Ethernet/tunnel       8 fps      |
 | Remote    vnc/direct   laptop  Ethernet              8 fps      |
 | Remote    vnc/direct   minipc  Ethernet/tunnel       8 fps      |

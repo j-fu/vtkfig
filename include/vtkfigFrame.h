@@ -16,9 +16,15 @@
 
 namespace vtkfig
 {
-
   class Figure;
-  class MainThread;
+
+  namespace internals
+  {
+    class MainThread;
+    class MyInteractorStyle;
+    class MyTimerCallback;  
+    class Client;           
+  }
 
   ///
   /// Provide a framwork wrapping window+interactor+renderers  from vtk
@@ -227,42 +233,44 @@ namespace vtkfig
     ///
     ///  Help string printed when pressing "h"/"?"
     ///
-    static constexpr const char* keyboard_help=
+    static constexpr const char* KeyboardHelp=
 R"(
 --------------------------------------
    Key    Realm    Action
 
-    Space Frame    Interrupt/continue calculation
-   Escape Figure   Finish plane/level editing
+    Space Frame    Block/unblock calculation
+   Escape Figure   Finish editing
    Return Figure   Store edited plane/level value
 BackSpace Figure   Delete last plane/level value
         a Figure   Start arrow scale editing
         e Figure   Toggle elevation view
-        h Frame    This help
+        h Frame    Print this help to standard output
         i Figure   Toggle isosurface view (3D only)
         l Figure   Start isolevel editing
         L Figure   Generate 11 equally spaced isolevels.
         p Frame    Write frame to png
+        q Frame    Abort
         r Figure   Reset camera
         s Figure   Toggle surface plot
         w Figure   Toggle wireframe mode 
         x Figure   Start x plane editing (3D only)
         y Figure   Start y plane editing (3D only)
         z Figure   Start z plane editing (3D only)
-        ? Frame    This help
+        ? Frame    Print this help to standard output
 
-In edit mode, left mouse, as well as
-cursor keys move value of plane/isolevel.
+In  edit   mode,  left  mouse,   as  well  as  cursor   keys  increase
+resp. decrease the value of the plane/isolevel/arrowscale respectively
+
 Figures must be first clicked on before editing works.
 --------------------------------------
 )";
 
   private:
 
-    friend class MainThread;
-    friend class MyInteractorStyle;
-    friend class Client;
-    friend class TimerCallback;
+    friend class internals::MainThread;
+    friend class internals::MyInteractorStyle;
+    friend class internals::MyTimerCallback;
+    friend class internals::Client;
 
 
     /// Number of this frame in global frame list
@@ -326,12 +334,11 @@ Figures must be first clicked on before editing works.
       int camlinkframenum;
 
     } parameter;
-
     /// The spinning main thread
-    MainThread *mainthread;
+    internals::MainThread *mainthread;
     
     /// Blocking send of commands to main thread
-    void SendCommand(std::string source, Communicator::Command cmd);
+    void SendCommand(std::string source, internals::Communicator::Command cmd);
     
     /// Window vontaining frame
     vtkSmartPointer<vtkRenderWindow> window;

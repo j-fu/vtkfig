@@ -26,9 +26,9 @@ namespace vtkfig
 
   typedef std::vector<RGBPoint> RGBTable;
 
-  void SendRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab);
+  void SendRGBTable(vtkSmartPointer<internals::Communicator> communicator, RGBTable & rgbtab);
   
-  void ReceiveRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab);
+  void ReceiveRGBTable(vtkSmartPointer<internals::Communicator> communicator, RGBTable & rgbtab);
   
   size_t NSpin();
 

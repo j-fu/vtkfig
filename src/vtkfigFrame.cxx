@@ -16,7 +16,7 @@ namespace vtkfig
     nvpx(nvpx),
     nvpy(nvpy)
   {
-    MainThread::CreateMainThread();
+    mainthread=internals::MainThread::CreateMainThread();
 
     figures.clear();
     double dy= 0.925/(double)nvpy;
@@ -55,7 +55,7 @@ namespace vtkfig
     textprop->SetColor(0,0,0);
     
 
-    MainThread::mainthread->AddFrame(this);
+    mainthread->AddFrame(this);
 
   }
   
@@ -71,7 +71,7 @@ namespace vtkfig
     assert(ivpy<this->nvpy);
     this->figures.push_back(fig);
     fig->framepos=this->pos(ivpx,ivpy);
-    SendCommand("AddFigure", Communicator::Command::FrameAddFigure);
+    SendCommand("AddFigure", internals::Communicator::Command::FrameAddFigure);
   }
   
   void Frame::AddFigure(Figure* fig, int ipos)
@@ -85,51 +85,51 @@ namespace vtkfig
     parameter.camlinkthisframepos=pos(ivpx,ivpy);
     parameter.camlinkframepos=frame.pos(livpx,livpy);
     parameter.camlinkframenum=frame.number_in_frame_list;
-    SendCommand("LinkCamera", Communicator::Command::FrameLinkCamera);
+    SendCommand("LinkCamera", internals::Communicator::Command::FrameLinkCamera);
   }
   
 
   void Frame::WritePNG(std::string fname)
   {
     parameter.filename=fname;
-    SendCommand("Dump", Communicator::Command::FrameDump);
+    SendCommand("Dump", internals::Communicator::Command::FrameDump);
   }
 
   void Frame::SetSize(int x, int y)
   {
     parameter.winsize_x=x;
     parameter.winsize_y=y;
-    SendCommand("Size", Communicator::Command::FrameSize);
+    SendCommand("Size", internals::Communicator::Command::FrameSize);
   }
 
   void Frame::SetPosition(int x, int y)
   {
     parameter.winposition_x=x;
     parameter.winposition_y=y;
-    SendCommand("Position", Communicator::Command::FramePosition);
+    SendCommand("Position", internals::Communicator::Command::FramePosition);
   }
 
   void Frame::SetWindowTitle(const std::string title)
   {
     parameter.wintitle=title;
-    SendCommand("WindowTitle", Communicator::Command::WindowTitle);
+    SendCommand("WindowTitle", internals::Communicator::Command::WindowTitle);
   }
 
   void Frame::SetFrameTitle(const std::string title)
   {
     parameter.frametitle=title;
-    SendCommand("FrameTitle", Communicator::Command::FrameTitle);
+    SendCommand("FrameTitle", internals::Communicator::Command::FrameTitle);
   }
 
 
-  void Frame::SendCommand(std::string source, Communicator::Command comm)
+  void Frame::SendCommand(std::string source, internals::Communicator::Command comm)
   {
     mainthread->SendCommand(number_in_frame_list, source, comm);
   }
 
   Frame::~Frame()
   {
-    MainThread::mainthread->RemoveFrame(this);
+    mainthread->RemoveFrame(this);
   }
   
   

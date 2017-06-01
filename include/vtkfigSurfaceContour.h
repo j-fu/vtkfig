@@ -37,9 +37,9 @@ namespace vtkfig
       vtkSmartPointer<vtkRenderer> renderer);
     
     
-    void ServerRTSend(vtkSmartPointer<Communicator> communicator);
+    void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator);
     
-    void ClientMTReceive(vtkSmartPointer<Communicator> communicator);
+    void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator);
     
     
     template <class GRIDFUNC, class FILTER>

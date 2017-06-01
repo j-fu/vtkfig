@@ -47,7 +47,7 @@ Use vtkfigXYPlot instead...
   }
   
 
-  void  ChartXY::ServerRTSend(vtkSmartPointer<Communicator> communicator) 
+  void  ChartXY::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator) 
   {
     communicator->SendString(title);
     communicator->SendInt(num_plot);
@@ -66,7 +66,7 @@ Use vtkfigXYPlot instead...
     }
   };
   
-  void  ChartXY::ClientMTReceive(vtkSmartPointer<Communicator> communicator) 
+  void  ChartXY::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator) 
   {
     Clear();
     communicator->ReceiveString(title);

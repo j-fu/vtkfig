@@ -23,718 +23,799 @@
 
 namespace vtkfig
 {
-  MainThread * MainThread::mainthread=0;
-
-  void MainThread::DeleteMainThread()
+  namespace internals
   {
+    MainThread * MainThread::mainthread=0;
 
-    if (mainthread==0)
-      return;
-    delete mainthread;
-    mainthread=0;
-  }
+    void MainThread::DeleteMainThread()
+    {
 
-
-  MainThread* MainThread::CreateMainThread()
-  {
-    if (mainthread==0)
-      mainthread=new MainThread();
-    std::atexit(DeleteMainThread);
-    return mainthread;
-  }
-
-  MainThread::MainThread()
-  {
-    int wtime=5;
-    char* port_string=getenv("VTKFIG_PORT_NUMBER");
-    char* wtime_string=getenv("VTKFIG_WAIT_SECONDS");
-    char *debug_string=getenv("VTKFIG_DEBUG");
-    char *multi_string=getenv("VTKFIG_MULTITHREADED");
+      if (mainthread==0)
+        return;
+      delete mainthread;
+      mainthread=0;
+    }
 
 
-    if (debug_string!=0)
-      debug_level=atoi(debug_string);
+    MainThread* MainThread::CreateMainThread()
+    {
+      if (mainthread==0)
+        mainthread=new MainThread();
+      std::atexit(DeleteMainThread);
+      return mainthread;
+    }
+
+    MainThread::MainThread()
+    {
+      int wtime=5;
+      char* port_string= getenv("VTKFIG_PORT_NUMBER");
+      char* wtime_string=getenv("VTKFIG_WAIT_SECONDS");
+      char *debug_string=getenv("VTKFIG_DEBUG");
+      char *multi_string=getenv("VTKFIG_MULTITHREADED");
+
+
+      if (debug_string!=0)
+        debug_level=atoi(debug_string);
 
     
 #if CONFIG_APPLE
-    try_running_multithreaded=false;
-    if (multi_string!=0 && atoi(multi_string))
-    {
-    if (debug_level>0)
-      cout << "overriding multithreading default (off) on APPLE" << endl;
-    try_running_multithreaded=false;
-  }
-#else
-    try_running_multithreaded=true;
-    if (multi_string!=0 && !atoi(multi_string))
-    {
-    if (debug_level>0)
-      cout << "overriding multithreading default (on) on NON-APPLE" << endl;
       try_running_multithreaded=false;
-    }
+      if (multi_string!=0 && atoi(multi_string))
+      {
+        if (debug_level>0)
+          cout << "overriding multithreading default (off) on APPLE" << endl;
+        try_running_multithreaded=false;
+      }
+#else
+      try_running_multithreaded=true;
+      if (multi_string!=0 && !atoi(multi_string))
+      {
+        if (debug_level>0)
+          cout << "overriding multithreading default (on) on NON-APPLE" << endl;
+        try_running_multithreaded=false;
+      }
 #endif
 
 
-    if (wtime_string!=0)
-      wtime=atoi(wtime_string);
+      if (wtime_string!=0)
+        wtime=atoi(wtime_string);
     
     
-    if (port_string!=0)
-    {
-      int port=atoi(port_string);
-      if (port<=0) 
-        throw std::runtime_error("Invalid port number for server");
-      OpenConnection(port,wtime);
-    }
-
-    if (debug_level>0)
-    {   
-      char sc='c';
-      if (connection_open) 
-        sc='s';
-
-      if (try_running_multithreaded)
-        cout << sc<< " try running multithreaded" << endl;
-      else
-        cout << sc<<" try running single threaded" << endl;
-    }
-  }
-
-
-  void MainThread::OpenConnection(int port, int wtime)
-  {
-    if (connection_open) return;
-
-    cout << "Server start listening on port "<< port << endl;
-    communicator=vtkSmartPointer<vtkfig::Communicator>::New();
-    communicator->server_listen_num_retry=1;
-    communicator->server_listen_waiting_time=1000*wtime;
-    int rc=communicator->ServerConnect(port);
-    if (rc)  
-      cout << "Server connected" << endl;
-    else
-    {
-      cout << "Nobody is listening ... giving up" << endl;
-      throw std::runtime_error("Server connection failed");
-      exit(1);
-    }
-    connection_open=true;
-  }
-   
-  MainThread::~MainThread()
-  {
-    if (debug_level>0)
-      cout << " ~mt"  << endl;
-    if (this->running_multithreaded)
-    {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-      Terminate();
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-      this->thread->join();
-    }
-    else
-      Terminate();
-
-    framemap.clear();
-  }
-
-
-
-  void  MainThread::Update()
-  {
-    if (connection_open)
-      CommunicatorThreadCallback(this);
-    else
-      interactor->Start();
-  }
-  
-  void  MainThread::AddFrame(Frame*frame)
-  {
-    frame->mainthread=this;
-    frame->number_in_frame_list=lastframenum;
-    this->iframe=lastframenum;
-    framemap[lastframenum++]=frame;
-    if (lastframenum==1)
-    {
-      if (try_running_multithreaded)
+      if (port_string!=0)
       {
-        Start();
+        int port=atoi(port_string);
+        if (port<=0) 
+          throw std::runtime_error("Invalid port number for server");
+        OpenConnection(port,wtime);
+      }
+
+      if (debug_level>0)
+      {   
+        char sc='c';
+        if (connection_open) 
+          sc='s';
+
+        if (try_running_multithreaded)
+          cout << sc<< " try running multithreaded" << endl;
+        else
+          cout << sc<<" try running single threaded" << endl;
+      }
+    }
+
+
+    void MainThread::OpenConnection(int port, int wtime)
+    {
+      if (connection_open) return;
+
+      cout << "Server start listening on port "<< port << endl;
+      communicator=vtkSmartPointer<Communicator>::New();
+      communicator->server_listen_num_retry=1;
+      communicator->server_listen_waiting_time=1000*wtime;
+      int rc=communicator->ServerConnect(port);
+      if (rc)  
+        cout << "Server connected" << endl;
+      else
+      {
+        cout << "Nobody is listening ... giving up" << endl;
+        throw std::runtime_error("Server connection failed");
+        exit(1);
+      }
+      connection_open=true;
+    }
+   
+    MainThread::~MainThread()
+    {
+      if (debug_level>0)
+        cout << " ~mt"  << endl;
+      if (this->running_multithreaded)
+      {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        Terminate();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        this->thread->join();
       }
       else
+        Terminate();
+
+      framemap.clear();
+    }
+
+
+
+    void  MainThread::Update()
+    {
+      if (connection_open)
+        CommunicatorThreadCallback(this);
+      else
+        interactor->Start();
+    }
+  
+    void  MainThread::AddFrame(Frame*frame)
+    {
+      frame->mainthread=this;
+      frame->number_in_frame_list=lastframenum;
+      this->iframe=lastframenum;
+      framemap[lastframenum++]=frame;
+      if (lastframenum==1)
       {
-        if (connection_open)
+        if (try_running_multithreaded)
         {
-          PrepareCommunicatorThread(this);
-          CommunicatorThreadCallback(this);
+          Start();
         }
         else
         {
-          PrepareRenderThread(this);
+          if (connection_open)
+          {
+            PrepareCommunicatorThread(this);
+            CommunicatorThreadCallback(this);
+          }
+          else
+          {
+            PrepareRenderThread(this);
+          }
         }
       }
-    }
-    else
-    {
-      SendCommand(frame->number_in_frame_list, "AddFrame", Communicator::Command::MainThreadAddFrame);
-    }
-  }
-
-
-  void MainThread::RemoveFrame(Frame *frame)
-  {
-    assert(frame==framemap[frame->number_in_frame_list]);
-    SendCommand(frame->number_in_frame_list, "RemoveFrame", Communicator::Command::MainThreadRemoveFrame);
-    frame->number_in_frame_list=-1;
-  }
-
-  void MainThread::Show()
-  {
-    SendCommand(-1, "Show", Communicator::Command::MainThreadShow);
-  }
-
-
-  void MainThread::Interact()
-  {
-    // if (!this->running_multithreaded)
-    //   throw std::runtime_error("Interact: render thread is dead");
-
-    SendCommand(-1, "Show", Communicator::Command::MainThreadShow);
-
-    this->communication_blocked=true;
-    do
-    {
-      std::this_thread::sleep_for (std::chrono::milliseconds(10));
-      if (!this->running_multithreaded)
-        Show();
-    }
-    while (this->communication_blocked);
-
-  }
-
-  ////////////////////////////////////////////////////////////////
-  /// Communication with render thread
-
-  void MainThread::SendCommand(int number_in_frame_list, const std::string from, Communicator::Command cmd)
-  {
-    if (debug_level>0)
-      cout << "mt " << from << " " << number_in_frame_list << endl;
-
-
-    this->cmd=cmd;
-    this->iframe=number_in_frame_list;
-    if (running_multithreaded)
-    {
-      std::unique_lock<std::mutex> lock(this->mtx);
-      this->cv.wait(lock);
-    }
-    else
-      Update();
-  }
-
-  void MainThread::Terminate(void)
-  {
-    SendCommand(-1,"Terminate",Communicator::Command::MainThreadTerminate);
-  }
-
-  
-  ////////////////////////////////////////////////////////////////
-  /// Rendering 
-  
-  class MyInteractorStyle : public vtkInteractorStyleTrackballCamera
-  {
-  public:
-    Frame* frame;
-    
-    static MyInteractorStyle* New()
-    {
-      return new MyInteractorStyle();
-    }
-    MyInteractorStyle(): vtkInteractorStyleTrackballCamera() {};
-
-
-
-    std::vector<Figure*>edited_figures;
-    bool edit_mode =false;
-    bool bdown=false;
-
-    int lastx,lasty;
-    virtual void OnLeftButtonDown()
-    {
-
-      vtkRenderWindowInteractor *rwi = this->Interactor;
-      if (edit_mode)
+      else
       {
-        bdown=true;
-        lastx=rwi->GetEventPosition()[0];
-        lasty=rwi->GetEventPosition()[1];
+        SendCommand(frame->number_in_frame_list, "AddFrame", Communicator::Command::MainThreadAddFrame);
+      }
+    }
+
+
+    void MainThread::RemoveFrame(Frame *frame)
+    {
+      assert(frame==framemap[frame->number_in_frame_list]);
+      SendCommand(frame->number_in_frame_list, "RemoveFrame", Communicator::Command::MainThreadRemoveFrame);
+      frame->number_in_frame_list=-1;
+    }
+
+    void MainThread::Show()
+    {
+      SendCommand(-1, "Show", Communicator::Command::MainThreadShow);
+    }
+
+
+    void MainThread::Interact()
+    {
+      // if (!this->running_multithreaded)
+      //   throw std::runtime_error("Interact: render thread is dead");
+
+      SendCommand(-1, "Show", Communicator::Command::MainThreadShow);
+
+      this->communication_blocked=true;
+      do
+      {
+        std::this_thread::sleep_for (std::chrono::milliseconds(10));
+        if (!this->running_multithreaded)
+          Show();
+      }
+      while (this->communication_blocked);
+
+    }
+
+
+    void MainThread::SendCommand(int number_in_frame_list, const std::string from, Communicator::Command cmd)
+    {
+      if (debug_level>0)
+        cout << "mt " << from << " " << number_in_frame_list << endl;
+
+
+      this->cmd=cmd;
+      this->iframe=number_in_frame_list;
+      if (running_multithreaded)
+      {
+        std::unique_lock<std::mutex> lock(this->mutex);
+        this->condition_variable.wait(lock);
       }
       else
-        vtkInteractorStyleTrackballCamera::OnLeftButtonDown();
+        Update();
     }
 
-    virtual void OnLeftButtonUp()
+    void MainThread::Terminate(void)
     {
-      if (bdown)
-        bdown=false;
-      else
-        vtkInteractorStyleTrackballCamera::OnLeftButtonUp();
+      SendCommand(-1,"Terminate",Communicator::Command::MainThreadTerminate);
     }
 
-    virtual void OnMouseMove()
+  
+    
+    ///
+    ///  vtkfig specific keybord and mouse interaction
+    ///
+    class MyInteractorStyle : public vtkInteractorStyleTrackballCamera
     {
-      vtkRenderWindowInteractor *rwi = this->Interactor;
-      if (bdown)
+
+      /// List of currently edited figures
+      std::vector<Figure*>edited_figures;
+      
+      /// Figure edit mode
+      bool edit_mode =false;
+
+      /// Mouse button down 
+      bool left_button_down=false;
+
+      /// Last mouse  x position
+      int lastx=0;
+
+      /// Last mouse  y position
+      int lasty=0;
+      
+      /// Current frame
+      Frame *frame=0;
+
+    public:
+
+      
+    
+      static MyInteractorStyle* New()
+      {
+        return new MyInteractorStyle();
+      }
+
+      MyInteractorStyle(): vtkInteractorStyleTrackballCamera() {};
+
+      void SetFrame(Frame *f)
+      {
+        this->frame=f;
+      }
+      
+      /// Overwrite left button down
+      virtual void OnLeftButtonDown()
+      {
+
+        /// If edit mode is active,
+        /// catch mouse position, otherwisw pass to base class
+        if (this->edit_mode)
         {
-          int thisx=rwi->GetEventPosition()[0];
-          int thisy=rwi->GetEventPosition()[1];
+          this->left_button_down=true;
+          lastx=this->Interactor->GetEventPosition()[0];
+          lasty=this->Interactor->GetEventPosition()[1];
+        }
+        else
+          vtkInteractorStyleTrackballCamera::OnLeftButtonDown();
+      }
+
+      /// Overwrite left button up
+      virtual void OnLeftButtonUp()
+      {
+        /// If button was down, release, else pass to base class
+        if (this->left_button_down)
+          this->left_button_down=false;
+        else
+          vtkInteractorStyleTrackballCamera::OnLeftButtonUp();
+      }
+
+      /// Overwrite  mouse move
+      virtual void OnMouseMove()
+      {
+
+        
+        /// If button is down, act, else pass to base class
+        if (this->left_button_down)
+        {
+          // Calculate difference between old and
+          // new mouse position
+          int thisx=this->Interactor->GetEventPosition()[0];
+          int thisy=this->Interactor->GetEventPosition()[1];
           int dx=thisx-lastx;
           int dy=thisy-lasty;
-          for (auto figure:edited_figures) figure->RTProcessMove(dx,dy);
+
+          // Pass to all edited figures
+          for (auto figure:this->edited_figures) 
+            figure->RTProcessMove(dx,dy);
+          
+          // Render changed figure
+          this->Interactor->Render();
+
+          // Set new old position
           lastx=thisx;
           lasty=thisy;
-          rwi->Render();
         }
-      else
-        vtkInteractorStyleTrackballCamera::OnMouseMove();
-    }
-    
-    virtual void OnChar() 
-    {
-      // Get the keypress
-      vtkRenderWindowInteractor *interactor = this->Interactor;
-
-
-      std::string key = interactor->GetKeySym();
-//      cout << key << endl;
-      if(key== "f")  {}
-
-      else if(key == "q")
-      {
-        abort();
+        else
+          vtkInteractorStyleTrackballCamera::OnMouseMove();
       }
-      else if(key == "r")
+
+      ///  Overwrite keyboard callback
+      virtual void OnChar() 
       {
-        for (auto & subframe: frame->subframes)
+        // Get the key pressed
+        std::string key = this->Interactor->GetKeySym();
+
+        // disable some standard vtk key
+        if(key== "f")  {}
+
+        // q -> abort
+        else if(key == "q")
         {
-          if (subframe.renderer==this->CurrentRenderer)
+          abort();
+        }
+
+        // Reset Camera
+        else if(key == "r")
+        {
+          for (auto & subframe: this->frame->subframes)
           {
-            subframe.renderer->GetActiveCamera()->SetPosition(subframe.default_camera_position);
-            subframe.renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
-            subframe.renderer->GetActiveCamera()->OrthogonalizeViewUp();
-            subframe.renderer->GetActiveCamera()->SetRoll(0);
-            subframe.renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
-            subframe.renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
-          }
-        }
-        interactor->Render();
-      }
-      else if(key == "w")
-      {
-        for (auto &figure: frame->figures)
-          if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
-          {
-            figure->state.wireframe=!figure->state.wireframe;
-            if (figure->state.wireframe)
-              for (auto & actor: figure->actors)  actor->GetProperty()->SetRepresentationToWireframe();
-            else
-              for (auto&  actor: figure->actors)  actor->GetProperty()->SetRepresentationToSurface();
-            interactor->Render();
-          }
-        
-      }
-
-      else if (key=="p")
-      {
-        auto now = std::chrono::system_clock::now();
-        auto time = std::chrono::system_clock::to_time_t(now);
-        std::tm * ttm = localtime(&time);
-        char time_str[] = "yyyy-mm-ddTHH:MM:SS ";
-        strftime(time_str, strlen(time_str), "%Y-%m-%dT%H:%M:%S", ttm);
-        auto fname=frame->parameter.wintitle+"-"+time_str+".png";
-
-        auto imgfilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
-        auto pngwriter = vtkSmartPointer<vtkPNGWriter>::New();
-          
-        pngwriter->SetInputConnection(imgfilter->GetOutputPort());
-        pngwriter->SetFileName(fname.c_str());
-          
-        imgfilter->SetInput(frame->window);
-        imgfilter->Update();
-          
-        interactor->Render();
-        pngwriter->Write();
-
-        cout << "Frame written to "<< fname << endl;
-      }
-
-
-      else if (key == "x" || key== "y" || key== "z" || key== "l" || key== "a")
-      {      
-        if (!edit_mode)
-        {
-          
-          for (auto &figure: frame->figures)
-            if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
-              edited_figures.push_back(figure);
-          edit_mode=true;
-        } 
-        for (auto figure : edited_figures)
-          figure->RTProcessKey(key);
-        interactor->Render();
-
-
-      }
-      else if(key == "Left" || key== "Down")
-      {
-        if (edit_mode)
-        {
-          for (auto figure : edited_figures)
-            figure->RTProcessMove(-1,0);
-          interactor->Render();
-        }
-      }
-      else if(key == "Right" || key== "Up")
-      {
-        if (edit_mode)
-        {
-          for (auto figure : edited_figures)
-            figure->RTProcessMove(1,0);
-          interactor->Render();
-        }
-      }
-      else if(key == "Return" || key=="BackSpace")
-      {
-        if (edit_mode)
-        {
-          for (auto figure : edited_figures)
-            figure->RTProcessKey(key);
-          interactor->Render();
-        }
-      }
-      else if(key == "Escape")
-      {
-        edit_mode=false;
-        for (auto figure : edited_figures)
-        {
-          figure->RTProcessKey(key);
-          figure->RTMessage("");
-        }
-        interactor->Render();
-        edited_figures.resize(0);
-        
-      }
-      else if(key == "i" || key== "L" || key == "e" || key == "s")
-      {
-        for (auto &figure: frame->figures)
-          if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
-          {
-            figure->RTProcessKey(key);
-          }
-        interactor->Render();
-      }
-      else if (key=="space")
-      {
-        frame->mainthread->communication_blocked=!frame->mainthread->communication_blocked;
-      }
-
-      else if(key == "h" or key == "question")
-      {
-        cout << Frame::keyboard_help;
-      }
-
-      else
-      {
-        vtkInteractorStyleTrackballCamera::OnChar();
-      }
-    }
-  };
-  
- 
-  class TimerCallback : public vtkCommand
-  {
-  public:
-    
-    MainThread* mainthread;
-    vtkSmartPointer<vtkRenderWindowInteractor> interactor=0;
-    
-    static TimerCallback *New()    {return new TimerCallback;}
-    
-    virtual void Execute(
-      vtkObject *vtkNotUsed(caller),
-      unsigned long eventId,
-      void *vtkNotUsed(callData)
-      )
-    {
-      
-      if (mainthread->communication_blocked) return;
-      
-      if (
-        vtkCommand::TimerEvent == eventId  // Check if timer event
-        && mainthread->cmd!=Communicator::Command::Empty  // Check if command has been given
-        )
-      {        
-        // Lock mutex
-        if (mainthread->running_multithreaded)
-          std::unique_lock<std::mutex> lock(mainthread->mtx);
-        
-        // Command dispatch
-        switch(mainthread->cmd)
-        {
-          
-        case Communicator::Command::MainThreadAddFrame:
-        {
-
-          mainthread->RTAddFrame(mainthread, mainthread->iframe);
-        }
-       break;
-
-        case Communicator::Command::MainThreadRemoveFrame:
-        {
-
-          auto frame=mainthread->framemap[mainthread->iframe];
-          for (auto & subframe: frame->subframes)
-            subframe.renderer->RemoveAllViewProps();
-          frame->window->Finalize();
-          mainthread->framemap.erase(frame->number_in_frame_list);
-        }
-       break;
-
-
-          // Add actors to renderer
-        case Communicator::Command::MainThreadShow:
-        {
-          for (auto & framepair: mainthread->framemap)
-            for (auto & figure: framepair.second->figures)
+            if (subframe.renderer==this->CurrentRenderer)
             {
-              auto &renderer=framepair.second->subframes[figure->framepos].renderer;
-              auto &window=framepair.second->window;
-              if (figure->IsEmpty()  || renderer->GetActors()->GetNumberOfItems()==0)
-              {
-                figure->RTBuildVTKPipeline(window,interactor,renderer);
-
-                for (auto & actor: figure->actors) 
-                  renderer->AddActor(actor);
-  
-                for (auto & actor: figure->ctxactors) 
-                  renderer->AddActor(actor);
-  
-                for (auto & actor: figure->actors2d) 
-                  renderer->AddActor(actor);
-                
-              }
-              figure->RTUpdateActors();
-              renderer->SetBackground(figure->bgcolor[0],
-                                      figure->bgcolor[1],
-                                      figure->bgcolor[2]);
+              subframe.renderer->GetActiveCamera()->SetPosition(subframe.default_camera_position);
+              subframe.renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
+              subframe.renderer->GetActiveCamera()->OrthogonalizeViewUp();
+              subframe.renderer->GetActiveCamera()->SetRoll(0);
+              subframe.renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
+              subframe.renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
             }
-          for (auto & framepair: mainthread->framemap)
-              framepair.second->window->Render();
-//          interactor->Render();
+          }
+          this->Interactor->Render();
         }
-        break;
-        
-          // Write picture to file
-        case Communicator::Command::FrameDump:
+
+        // Toggle wireframe
+        else if(key == "w")
         {
-          auto frame=mainthread->framemap[mainthread->iframe];
+          for (auto &figure: this->frame->figures)
+            if (this->frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
+            {
+              figure->state.wireframe=!figure->state.wireframe;
+              if (figure->state.wireframe)
+                for (auto & actor: figure->actors)  actor->GetProperty()->SetRepresentationToWireframe();
+              else
+                for (auto&  actor: figure->actors)  actor->GetProperty()->SetRepresentationToSurface();
+              this->Interactor->Render();
+            }
+        
+        }
+
+        // Write output to png
+        else if (key=="p")
+        {
+
+          // Generate file name using current time
+          auto now = std::chrono::system_clock::now();
+          auto time = std::chrono::system_clock::to_time_t(now);
+          std::tm * ttm = localtime(&time);
+          char time_str[] = "yyyy-mm-ddTHH:MM:SS ";
+          strftime(time_str, strlen(time_str), "%Y-%m-%dT%H:%M:%S", ttm);
+          auto fname=frame->parameter.wintitle+"-"+time_str+".png";
+
           auto imgfilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
-          auto pngwriter = vtkSmartPointer<vtkPNGWriter>::New();
-          
-          pngwriter->SetInputConnection(imgfilter->GetOutputPort());
-          pngwriter->SetFileName(frame->parameter.filename.c_str());
-          
           imgfilter->SetInput(frame->window);
           imgfilter->Update();
+
+          auto pngwriter = vtkSmartPointer<vtkPNGWriter>::New();
+          pngwriter->SetInputConnection(imgfilter->GetOutputPort());
+          pngwriter->SetFileName(fname.c_str());
           
-          interactor->Render();
+          this->Interactor->Render();
           pngwriter->Write();
+
+          cout << "Frame written to "<< fname << endl;
         }
-        break;
 
-        
+        // Keys which toggle editing
+        else if (key == "x" || key== "y" || key== "z" || key== "l" || key== "a")
+        {      
+          if (!this->edit_mode)
+          {
+            
+            this->edit_mode=true;
+            /// Create list of currently edited figures. These
+            /// are those the same subframe which means that they have
+            /// the same renderer
+            for (auto &figure: frame->figures)
+              if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
+                this->edited_figures.push_back(figure);
+          } 
+          
+          /// Pass key to edited figures
+          for (auto figure : this->edited_figures)
+            figure->RTProcessKey(key);
+          this->Interactor->Render();
+        }
 
-        
-        case Communicator::Command::FrameSize:
+
+        // Emulate mouse move for all edited figures
+        else if(key == "Left" || key== "Down")
         {
-          auto frame=mainthread->framemap[mainthread->iframe];
-          frame->window->SetSize(frame->parameter.winsize_x, frame->parameter.winsize_y);
+          if (this->edit_mode)
+          {
+            for (auto figure : this->edited_figures)
+              figure->RTProcessMove(-1,0);
+            this->Interactor->Render();
+          }
         }
-        break;
-        
-        case Communicator::Command::FramePosition:
+
+        // Emulate mouse move for all edited figures
+        else if(key == "Right" || key== "Up")
         {
-          auto frame=mainthread->framemap[mainthread->iframe];
-          frame->window->SetPosition(frame->parameter.winposition_x, frame->parameter.winposition_y);
+          if (this->edit_mode)
+          {
+            for (auto figure : this->edited_figures)
+              figure->RTProcessMove(1,0);
+            this->Interactor->Render();
+          }
         }
-        break;
 
-        case Communicator::Command::FrameTitle:
+        // These are interaction keys in edit mode
+        else if(key == "Return" || key=="BackSpace")
         {
-          auto frame=mainthread->framemap[mainthread->iframe];
-          frame->title_actor->SetText(7,frame->parameter.frametitle.c_str());
-          frame->title_actor->Modified();
-                                      
+          if (this->edit_mode)
+          {
+            for (auto figure : this->edited_figures)
+              figure->RTProcessKey(key);
+            this->Interactor->Render();
+          }
         }
-        break;
 
-        case Communicator::Command::WindowTitle:
+        // Escape ends edit mode
+        else if(key == "Escape")
         {
-          auto frame=mainthread->framemap[mainthread->iframe];
-          frame->window->SetWindowName(frame->parameter.wintitle.c_str());
-        }
-        break;
-
-        case Communicator::Command::FrameLinkCamera:
-        {
-          auto frame=mainthread->framemap[mainthread->iframe];
-          auto renderer=mainthread->framemap[mainthread->iframe]->subframes[frame->parameter.camlinkthisframepos].renderer;
-          auto lrenderer=mainthread->framemap[frame->parameter.camlinkframenum]->subframes[frame->parameter.camlinkframepos].renderer;
-          renderer->SetActiveCamera(lrenderer->GetActiveCamera());
-        }
-        break;
-
-
-
-        
-        case Communicator::Command::MainThreadTerminate:
-        {
-
-          for (auto & framepair: mainthread->framemap)
-            framepair.second->window->Finalize();
-          mainthread->framemap.clear();
-          interactor->TerminateApp();
-          mainthread->running_multithreaded=false;
-          mainthread->cv.notify_all();
-          return;
-        }
-        break;
-        
-        default:;
+          this->edit_mode=false;
+          for (auto figure : this->edited_figures)
+          {
+            figure->RTProcessKey(key);
+            figure->RTMessage("");
+          }
+          this->Interactor->Render();
+          this->edited_figures.resize(0);
+          this->Interactor->Render();
         }
         
-        // Clear command
-        mainthread->cmd=Communicator::Command::Empty;
+        // Toggle some states independent of edit mode
+        else if(key == "i" || key== "L" || key == "e" || key == "s")
+        {
+          for (auto &figure: frame->figures)
+            if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
+              figure->RTProcessKey(key);
+
+          this->Interactor->Render();
+        }
+
+        // Block/unblock calculation
+        else if (key=="space")
+        {
+          frame->mainthread->communication_blocked=!frame->mainthread->communication_blocked;
+        }
         
-        // Notify that command was exeuted
-        if (mainthread->running_multithreaded)
-          mainthread->cv.notify_all();
+        // Print help string
+        else if(key == "h" or key == "question")
+        {
+          cout << Frame::KeyboardHelp;
+        }
+
+        // Pass other keys to base
         else
-          mainthread->interactor->TerminateApp();
-        
+        {
+          vtkInteractorStyleTrackballCamera::OnChar();
+        }
       }
-    }
-  };
-
-
-  void MainThread::RTAddFrame(MainThread* mainthread, int iframe)
-  {
-    auto frame=mainthread->framemap[iframe];
-    frame->window = vtkSmartPointer<vtkRenderWindow>::New();
-    frame->window->DoubleBufferOff();
-    frame->window->SetSize(frame->parameter.winsize_x, frame->parameter.winsize_y);
-    frame->window->SetPosition(frame->parameter.winposition_x, frame->parameter.winposition_y);
-
-    for (auto & subframe : frame->subframes)
+    };
+  
+    /// Timer callback handling communication with render thread
+    class MyTimerCallback : public vtkCommand
     {
+    public:
+      // Main thread to interact with
+      MainThread* mainthread;
       
+      
+      vtkSmartPointer<vtkRenderWindowInteractor> Interactor=0;
+    
+      static MyTimerCallback *New()    {return new MyTimerCallback;}
+    
+      
+      virtual void Execute(
+        vtkObject *vtkNotUsed(caller),
+        unsigned long eventId,
+        void *vtkNotUsed(callData)
+        )
       {
-        auto renderer = vtkSmartPointer<vtkRenderer>::New();
-        subframe.renderer=renderer;
-        renderer->SetViewport(subframe.viewport);
-        renderer->SetBackground(1., 1., 1.);
-        //      renderer->SetUseHiddenLineRemoval(1);
-
-
-        renderer->GetActiveCamera()->SetPosition(subframe.default_camera_position);
-        renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
-        renderer->GetActiveCamera()->OrthogonalizeViewUp();
-        renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
-        renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
-        renderer->GetActiveCamera()->OrthogonalizeViewUp();
-        frame->window->AddRenderer(renderer);
+      
+        if (this->mainthread->communication_blocked) return;
+      
+        if (
+          vtkCommand::TimerEvent == eventId  // Check if timer event
+          && this->mainthread->cmd!=Communicator::Command::Empty  // Check if command has been given
+          )
+        {        
+          // Lock mutex
+          if (this->mainthread->running_multithreaded)
+            std::unique_lock<std::mutex> lock(this->mainthread->mutex);
         
+          // Command dispatch
+          switch(mainthread->cmd)
+          {
+          
+           // Add frame to main thread
+          case Communicator::Command::MainThreadAddFrame:
+          {
+            mainthread->RTAddFrame(mainthread, mainthread->iframe);
+          }
+          break;
+
+          // Remove frame from mainthread
+          case Communicator::Command::MainThreadRemoveFrame:
+          {
+
+            auto frame=mainthread->framemap[mainthread->iframe];
+            for (auto & subframe: frame->subframes)
+              subframe.renderer->RemoveAllViewProps();
+
+            frame->window->Finalize();
+
+            mainthread->framemap.erase(frame->number_in_frame_list);
+
+          }
+          break;
+
+
+          // Add actors from figures to renderer
+          case Communicator::Command::MainThreadShow:
+          {
+            for (auto & framepair: mainthread->framemap)
+              for (auto & figure: framepair.second->figures)
+              {
+                auto &renderer=framepair.second->subframes[figure->framepos].renderer;
+
+                auto &window=framepair.second->window;
+
+                if (
+                  figure->IsEmpty()  
+                  || renderer->GetActors()->GetNumberOfItems()==0
+                  )
+                {
+                  figure->RTBuildVTKPipeline(window,Interactor,renderer);
+
+                  for (auto & actor: figure->actors) 
+                    renderer->AddActor(actor);
+  
+                  for (auto & actor: figure->ctxactors) 
+                    renderer->AddActor(actor);
+  
+                  for (auto & actor: figure->actors2d) 
+                    renderer->AddActor(actor);
+                
+                }
+
+                figure->RTUpdateActors();
+
+                renderer->SetBackground(figure->bgcolor[0],
+                                        figure->bgcolor[1],
+                                        figure->bgcolor[2]);
+
+              }
+
+            for (auto & framepair: mainthread->framemap)
+              framepair.second->window->Render();
+//          this->Interactor->Render();
+          }
+          break;
+        
+          // Write picture to file
+          case Communicator::Command::FrameDump:
+          {
+            auto frame=mainthread->framemap[mainthread->iframe];
+            auto imgfilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
+            auto pngwriter = vtkSmartPointer<vtkPNGWriter>::New();
+          
+            pngwriter->SetInputConnection(imgfilter->GetOutputPort());
+            pngwriter->SetFileName(frame->parameter.filename.c_str());
+          
+            imgfilter->SetInput(frame->window);
+            imgfilter->Update();
+          
+            this->Interactor->Render();
+            pngwriter->Write();
+          }
+          break;
+
+          // Set frame size
+          case Communicator::Command::FrameSize:
+          {
+            auto frame=mainthread->framemap[mainthread->iframe];
+            frame->window->SetSize(frame->parameter.winsize_x, frame->parameter.winsize_y);
+          }
+          break;
+        
+          // Set frame position
+          case Communicator::Command::FramePosition:
+          {
+            auto frame=mainthread->framemap[mainthread->iframe];
+            frame->window->SetPosition(frame->parameter.winposition_x, frame->parameter.winposition_y);
+          }
+          break;
+
+          // Set frame title
+          case Communicator::Command::FrameTitle:
+          {
+            auto frame=mainthread->framemap[mainthread->iframe];
+            frame->title_actor->SetText(7,frame->parameter.frametitle.c_str());
+            frame->title_actor->Modified();
+                                      
+          }
+          break;
+
+          // Set window title
+          case Communicator::Command::WindowTitle:
+          {
+            auto frame=mainthread->framemap[mainthread->iframe];
+            frame->window->SetWindowName(frame->parameter.wintitle.c_str());
+          }
+          break;
+
+          // Link camera to other
+          case Communicator::Command::FrameLinkCamera:
+          {
+            auto frame=mainthread->framemap[mainthread->iframe];
+            auto renderer=mainthread->framemap[mainthread->iframe]->subframes[frame->parameter.camlinkthisframepos].renderer;
+            auto lrenderer=mainthread->framemap[frame->parameter.camlinkframenum]->subframes[frame->parameter.camlinkframepos].renderer;
+            renderer->SetActiveCamera(lrenderer->GetActiveCamera());
+          }
+          break;
+
+          // Terminate
+          case Communicator::Command::MainThreadTerminate:
+          {
+
+            for (auto & framepair: mainthread->framemap)
+              framepair.second->window->Finalize();
+
+            mainthread->framemap.clear();
+
+            this->Interactor->TerminateApp();
+
+            mainthread->running_multithreaded=false;
+
+            mainthread->condition_variable.notify_all();
+
+            return;
+          }
+          break;
+        
+          default:;
+          }
+        
+          // Clear command 
+          mainthread->cmd=Communicator::Command::Empty;
+        
+          // Notify that command was exeuted
+          if (mainthread->running_multithreaded)
+            // 
+            mainthread->condition_variable.notify_all();
+          else
+            // dirty trick to unblock event loop.
+            // hopefully works if multitreading does not
+            mainthread->interactor->TerminateApp();
+        
+        }
       }
-    }
-
-    auto & subframe=frame->subframes[frame->nvpx*frame->nvpy];
-    subframe.renderer->AddActor(frame->title_actor);
-    frame->title_actor->SetText(7,frame->parameter.frametitle.c_str());
-
-  }
+    };
 
 
-  void MainThread::PrepareRenderThread(MainThread* mainthread)
-  {
-    RTAddFrame(mainthread,0);
-    auto frame=mainthread->framemap[0];
-
-    mainthread->interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
-    auto style =  vtkSmartPointer<MyInteractorStyle>::New();
-    style->frame=frame;
-    mainthread->interactor->SetInteractorStyle(style);
-    
-    mainthread->interactor->SetRenderWindow(frame->window);
-
-    auto callback =  vtkSmartPointer<TimerCallback>::New();
-    callback->interactor=mainthread->interactor;
-    callback->mainthread=mainthread;
-    mainthread->interactor->AddObserver(vtkCommand::TimerEvent,callback);
-
-
-
-
-    mainthread->interactor->Initialize();
-    mainthread->interactor->CreateRepeatingTimer(10);
-  }
-  
-  void MainThread::RenderThread(MainThread* mainthread)
-  {
-
-    MainThread::PrepareRenderThread(mainthread);
-  
-    mainthread->running_multithreaded=true;
-    mainthread->interactor->Start();
-    mainthread->running_multithreaded=false;
-    mainthread->cv.notify_all();
-    
-    mainthread->interactor->SetRenderWindow(0);
-    mainthread->interactor->TerminateApp();
-    mainthread->running_multithreaded=false;
-                                     
-    //window->Finalize();
-  }
-
-  void MainThread::Start(void)
-  {
-    if (connection_open)
-      this->thread=std::make_shared<std::thread>(CommunicatorThread,this);
-    else
-      this->thread=std::make_shared<std::thread>(RenderThread,this);
-
-    do
+    void MainThread::RTAddFrame(MainThread* mainthread, int iframe)
     {
-      std::this_thread::sleep_for (std::chrono::milliseconds(10));
+      auto frame=mainthread->framemap[iframe];
+      frame->window = vtkSmartPointer<vtkRenderWindow>::New();
+      frame->window->DoubleBufferOff();
+      frame->window->SetSize(frame->parameter.winsize_x, frame->parameter.winsize_y);
+      frame->window->SetPosition(frame->parameter.winposition_x, frame->parameter.winposition_y);
+
+      for (auto & subframe : frame->subframes)
+      {
+      
+        {
+          auto renderer = vtkSmartPointer<vtkRenderer>::New();
+          subframe.renderer=renderer;
+          renderer->SetViewport(subframe.viewport);
+          renderer->SetBackground(1., 1., 1.);
+          //      renderer->SetUseHiddenLineRemoval(1);
+
+
+          renderer->GetActiveCamera()->SetPosition(subframe.default_camera_position);
+          renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
+          renderer->GetActiveCamera()->OrthogonalizeViewUp();
+          renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
+          renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
+          renderer->GetActiveCamera()->OrthogonalizeViewUp();
+          frame->window->AddRenderer(renderer);
+        
+        }
+      }
+
+      auto & subframe=frame->subframes[frame->nvpx*frame->nvpy];
+      subframe.renderer->AddActor(frame->title_actor);
+      frame->title_actor->SetText(7,frame->parameter.frametitle.c_str());
+
     }
-    while (!this->running_multithreaded);
-  }
 
 
-  ////////////////////////////////////////////////////////////////
-  /// Server communication 
-  void  MainThread::PrepareCommunicatorThread(MainThread* mainthread)
-  {
-    mainthread->cmd=Communicator::Command::MainThreadAddFrame;
+    void MainThread::PrepareRenderThread(MainThread* mainthread)
+    {
+      RTAddFrame(mainthread,0);
+      auto frame=mainthread->framemap[0];
 
-  }
+      mainthread->interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
+      auto style =  vtkSmartPointer<MyInteractorStyle>::New();
+      style->SetFrame(frame);
+      mainthread->interactor->SetInteractorStyle(style);
+    
+      mainthread->interactor->SetRenderWindow(frame->window);
 
-  void  MainThread::CommunicatorThreadCallback(MainThread* mainthread)
-  {
+      auto callback =  vtkSmartPointer<MyTimerCallback>::New();
+      callback->Interactor=mainthread->interactor;
+      callback->mainthread=mainthread;
+      mainthread->interactor->AddObserver(vtkCommand::TimerEvent,callback);
+
+      mainthread->interactor->Initialize();
+
+      mainthread->interactor->CreateRepeatingTimer(mainthread->timer_interval);
+    }
+  
+    void MainThread::RenderThread(MainThread* mainthread)
+    {
+
+      MainThread::PrepareRenderThread(mainthread);
+  
+      mainthread->running_multithreaded=true;
+      mainthread->interactor->Start();
+      mainthread->running_multithreaded=false;
+      mainthread->condition_variable.notify_all();
+    
+      mainthread->interactor->SetRenderWindow(0);
+      mainthread->interactor->TerminateApp();
+      mainthread->running_multithreaded=false;
+                                     
+      //window->Finalize();
+    }
+
+    void MainThread::Start(void)
+    {
+      if (connection_open)
+        this->thread=std::make_shared<std::thread>(CommunicatorThread,this);
+      else
+        this->thread=std::make_shared<std::thread>(RenderThread,this);
+
+      do
+      {
+        std::this_thread::sleep_for (std::chrono::milliseconds(10));
+      }
+      while (!this->running_multithreaded);
+    }
+
+
+    ////////////////////////////////////////////////////////////////
+    /// Server communication 
+    void  MainThread::PrepareCommunicatorThread(MainThread* mainthread)
+    {
+      mainthread->cmd=Communicator::Command::MainThreadAddFrame;
+
+    }
+
+    void  MainThread::CommunicatorThreadCallback(MainThread* mainthread)
+    {
       if (mainthread->cmd!=Communicator::Command::Empty)
       {      
         
         // Lock mutex
         if (mainthread->running_multithreaded)
-          std::unique_lock<std::mutex> lock(mainthread->mtx);
+          std::unique_lock<std::mutex> lock(mainthread->mutex);
 
         if (mainthread->debug_level>0) 
           cout << "s cmd: " << static_cast<int>(mainthread->cmd) << " frame: " <<mainthread->iframe<< endl;
@@ -850,7 +931,7 @@ namespace vtkfig
             cout << "s term" << endl;
           mainthread->framemap.clear();
           // Notify that command was exeuted
-          mainthread->cv.notify_all();
+          mainthread->condition_variable.notify_all();
           mainthread->running_multithreaded=false;
           return;
         }
@@ -870,23 +951,25 @@ namespace vtkfig
         
         // Notify that command was exeuted
         if (mainthread->running_multithreaded)
-          mainthread->cv.notify_all();
+          mainthread->condition_variable.notify_all();
       }
 
-  }
-
-  void  MainThread::CommunicatorThread(MainThread* mainthread)
-  {
-    mainthread->running_multithreaded=true;
-    PrepareCommunicatorThread(mainthread);
-    while(1)
-    {
-      std::this_thread::sleep_for (std::chrono::milliseconds(5));
-      MainThread::CommunicatorThreadCallback(mainthread);
     }
-    mainthread->running_multithreaded=false;
-  }
+
+    void  MainThread::CommunicatorThread(MainThread* mainthread)
+    {
+      mainthread->running_multithreaded=true;
+      PrepareCommunicatorThread(mainthread);
+      while(1)
+      {
+        std::this_thread::sleep_for (std::chrono::milliseconds(5));
+        MainThread::CommunicatorThreadCallback(mainthread);
+      }
+      mainthread->running_multithreaded=false;
+    }
   
  
   
+  }
+
 }

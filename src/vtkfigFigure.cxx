@@ -5,6 +5,7 @@
 #include "vtkCommand.h"
 
 #include "vtkfigFigure.h"
+
 namespace vtkfig
 {
   ////////////////////////////////////////////////
@@ -75,13 +76,13 @@ namespace vtkfig
   }
 
 
-  void Figure::SendRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab)
+  void Figure::SendRGBTable(vtkSmartPointer<internals::Communicator> communicator, RGBTable & rgbtab)
   {
     communicator->SendInt(rgbtab.size());
     communicator->SendFloatBuffer((float*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(float));
   }
   
-  void Figure::ReceiveRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab)
+  void Figure::ReceiveRGBTable(vtkSmartPointer<internals::Communicator> communicator, RGBTable & rgbtab)
   {
     int tabsize;
     communicator->ReceiveInt(tabsize);
@@ -89,30 +90,33 @@ namespace vtkfig
     communicator->ReceiveFloatBuffer((float*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(float));
   }
 
-  /////////////////////////////////////////////////////////////////////
-  /// Slider callback class
 
-  class MySliderCallback : public vtkCommand
+  namespace internals
   {
-  public:
-    static MySliderCallback *New() 
+    ///
+    /// Slider callback class
+    /// \deprecated
+    class MySliderCallback : public vtkCommand
     {
-      return new MySliderCallback;
-    }
-    virtual void Execute(vtkObject *caller, unsigned long, void*)
-    {
-      vtkSliderWidget *sliderWidget =         reinterpret_cast<vtkSliderWidget*>(caller);
-      double value=static_cast<vtkSliderRepresentation *>(sliderWidget->GetRepresentation())->GetValue();
+    public:
+      static MySliderCallback *New() 
+      {
+        return new MySliderCallback;
+      }
+      virtual void Execute(vtkObject *caller, unsigned long, void*)
+      {
+        vtkSliderWidget *sliderWidget =         reinterpret_cast<vtkSliderWidget*>(caller);
+        double value=static_cast<vtkSliderRepresentation *>(sliderWidget->GetRepresentation())->GetValue();
+        
+        figure->state.num_contours=value;
+        figure->SetVMinMax(figure->state.real_vmin,figure->state.real_vmax);
+      }
+      MySliderCallback():figure(0) {}
       
-      figure->state.num_contours=value;
-      figure->SetVMinMax(figure->state.real_vmin,figure->state.real_vmax);
-    }
-    MySliderCallback():figure(0) {}
-
-    Figure *figure;
-
-  };
-
+      Figure *figure;
+      
+    };
+  }
 
 
   /////////////////////////////////////////////////////////////////////
@@ -150,7 +154,7 @@ namespace vtkfig
     sliderWidget->CreateDefaultRepresentation();    
     sliderWidget->SetRepresentation(sliderRep);
 
-    auto callback =   vtkSmartPointer<MySliderCallback>::New();
+    auto callback =   vtkSmartPointer<internals::MySliderCallback>::New();
     callback->figure = this;
     sliderWidget->AddObserver(vtkCommand::InteractionEvent,callback);
     sliderWidget->SetDefaultRenderer(renderer);

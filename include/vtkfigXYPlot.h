@@ -68,9 +68,9 @@ namespace vtkfig
     
 
     int num_plot=0;
-    void ServerRTSend(vtkSmartPointer<Communicator> communicator);
+    void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator);
 
-    void ClientMTReceive(vtkSmartPointer<Communicator> communicator); 
+    void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator); 
 
     vtkSmartPointer<vtkXYPlotWidget> widget;
 

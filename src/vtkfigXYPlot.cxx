@@ -93,7 +93,7 @@ namespace vtkfig
 
   
 
-  void  XYPlot::ServerRTSend(vtkSmartPointer<Communicator> communicator) 
+  void  XYPlot::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator) 
   {
     communicator->SendString(title);
     communicator->SendString(xtitle);
@@ -129,7 +129,7 @@ namespace vtkfig
     }
   };
   
-  void  XYPlot::ClientMTReceive(vtkSmartPointer<Communicator> communicator) 
+  void  XYPlot::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator) 
   {
     Clear();
     communicator->ReceiveString(title);

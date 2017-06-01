@@ -30,6 +30,16 @@
 namespace vtkfig
 {
 
+
+  namespace internals
+  {
+    class MainThread;
+    class MyInteractorStyle;
+    class MyTimerCallback;  
+    class MySliderCallback;  
+    class Client;           
+  }
+
   /// Base class for all figures.
   ///
   /// It justs consists of a set of instances of vtkActor which
@@ -39,8 +49,6 @@ namespace vtkfig
   ///
   /// In this way, any vtk rendering pipeline can be used. 
   /// 
-
-
   class Figure
   {
 
@@ -170,18 +178,17 @@ namespace vtkfig
   protected:
 
     friend class Frame;
-    friend class MainThread;
-    friend class TimerCallback;
-    friend class Client;
-    friend class MyInteractorStyle;
-    friend class MySliderCallback;
-    friend class Quiver;
+    friend class internals::MainThread;
+    friend class internals::Client;
+    friend class internals::MyInteractorStyle;
+    friend class internals::MyTimerCallback;
+    friend class internals::MySliderCallback;
 
     /// Send rgb table to client
-    static void SendRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab);
+    static void SendRGBTable(vtkSmartPointer<internals::Communicator> communicator, RGBTable & rgbtab);
 
     /// Receive rgb table from client.
-    static void ReceiveRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab);
+    static void ReceiveRGBTable(vtkSmartPointer<internals::Communicator> communicator, RGBTable & rgbtab);
 
 
     /// The following items are declared in the base
@@ -273,8 +280,8 @@ namespace vtkfig
 
     /// These two need to re-implemented in subclasses 
     /// in order to get server-client communication
-    virtual void ServerRTSend(vtkSmartPointer<Communicator> communicator) {};
-    virtual void ClientMTReceive(vtkSmartPointer<Communicator> communicator) {};
+    virtual void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator) {};
+    virtual void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator) {};
 
 
     /// Process keyboard and mouse move events

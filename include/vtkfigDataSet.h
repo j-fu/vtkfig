@@ -17,10 +17,11 @@ namespace vtkfig
   ///
   /// Class to collect all data given on one grid.
   /// 
-  /// Wrapper of vtkRectilinearGridData resp. vtkUnstructuredGridData.
+  /// Wrapper of [vtkRectilinearGrid](http://www.vtk.org/doc/nightly/html/classvtkRectilinearGrid.html)
+  /// resp. [vtkUnstructuredGrid](http://www.vtk.org/doc/nightly/html/classvtkUnstructuredGrid.html)
   /// Using [duck typing](https://en.wikipedia.org/wiki/Duck_typing),
   /// this class internally builds copies of the data in the form
-  /// of a vtkDataSet.
+  /// of a [vtkDataSet](http://www.vtk.org/doc/nightly/html/classvtkDataSet.html)
   ///
 
   class DataSet
