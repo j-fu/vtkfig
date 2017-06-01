@@ -306,7 +306,7 @@ namespace vtkfig
 
       std::string key = interactor->GetKeySym();
 //      cout << key << endl;
-      if(key == "e" ||  key== "f")  {}
+      if(key== "f")  {}
 
       else if(key == "q")
       {
@@ -423,7 +423,7 @@ namespace vtkfig
         edited_figures.resize(0);
         
       }
-      else if(key == "i" || key== "L")
+      else if(key == "i" || key== "L" || key == "e" || key == "s")
       {
         for (auto &figure: frame->figures)
           if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)

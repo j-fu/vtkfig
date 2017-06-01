@@ -1,0 +1,8 @@
+syntax:glob
+doc/
+*~
+.build*/
+.\#*
+*.bak
+*.log
+QUARRY

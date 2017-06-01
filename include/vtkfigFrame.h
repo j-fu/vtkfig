@@ -237,12 +237,14 @@ R"(
    Return Figure   Store edited plane/level value
 BackSpace Figure   Delete last plane/level value
         a Figure   Start arrow scale editing
+        e Figure   Toggle elevation view
         h Frame    This help
         i Figure   Toggle isosurface view (3D only)
         l Figure   Start isolevel editing
         L Figure   Generate 11 equally spaced isolevels.
         p Frame    Write frame to png
         r Figure   Reset camera
+        s Figure   Toggle surface plot
         w Figure   Toggle wireframe mode 
         x Figure   Start x plane editing (3D only)
         y Figure   Start y plane editing (3D only)

@@ -20,6 +20,7 @@
 #include "vtkTransformPolyDataFilter.h"
 #include "vtkTransformFilter.h"
 #include "vtkClipPolyData.h"
+#include "vtkWarpScalar.h"
 
 
 #include "vtkfigSurfaceContour.h"
@@ -73,7 +74,30 @@ namespace vtkfig
     transgeometry->SetInputConnection(geometry->GetOutputPort());
     transgeometry->SetTransform(transform);
 
-    if (state.show_surface)
+
+    if (true) // Elevation
+    {
+      auto wtransform =  vtkSmartPointer<vtkTransform>::New();
+      wtransform->Translate(0,0,0.5);
+      auto wtransgeometry=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+      wtransgeometry->SetInputConnection(transgeometry->GetOutputPort());
+      wtransgeometry->SetTransform(wtransform);
+
+      auto elevation = vtkSmartPointer<vtkWarpScalar>::New();
+      elevation->SetInputConnection(wtransgeometry->GetOutputPort());
+      elevation->SetScaleFactor(0.5/(state.real_vmax-state.real_vmin));
+      vtkSmartPointer<vtkPolyDataMapper> wmapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+      wmapper->SetInputConnection(elevation->GetOutputPort());
+      vtkSmartPointer<vtkActor> wplot = vtkSmartPointer<vtkActor>::New();
+      wmapper->UseLookupTableScalarRangeOn();
+      wmapper->SetLookupTable(elevation_lut);
+      elevation_plot->SetMapper(wmapper);
+      elevation_plot->SetVisibility(state.show_elevation);
+      Figure::RTAddActor(elevation_plot);
+    }
+
+
+    if (true)
     {
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       mapper->SetInputConnection(transgeometry->GetOutputPort());
@@ -83,16 +107,16 @@ namespace vtkfig
       mapper->SetLookupTable(surface_lut);
       mapper->ImmediateModeRenderingOn();
 
-      vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
-      plot->SetMapper(mapper);
-      Figure::RTAddActor(plot);
+      surface_plot->SetMapper(mapper);
+      surface_plot->SetVisibility(state.show_surface);
+      Figure::RTAddActor(surface_plot);
       
       if (state.show_surface_colorbar)
         Figure::RTAddActor2D(BuildColorBar(mapper));
     }
     
     
-    if (state.show_isolines)
+    if (true)
     {
       
       isoline_filter->SetInputConnection(transgeometry->GetOutputPort());
@@ -102,12 +126,13 @@ namespace vtkfig
       mapper->UseLookupTableScalarRangeOn();
       mapper->SetLookupTable(contour_lut);
       
-      vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
-      plot->SetMapper(mapper);
-      plot->GetProperty()->SetLineWidth(state.isoline_width);
-      Figure::RTAddActor(plot);
-      if (state.show_contour_colorbar)
-        Figure::RTAddActor2D(BuildColorBar(mapper));
+      isoline_plot->SetMapper(mapper);
+      isoline_plot->GetProperty()->SetLineWidth(state.isoline_width);
+      isoline_plot->SetVisibility(state.show_isolines);
+      Figure::RTAddActor(isoline_plot);
+
+      // if (state.show_contour_colorbar)
+      //   Figure::RTAddActor2D(BuildColorBar(mapper));
       
       if (state.show_slider)
         AddSlider(interactor,renderer);

@@ -216,6 +216,12 @@ namespace vtkfig
     vtkSmartPointer<vtkActor>     isoline_plot;
     vtkSmartPointer<vtkContourFilter> isoline_filter;
 
+    /// Items for elevation plot
+    vtkSmartPointer<vtkActor>     elevation_plot;
+
+    /// Items for surface plot
+    vtkSmartPointer<vtkActor>     surface_plot;
+
 
 
 
@@ -244,6 +250,10 @@ namespace vtkfig
     /// Color lookup table for contour plots
     vtkSmartPointer<vtkLookupTable> contour_lut;
     RGBTable contour_rgbtab{{0,0,0,0},{1,0,0,0}};
+    
+    /// Color lookup table for elevation plots
+    vtkSmartPointer<vtkLookupTable> elevation_lut;
+    RGBTable elevation_rgbtab{{0.0,0.9,0.9,0.9},{1.0,0.9,0.9,0.9}};
     
     /// Set minmax values from data
     void SetVMinMax(double vmin, double vmax);
@@ -332,7 +342,7 @@ namespace vtkfig
       
       bool show_contour_colorbar=false;
       
-      bool show_elevation=true;
+      bool show_elevation=false;
 
       int contour_rgbtab_size=2;
       
@@ -341,6 +351,9 @@ namespace vtkfig
       int surface_rgbtab_size=255;
       
       bool surface_rgbtab_modified=true;
+
+      int elevation_rgbtab_size=2;
+
       
       bool wireframe=false;
       

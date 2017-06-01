@@ -15,6 +15,7 @@ namespace vtkfig
 
     surface_lut=BuildLookupTable(surface_rgbtab,state.surface_rgbtab_size);
     contour_lut=BuildLookupTable(contour_rgbtab,state.contour_rgbtab_size);
+    elevation_lut=BuildLookupTable(elevation_rgbtab,state.elevation_rgbtab_size);
     isoline_filter = vtkSmartPointer<vtkContourFilter>::New();
     isosurface_filter = vtkSmartPointer<vtkContourFilter>::New();
     sliderWidget = vtkSmartPointer<vtkSliderWidget>::New();
@@ -22,6 +23,8 @@ namespace vtkfig
 
     isosurface_plot = vtkSmartPointer<vtkActor>::New();
     isoline_plot = vtkSmartPointer<vtkActor>::New();
+    elevation_plot = vtkSmartPointer<vtkActor>::New();
+    surface_plot = vtkSmartPointer<vtkActor>::New();
 
 
     planecutX= vtkSmartPointer<vtkCutter>::New();
@@ -326,6 +329,26 @@ namespace vtkfig
       isosurface_plot->Modified();
       return;
     }
+
+    if (key=="s" && state.spacedim==2)
+    {
+      state.show_surface=!state.show_surface;
+      state.show_isolines=!state.show_isolines;
+      isoline_plot->SetVisibility(state.show_isolines);
+      surface_plot->SetVisibility(state.show_surface);
+      isoline_plot->Modified();
+      surface_plot->Modified();
+      return;
+    }
+
+    if (key=="e" && state.spacedim==2)
+    {
+      state.show_elevation=!state.show_elevation;
+      elevation_plot->SetVisibility(state.show_elevation);
+      elevation_plot->Modified();
+      return;
+    }
+
 
     if (key=="L")
     {
