@@ -1,3 +1,9 @@
+///
+///   \example   examples/example-xyplot.cxx
+///
+///  Plot of 1D functions
+///
+
 #include <cstdio>
 #include "vtkfigFrame.h"
 #include "vtkfigXYPlot.h"
@@ -69,7 +75,7 @@ int main()
     frame->Show();
     
     if (ii==3) 
-        frame->Dump("example-xyplot.png");
+        frame->WritePNG("example-xyplot.png");
 
     tt+=0.1;
     auto t1=std::chrono::system_clock::now();

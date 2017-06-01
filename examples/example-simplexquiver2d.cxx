@@ -1,3 +1,9 @@
+///
+///   \example   examples/example-simplexquiver2d.cxx
+///
+///  Vector function on 2D simplex grid
+///
+
 #include "vtkMath.h"
 #include "vtkfigFrame.h"
 #include "vtkfigSurfaceContour.h"
@@ -121,7 +127,7 @@ int main(void)
     frame->Show();
 
     if (ii==3) 
-      frame->Dump("example-simplexquiver2d.png");
+      frame->WritePNG("example-simplexquiver2d.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

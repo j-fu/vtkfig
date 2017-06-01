@@ -1,3 +1,9 @@
+///
+///   \example   examples/example-simplexcontour3d.cxx
+///
+///  Scalar function on 3D simplex grid
+///
+
 #include <chrono>
 
 #include "vtkfigFrame.h"
@@ -81,7 +87,7 @@ int main(void)
 
     frame->Show();
      if (ii==3) 
-      frame->Dump("example-simplexcontour3d.png");
+      frame->WritePNG("example-simplexcontour3d.png");
    
     t+=dt;
     auto t1=std::chrono::system_clock::now();

@@ -1,3 +1,9 @@
+///
+///   \example   examples/example-rectquiver2d.cxx
+///
+///  Vector function on 2D rectilinear grid
+///
+
 #include "vtkfigFrame.h"
 #include "vtkfigSurfaceContour.h"
 #include "vtkfigQuiver.h"
@@ -102,7 +108,7 @@ int main(void)
     frame->Show();
 
     if (ii==3) 
-      frame->Dump("example-quiver2d.png");
+      frame->WritePNG("example-quiver2d.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

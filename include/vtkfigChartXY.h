@@ -13,7 +13,9 @@
 
 namespace vtkfig
 {
-  
+  ///
+  /// Experimental class trying to use the chartxy widget - don't use!
+  /// 
   class ChartXY: public Figure
   {
     
@@ -54,7 +56,7 @@ namespace vtkfig
 
     void AddPlot();
 
-    virtual void RTBuild(
+    virtual void RTBuildVTKPipeline(
       vtkSmartPointer<vtkRenderWindow> window,
       vtkSmartPointer<vtkRenderWindowInteractor> interactor,
       vtkSmartPointer<vtkRenderer> renderer);

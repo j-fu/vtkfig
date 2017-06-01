@@ -1,3 +1,9 @@
+///
+///   \example   examples/example-surf2d.cxx
+///
+/// Elevation view on 2D grid.
+///
+
 #include <chrono>
 #include "vtkfigFrame.h"
 #include "vtkfigSurf2D.h"
@@ -75,7 +81,7 @@ int main(const int argc, const char *argv[])
     frame.Show();
     
     if (ii==3) 
-      frame.Dump("example-surf2d.png");
+      frame.WritePNG("example-surf2d.png");
 
     t+=dt;
 

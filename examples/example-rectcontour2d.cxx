@@ -1,3 +1,9 @@
+///
+///   \example   examples/example-rectcontour2d.cxx
+///
+///  Scalar function on 2D rectilinear grid
+///
+
 #include <chrono>
 #include "vtkfigFrame.h"
 #include "vtkfigDataSet.h"
@@ -71,7 +77,7 @@ int main(void)
     frame->Show();
 
     if (ii==3) 
-      frame->Dump("example-rectcontour2d.png");
+      frame->WritePNG("example-rectcontour2d.png");
 
     t+=dt;
     auto t1=std::chrono::system_clock::now();

@@ -20,7 +20,7 @@ namespace vtkfig
   }
 
 
-  void Surf2D::RTBuild(
+  void Surf2D::RTBuildVTKPipeline(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer)

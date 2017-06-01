@@ -14,15 +14,149 @@
 namespace vtkfig
 {
   
+  ///
+  /// Class to collect all data given on one grid.
+  /// 
+  /// Wrapper of vtkRectilinearGridData resp. vtkUnstructuredGridData.
+  /// Using [duck typing](https://en.wikipedia.org/wiki/Duck_typing),
+  /// this class internally builds copies of the data in the form
+  /// of a vtkDataSet.
+  ///
+
   class DataSet
   {
 
-
-
   public:    
     
+    /// Static constructor of an empty instance
     static std::shared_ptr<DataSet> New() { return std::make_shared<DataSet>(); }
 
+    ///
+    /// Enter data of a simplex grid.  
+    ///
+    /// \tparam V Vector class counting from zero with member functions
+    ///  size() and operator[]. std::vector will work.
+    ///
+    /// \tparam IV Vector class counting from zero with member functions
+    /// size() and operator[]. std::vector will work.
+    ///
+    /// \param dim  Space dimension (2 or 3)
+    ///
+    /// \param points  Point coordinates, stored consecutively.<br>
+    ///      In 2D, coordinates of point i are `(points[2*i],points[2*i+1])`<br>
+    ///      In 3D, coordinates of point i are `(points[3*i],points[3*i+1],,points[3*i+2])`
+    ///
+    /// \param cells  Simplex point indices (counting from 0!)
+    ///      In 2D, point indices of triangle i are `(cells[3*i],cells[3*i+1],cells[3*i+2])`<br>
+    ///      In 3D, point indices of tetrahedron i are `(cells[3*i],cells[3*i+1],cells[3*i+2],cells[3*i+3])`
+
+    template <class V, class IV>
+      void SetSimplexGrid(int dim, const V& points,  const IV& cells);
+
+    ///
+    /// Enter data of a 2D rectilinear grid.  
+    ///
+    /// \tparam V Vector class counting from zero with member functions
+    ///  size() and operator[]. std::vector will work.
+    ///
+    /// \param x   x-coordinates
+    /// \param y   y-coordinates
+    template<typename V> 
+      void SetRectilinearGrid(const V &x, const V &y);
+
+    ///
+    /// Enter data of a 3D rectilinear grid.  
+    ///
+    /// \tparam V Vector class counting from zero with member functions
+    ///  size() and operator[]. std::vector will work.
+    ///
+    /// \param x   x-coordinates
+    /// \param y   y-coordinates
+    /// \param z   z-coordinates
+    template<typename V>
+      void SetRectilinearGrid(const V &x, const V &y, const V &z);
+
+    ///
+    /// Set data of a scalar function defined on the points of the grid
+    ///
+    /// \tparam V Vector class counting from zero with member functions
+    ///  size() and operator[]. std::vector will work.
+    ///
+    /// \param f  Vector of function values
+    ///
+    /// \param name Name of function
+    template <class V>
+      void SetPointScalar(const V&f , const std::string name);
+
+    ///
+    /// Set data of a vector function defined on the points on a 2D grid
+    ///
+    /// \tparam V Vector class counting from zero with member functions
+    ///  size() and operator[]. std::vector will work.
+    ///
+    /// \param u  Vector of x component values
+    ///
+    /// \param v  Vector of y component values
+    ///
+    /// \param name Name of function
+    template <class V>
+      void SetPointVector(const V&u, const V& v, const std::string name);
+
+    ///
+    /// Set data of a vector function defined on the points on a 2D grid
+    ///
+    /// \tparam V Vector class counting from zero with member functions
+    ///  size() and operator[]. std::vector will work.
+    ///
+    /// \param u  Vector of x component values
+    ///
+    /// \param v  Vector of y component values
+    ///
+    /// \param w  Vector of z component values
+    ///
+    /// \param name Name of function
+    template <class V>
+      void SetPointVector(const V&u, const V& v, const V& w, const std::string name);
+
+    ///
+    /// Set data of a scalar function defined on the cells of the grid
+    ///
+    /// \tparam V Vector class counting from zero with member functions
+    ///  size() and operator[]. std::vector will work.
+    ///
+    /// \param f  Vector of function values
+    ///
+    /// \param name Name of function
+    template <class V>
+      void SetCellScalar(const V&f, const std::string name);
+
+    ///
+    /// Set cell region data (for multiregion grids)
+    ///
+    /// \tparam V Vector class counting from zero with member functions
+    ///  size() and operator[]. std::vector will work.
+    ///
+    /// \param cr Cell region numbers
+    ///
+    /// \param name Name of function
+    template <class V>
+      void SetCellRegions(const V& cr);
+
+    ///
+    /// Write dataset to disk in VTK format
+    ///
+    /// \param fname File name
+    void WriteVTK(std::string fname);
+    
+    /// 
+    /// Request the space dimension of the dataset
+    /// 
+    /// \return Space dimension
+    int GetSpaceDimension() { return spacedim;}
+    
+    ///
+    /// Enum describing different possible data types.
+    ///
     enum class DataType
     {
       NoType=0,
@@ -33,39 +167,17 @@ namespace vtkfig
         
         };
 
+    /// 
+    /// Request the data type of the dataset
+    /// 
+    /// \return Data type
     DataType GetDataType();
 
-    void WriteVTK(std::string fname);
-    
+    /// 
+    /// Request vtkDataset which contains all the data.
+    /// 
+    /// \return vtkDataset
     vtkSmartPointer<vtkDataSet> GetVTKDataSet() { return data;}
-
-    int GetSpaceDimension() { return spacedim;}
-    
-    template <class V, class IV>
-      void SetSimplexGrid(int dim, const V& points,  const IV& cells);
-
-    template<typename V> 
-      void SetRectilinearGrid(const V &x, const V &y);
-
-    template<typename V>
-      void SetRectilinearGrid(const V &x, const V &y, const V &z);
-
-    template <class V>
-      void SetPointScalar(const V&values, const std::string name);
-
-    template <class V>
-      void SetPointVector(const V&u, const V& v, const std::string name);
-
-    template <class V>
-      void SetPointVector(const V&u, const V& v, const V& w, const std::string name);
-
-    template <class V>
-      void SetCellScalar(const V&values, const std::string name);
-
-    template <class V>
-      void SetCellRegions(const V&values);
-    
-
     
   private:
     

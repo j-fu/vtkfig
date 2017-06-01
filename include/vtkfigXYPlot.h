@@ -13,6 +13,9 @@
 namespace vtkfig
 {
   
+  /// 
+  /// 1D function plot.
+  ///
   class XYPlot: public Figure
   {
     
@@ -74,7 +77,7 @@ namespace vtkfig
     void AddPlot();
     
   
-    virtual void RTBuild(
+    virtual void RTBuildVTKPipeline(
       vtkSmartPointer<vtkRenderWindow> window,
       vtkSmartPointer<vtkRenderWindowInteractor> interactor,
       vtkSmartPointer<vtkRenderer> renderer);

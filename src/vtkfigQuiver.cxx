@@ -30,15 +30,16 @@ namespace vtkfig
   
 
   template <class DATA, class FILTER>
-  void  Quiver::RTBuild2D(
+  void  Quiver::RTBuildVTKPipeline2D(
         vtkSmartPointer<vtkRenderWindow> window,
         vtkSmartPointer<vtkRenderWindowInteractor> interactor,
         vtkSmartPointer<vtkRenderer> renderer,
         vtkSmartPointer<DATA> gridfunc)
   {
+    auto transform=CalcTransform(gridfunc);
     
 
-    gridfunc->GetBounds(bounds);
+
     
 
     auto vector = vtkSmartPointer<vtkAssignAttribute>::New();
@@ -49,21 +50,20 @@ namespace vtkfig
     auto geometry = vtkSmartPointer<FILTER>::New();
     geometry->SetInputConnection(vector->GetOutputPort());
 
-    auto transform=CalcTransform(gridfunc);
     auto transgeometry=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
     transgeometry->SetInputConnection(geometry->GetOutputPort());
     transgeometry->SetTransform(transform);
 
 
     auto probePoints =  vtkSmartPointer<vtkPoints>::New();
-    double dx=(tbounds[1]-tbounds[0])/( (int)state.qv_nx);
-    double dy=(tbounds[3]-tbounds[2])/( (int)state.qv_ny);
+    double dx=(trans_bounds[1]-trans_bounds[0])/( (int)state.qv_nx);
+    double dy=(trans_bounds[3]-trans_bounds[2])/( (int)state.qv_ny);
 
     double x,y;
-    x=tbounds[0];
+    x=trans_bounds[0];
     for (int ix=0; ix<state.qv_nx;ix++,x+=dx )
     {
-      y=tbounds[2];
+      y=trans_bounds[2];
       for ( int iy=0;iy<state.qv_ny;iy++,y+=dy )
       {
         probePoints->InsertNextPoint ( x, y, 0);
@@ -124,7 +124,7 @@ namespace vtkfig
 
   /////////////////////////////////////////////////////////////////////
   /// Generic access to filter
-  void  Quiver::RTBuild(
+  void  Quiver::RTBuildVTKPipeline(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer)
@@ -135,10 +135,10 @@ namespace vtkfig
       auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
       
       if (state.spacedim==2)
-        this->RTBuild2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,griddata);
+        this->RTBuildVTKPipeline2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,griddata);
 
       // else
-      //   this->RTBuild3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,griddata); 
+      //   this->RTBuildVTKPipeline3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,griddata); 
     }
     else if (state.datatype==DataSet::DataType::RectilinearGrid)
     {
@@ -146,9 +146,9 @@ namespace vtkfig
       
       
       if (state.spacedim==2)
-        this->RTBuild2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
+        this->RTBuildVTKPipeline2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
       // else
-      //   this->RTBuild3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
+      //   this->RTBuildVTKPipeline3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
     }
   }
 

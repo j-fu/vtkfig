@@ -5,7 +5,7 @@
 
 namespace vtkfig
 {
-
+  
   DataSet::DataType  DataSet::GetDataType()
   {
     auto udata=vtkUnstructuredGrid::SafeDownCast(this->data);
@@ -30,7 +30,6 @@ namespace vtkfig
   
   void  DataSet::WriteVTK(std::string fname)
   {
-
     if (GetDataType()==DataType::UnstructuredGrid) 
       WriteVTK<vtkUnstructuredGrid,vtkUnstructuredGridWriter>(vtkUnstructuredGrid::SafeDownCast(data),fname);
     if (GetDataType()==DataType::RectilinearGrid) 

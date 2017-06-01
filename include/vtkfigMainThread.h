@@ -12,6 +12,11 @@ namespace vtkfig
 {
 
   class Frame;
+
+  ///
+  /// Main communication thread.
+  ///
+  /// Not to be exposed to user.
   class  MainThread
   {
     friend class Frame;
@@ -19,14 +24,11 @@ namespace vtkfig
     friend class TimerCallback;
     friend class MyInteractorStyle;
 
-
-  public:
+  private:
     ~MainThread();
     MainThread();
     vtkSmartPointer<vtkRenderWindowInteractor> interactor;
 
-
-  private:
 
     static MainThread * CreateMainThread();
     void Show();

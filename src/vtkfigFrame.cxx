@@ -82,55 +82,54 @@ namespace vtkfig
 
   void Frame::LinkCamera(int ivpx, int ivpy, Frame& frame, int livpx, int livpy)
   {
-    camlinkthisframepos=pos(ivpx,ivpy);
-    camlinkframepos=frame.pos(livpx,livpy);
-    camlinkframenum=frame.framenum;
+    parameter.camlinkthisframepos=pos(ivpx,ivpy);
+    parameter.camlinkframepos=frame.pos(livpx,livpy);
+    parameter.camlinkframenum=frame.number_in_frame_list;
     SendCommand("LinkCamera", Communicator::Command::FrameLinkCamera);
   }
   
 
-  void Frame::Dump(std::string fname)
+  void Frame::WritePNG(std::string fname)
   {
-    this->fname=fname;
+    parameter.filename=fname;
     SendCommand("Dump", Communicator::Command::FrameDump);
   }
 
   void Frame::SetSize(int x, int y)
   {
-    this->win_x=x;
-    this->win_y=y;
+    parameter.winsize_x=x;
+    parameter.winsize_y=y;
     SendCommand("Size", Communicator::Command::FrameSize);
   }
 
   void Frame::SetPosition(int x, int y)
   {
-    this->pos_x=x;
-    this->pos_y=y;
+    parameter.winposition_x=x;
+    parameter.winposition_y=y;
     SendCommand("Position", Communicator::Command::FramePosition);
   }
 
   void Frame::SetWindowTitle(const std::string title)
   {
-    this->wintitle=title;
+    parameter.wintitle=title;
     SendCommand("WindowTitle", Communicator::Command::WindowTitle);
   }
 
   void Frame::SetFrameTitle(const std::string title)
   {
-    this->frametitle=title;
+    parameter.frametitle=title;
     SendCommand("FrameTitle", Communicator::Command::FrameTitle);
   }
 
 
   void Frame::SendCommand(std::string source, Communicator::Command comm)
   {
-    mainthread->SendCommand(framenum, source, comm);
+    mainthread->SendCommand(number_in_frame_list, source, comm);
   }
 
   Frame::~Frame()
   {
     MainThread::mainthread->RemoveFrame(this);
-    
   }
   
   

@@ -17,6 +17,9 @@
 namespace vtkfig
 {
   
+  /// 
+  /// Surface and contour plot of 2/3D scalar data
+  ///
   class SurfaceContour: public Figure
   {
     
@@ -28,7 +31,7 @@ namespace vtkfig
     
   private:
     
-    virtual void RTBuild(
+    virtual void RTBuildVTKPipeline(
       vtkSmartPointer<vtkRenderWindow> window,
       vtkSmartPointer<vtkRenderWindowInteractor> interactor,
       vtkSmartPointer<vtkRenderer> renderer);
@@ -40,13 +43,13 @@ namespace vtkfig
     
     
     template <class GRIDFUNC, class FILTER>
-      void RTBuild2D(vtkSmartPointer<vtkRenderWindow> window,
+      void RTBuildVTKPipeline2D(vtkSmartPointer<vtkRenderWindow> window,
                      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
                      vtkSmartPointer<vtkRenderer> renderer,
                      vtkSmartPointer<GRIDFUNC> gridfunc);
     
     template <class GRIDFUNC, class FILTER>
-      void RTBuild3D(vtkSmartPointer<vtkRenderWindow> window,
+      void RTBuildVTKPipeline3D(vtkSmartPointer<vtkRenderWindow> window,
                      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
                      vtkSmartPointer<vtkRenderer> renderer,
                      vtkSmartPointer<GRIDFUNC> gridfunc);

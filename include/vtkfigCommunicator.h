@@ -10,12 +10,14 @@
 namespace vtkfig
 {
 
-
-
+  ///
+  /// Derived class from  vtkSocketCommunicator
+  /// providing framework for server-client communication
+  /// 
   class Communicator: public vtkSocketCommunicator
   {
-  public:
 
+  public:
   enum class Command: int
   {
     Dummy=-1,
@@ -36,12 +38,6 @@ namespace vtkfig
       Exit
       };
     
-    int server_listen_num_retry=10;
-    int server_listen_retry_timeout=100;
-    int server_listen_waiting_time=200;
-    
-    int client_connect_num_retry=10;
-    int client_connect_retry_timeout=100;
     
     static Communicator *New();
     
@@ -86,8 +82,7 @@ namespace vtkfig
     int ReceiveDoubleBuffer(double *buf, int ndata, int tag= static_cast<int>(Tag::DoubleBuffer));
 
 
-  private:
-    const int remoteHandle=1;
+
     enum class Tag : int
     {
       Command=100,
@@ -100,6 +95,19 @@ namespace vtkfig
         DoubleBuffer
         };
     
+  private:
+    friend class MainThread;
+    friend class Frame;
+    friend class Client;
+
+    const int remoteHandle=1;
+
+    int server_listen_num_retry=10;
+    int server_listen_retry_timeout=100;
+    int server_listen_waiting_time=200;
+    
+    int client_connect_num_retry=10;
+    int client_connect_retry_timeout=100;
 
     vtkSmartPointer<vtkSocketController> controller;
     vtkSmartPointer<vtkServerSocket> ssocket;

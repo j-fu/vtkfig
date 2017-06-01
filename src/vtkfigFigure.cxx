@@ -10,6 +10,9 @@ namespace vtkfig
   ////////////////////////////////////////////////
   Figure::Figure() 
   {
+
+
+
     surface_lut=BuildLookupTable(surface_rgbtab,state.surface_rgbtab_size);
     contour_lut=BuildLookupTable(contour_rgbtab,state.contour_rgbtab_size);
     isoline_filter = vtkSmartPointer<vtkContourFilter>::New();
@@ -44,8 +47,8 @@ namespace vtkfig
 
 
 
-    tactor= vtkSmartPointer<vtkCornerAnnotation>::New();
-    auto textprop=tactor->GetTextProperty();
+    annot= vtkSmartPointer<vtkCornerAnnotation>::New();
+    auto textprop=annot->GetTextProperty();
     textprop->ItalicOff();
     textprop->BoldOff();
     textprop->SetFontSize(8);
@@ -53,6 +56,35 @@ namespace vtkfig
     textprop->SetColor(0,0,0);
   };
 
+  void Figure::SetData(DataSet& xgriddata, const std::string xdataname)
+  {
+    state.spacedim=xgriddata.GetSpaceDimension();
+    data=xgriddata.GetVTKDataSet();
+    state.datatype=xgriddata.GetDataType();
+    dataname=xdataname;
+    title=xdataname;
+  }
+  
+  
+  void Figure::SetData(std::shared_ptr<DataSet> xgriddata, const std::string xdataname)
+  {
+    SetData(*xgriddata,xdataname);
+  }
+
+
+  void Figure::SendRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab)
+  {
+    communicator->SendInt(rgbtab.size());
+    communicator->SendFloatBuffer((float*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(float));
+  }
+  
+  void Figure::ReceiveRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab)
+  {
+    int tabsize;
+    communicator->ReceiveInt(tabsize);
+    rgbtab.resize(tabsize);
+    communicator->ReceiveFloatBuffer((float*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(float));
+  }
 
   /////////////////////////////////////////////////////////////////////
   /// Slider callback class
@@ -140,12 +172,12 @@ namespace vtkfig
     int i=planecut->GetNumberOfContours();
     if (i>0)
     {
-      double planepos=bounds[2*idim]+ (bounds[2*idim+1]-bounds[2*idim])*(planecut->GetValue(i-1)+tcenter[idim]-tbounds[2*idim]);
+      double planepos=data_bounds[2*idim]+ (data_bounds[2*idim+1]-data_bounds[2*idim])*(planecut->GetValue(i-1)+trans_center[idim]-trans_bounds[2*idim]);
       RTMessage("plane_" + plane +"[" + std::to_string(i-1) + "]=" + std::to_string(planepos));
     }
     else
     {
-      double planepos=bounds[2*idim]+ (bounds[2*idim+1]-bounds[2*idim])*(tcenter[idim]-tbounds[2*idim]);
+      double planepos=data_bounds[2*idim]+ (data_bounds[2*idim+1]-data_bounds[2*idim])*(trans_center[idim]-trans_bounds[2*idim]);
       RTMessage("[Return] for plane_"+plane+"[0]="+std::to_string(planepos));
     }
   }
@@ -332,11 +364,11 @@ namespace vtkfig
       int i=planecut->GetNumberOfContours()-1;
       if (i>=0)
       {
-        double planepos=planecut->GetValue(i)+tcenter[idim];
-        planepos+=(0.01)*((double)dx)*(tbounds[2*idim+1]-tbounds[2*idim+0]);
-        planepos=std::min(planepos,tbounds[2*idim+1]);
-        planepos=std::max(planepos,tbounds[2*idim+0]);
-        planecut->SetValue(i,planepos-tcenter[idim+0]);
+        double planepos=planecut->GetValue(i)+trans_center[idim];
+        planepos+=(0.01)*((double)dx)*(trans_bounds[2*idim+1]-trans_bounds[2*idim+0]);
+        planepos=std::min(planepos,trans_bounds[2*idim+1]);
+        planepos=std::max(planepos,trans_bounds[2*idim+0]);
+        planecut->SetValue(i,planepos-trans_center[idim+0]);
         RTShowPlanePos(planecut,plane,idim);
         planecut->Modified();
       }
@@ -422,14 +454,14 @@ namespace vtkfig
   
   vtkSmartPointer<vtkTransform>  Figure::CalcTransform(vtkSmartPointer<vtkDataSet> data)
   {
-    data->GetBounds(bounds);
-    data->GetCenter(center);
+    data->GetBounds(data_bounds);
+    data->GetCenter(data_center);
 
     auto transform =  vtkSmartPointer<vtkTransform>::New();
     auto glyphtransform =  vtkSmartPointer<vtkTransform>::New();
-    double xsize=bounds[1]-bounds[0];
-    double ysize=bounds[3]-bounds[2];
-    double zsize=bounds[5]-bounds[4];
+    double xsize=data_bounds[1]-data_bounds[0];
+    double ysize=data_bounds[3]-data_bounds[2];
+    double zsize=data_bounds[5]-data_bounds[4];
     if (state.spacedim==2) zsize=0;
     double xysize=std::max(xsize,ysize);
     double xyzsize=std::max(xysize,zsize);
@@ -458,22 +490,22 @@ namespace vtkfig
       }
     }
     
-    transform->Translate(-bounds[0],-bounds[2],-bounds[4]);
+    transform->Translate(-data_bounds[0],-data_bounds[2],-data_bounds[4]);
   
-    double p0[3]={bounds[0],bounds[2],bounds[4]};
-    double p1[3]={bounds[1],bounds[3],bounds[5]};
+    double p0[3]={data_bounds[0],data_bounds[2],data_bounds[4]};
+    double p1[3]={data_bounds[1],data_bounds[3],data_bounds[5]};
     double tp0[3],tp1[3];
 
     transform->TransformPoint(p0,tp0);
     transform->TransformPoint(p1,tp1);
-    tbounds[0]=tp0[0];
-    tbounds[1]=tp1[0];
-    tbounds[2]=tp0[1];
-    tbounds[3]=tp1[1];
-    tbounds[4]=tp0[2];
-    tbounds[5]=tp1[2];
+    trans_bounds[0]=tp0[0];
+    trans_bounds[1]=tp1[0];
+    trans_bounds[2]=tp0[1];
+    trans_bounds[3]=tp1[1];
+    trans_bounds[4]=tp0[2];
+    trans_bounds[5]=tp1[2];
 
-    transform->TransformPoint(center,tcenter);
+    transform->TransformPoint(data_center,trans_center);
 
     return transform;
   }
@@ -508,15 +540,15 @@ namespace vtkfig
 
   void Figure::RTAddAnnotations()
   {
-    tactor->SetText(7,title.c_str());
-    tactor->SetText(4,"");
-    Figure::RTAddActor2D(tactor);
+    annot->SetText(7,title.c_str());
+    annot->SetText(4,"");
+    Figure::RTAddActor2D(annot);
   }
 
   void Figure::RTMessage(std::string msg)
   {
-    tactor->SetText(4,msg.c_str());
-    tactor->Modified();
+    annot->SetText(4,msg.c_str());
+    annot->Modified();
   }
       
   

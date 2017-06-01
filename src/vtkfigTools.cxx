@@ -8,20 +8,6 @@ namespace vtkfig
 {
 
 
-  void SendRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab)
-  {
-    communicator->SendInt(rgbtab.size());
-    communicator->SendFloatBuffer((float*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(float));
-  }
-  
-  void ReceiveRGBTable(vtkSmartPointer<Communicator> communicator, RGBTable & rgbtab)
-  {
-    int tabsize;
-    communicator->ReceiveInt(tabsize);
-    rgbtab.resize(tabsize);
-    communicator->ReceiveFloatBuffer((float*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(float));
-  }
-
 
   size_t NSpin()
   {

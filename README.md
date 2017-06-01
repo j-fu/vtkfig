@@ -1,36 +1,50 @@
-vtkfig V0.10
+vtkfig V0.11
 ============
 
-The intention of  vtkfig is to provide a C++  graphics library with an API 
-that is not more complicated than that of matplotlib
-and which uses [vtk](http://vtk.org) for rendering.
+The intention of  vtkfig is to provide a C++  graphics library with an
+API that is as easy to use as that of python/matplotlib and which uses
+[vtk](http://vtk.org) for rendering.
 
 ## Features
 
-- Mainly C++11
-- Separate rendering thread allowing for easy handling of changing data  handeled by the vtkfig::Frame class
+- Duck typing based interface for data allows flexible use
+
+- Separate  rendering thread  allowing for  handling of  changing data
+  managed by the vtkfig::Frame class
+
 - Standard views for 2D, 3D, grid
-- Extensible by implementing derived classes from vtkfig::Figure containing standard vtk rendering pipelines
+
+- Extensible by implementing derived classes from vtkfig::Figure using
+  vtk rendering pipelines
+
 - Experimental client-server communication for remote execution
+
+- 3-Clause BSD License ([same as vtk](http://www.vtk.org/licensing/)
 
 ## News
 
+- v0.11
+  - vtkfig::DataSet now unifies unstructured and rectilinear grid data
+  - some work on documentation
+
 - v0.10 quiver 2D now scales right
-   - arrow scale edit
-   - reshuffle: transform data instead of model view transform, otherwise
-     quiver wouldn't scale right in anisotropic cases
+  - arrow scale edit
+  - reshuffle architecture: transform data instead of model view transform, otherwise
+    quiver wouldn't scale right in anisotropic cases
 
 - v0.9: plane/isolevel edit
 
 - v0.8: 
-   - architecture reshuffle: separate data from figures
-   - environment variable VTKFIG_MULTITHREADED controls single/multithread
-     rendering. On the mac 0 is the default...
+  - architecture reshuffle: separate data from figures
+  - environment variable VTKFIG_MULTITHREADED controls single/multithread
+    rendering. On the mac 0 is the default...
  
 ## Build
 
-Prerequisite is an installed version of VTK, and C++11 compiler. 
-Build uses the standard CMake way. E.g. to configure with clang, use
+Prerequisite is  an C++11  compiler and an  installed version  of VTK.
+Nothing of  this code has  been tested with  versions of VTK  prior to
+7.0.  Build uses the standard CMake way. E.g. to configure with clang,
+use
 
 ```` 
 $ mkdir build
@@ -40,8 +54,8 @@ $ make
 
 ````
 
-Versions of CMake pre 3.02 do not do automatic configuration for C++11, so in this case
-you need to issue
+Versions  of CMake  pre 3.02  do  not do  automatic configuration  for
+C++11, so in this case you need to issue
 
 ```` 
 $ CXX=clang++ CXXFLAG=-std=c++11 cmake ..
@@ -51,74 +65,16 @@ $ CXX=clang++ CXXFLAG=-std=c++11 cmake ..
 
 You will find the compiled examples in build/examples.
 
-## Server-client  communication
-
-In build/src/vtkfig-exec is the  experimental driver for server-client
-communication.  The examples ``example-xyplot`` and ``example-surf2d``
-are equipped  with this  feature.  Here  is how to  use it  (we assume
-working from  the ``build``  directory, ``port``  is an  optional port
-number, ``vtkfigpath`` is  the path to the vtkfig  source directory on
-the remote host ):
-
-   - Run example locally
-
-     ````
-     $ examples/example-surf2d
-     ````
-
-   - Run example in client server mode on localhost
-
-     ````
-     $ src/vtkfig-exec -p port  localhost examples/example-surf2d
-     ````
-
-
-   - Run example on remote host ``remote``
-
-     ````
-     $ src/vtkfig-exec -p port -ssh  remote vtkfigpath/build/examples/example-surf2d
-     ````
-
-   - Run example on remote host ``remote`` with ssh tunnel via gateway  ``gate``
-
-     ````
-     $ src/vtkfig-exec -p port -via gate -ssh  remote vtkfigpath/build/examples/example-surf2d
-     ````
-
-Initial experiments (for example-surf2d) show the following perfomance comparison
-
-| location  render path  system  card/connection       frame rate |
-|-----------------------------------------------------------------|
-| Local     direct       laptop  NVIDIA Quadro K610    43 fps     |
-| Local     server       laptop  NVIDIA Quadro K610    40 fps     |
-| Local     direct       minipc  Intel Skylake DT GT2  20 fps     |
-| Local     server       minipc  Intel Skylake DT GT2  20 fps     |
-|                                                                 |
-| Remote    server       laptop  Ethernet/tunnel       22 fps     |
-| Remote    server       laptop  Ethernet              20 fps     |
-| Remote    server       minipc  Ethernet/tunnel       20 fps     |
-| Remote    server       minipc  Ethernet              12 fps     |
-| Remote    vnc/direct   laptop  Ethernet/tunnel       8 fps      |
-| Remote    vnc/direct   laptop  Ethernet              8 fps      |
-| Remote    vnc/direct   minipc  Ethernet/tunnel       8 fps      |
-| Remote    vnc/direct   minipc  Ethernet              8 fps      |
-| Remote    vnc/direct   laptop  WLAN/tunnel           8 fps      |
-| Remote    vnc/direct   laptop  WLAN                  8 fps      |
-| Remote    server       laptop  WLAN/tunnel           6 fps      |
-| Remote    server       laptop  WLAN                  4 fps      |
 
 ## Contributors
 
-
-A  preliminary  conclusion  tells  us   that  the  perfomance  of  the
-client-server  render  path  strongly  depends on  the  speed  of  the
-physical  connection.   Only  with  ethernet there  is  a  significant
-advantage  over  standard  vnc   (where  software  rendering  ist  the
-default).    A   solution   for   remote   rendering   might   be
-TurboVNC+VirtualGL on servers with GPUs.
-
-vtkfig started from [matplot](http://www.csc.kth.se/~dag/matplot_20091021.tar.gz) by Dag Lindbo found on [http://na-wiki.csc.kth.se/mediawiki/index.php/Mat_plot_vtk](http://na-wiki.csc.kth.se/mediawiki/index.php/Mat_plot_vtk).
+vtkfig                           started                          from
+[matplot](http://www.csc.kth.se/~dag/matplot_20091021.tar.gz)  by  Dag
+Lindbo                             found                            on
+[http://na-wiki.csc.kth.se/mediawiki/index.php/Mat_plot_vtk](http://na-wiki.csc.kth.se/mediawiki/index.php/Mat_plot_vtk).
 
 
-Numerous online  postings by  community members  and the  VTK examples
-were extremely helpful for setting up this code.
+Numerous online postings  by community members, the  VTK examples, the
+doxygen  documentation  of VTK  and  sometimes  its source  code  were
+helpful for setting up this code.
+

@@ -1,3 +1,10 @@
+///
+///   \example   examples/example-gridview.cxx
+///
+/// Multiple frames. 
+///
+/// Here the problem is that we get interaction only in the first frame...
+///
 #include <chrono>
 #include "vtkfigFrame.h"
 #include "vtkfigDataSet.h"

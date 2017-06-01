@@ -1,3 +1,9 @@
+///
+///   \example   examples/example-custom.cxx
+///
+///   Custom vtk pipeline with vtkfig::Figure
+///
+
 #include <chrono>
 #include "vtkStructuredGrid.h"
 #include "vtkPointData.h"

@@ -19,7 +19,7 @@ Use vtkfigXYPlot instead...
 
   }
 
-  void ChartXY::RTBuild(vtkSmartPointer<vtkRenderWindow> window,
+  void ChartXY::RTBuildVTKPipeline(vtkSmartPointer<vtkRenderWindow> window,
                         vtkSmartPointer<vtkRenderWindowInteractor> interactor,
                         vtkSmartPointer<vtkRenderer> renderer)
   {

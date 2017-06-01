@@ -21,6 +21,7 @@
 
 namespace vtkfig
 {
+  /// RGB point for color tables
   struct RGBPoint { double x,r,g,b;};
 
   typedef std::vector<RGBPoint> RGBTable;

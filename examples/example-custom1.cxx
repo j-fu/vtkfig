@@ -1,3 +1,9 @@
+///
+///   \example   examples/example-custom1.cxx
+///
+///   Custom vtk pipeline without vtkfit stuff
+///
+
 #include <chrono>
 #include "vtkStructuredGrid.h"
 #include "vtkPointData.h"
@@ -19,6 +25,7 @@ inline double G(double x,double y, double t)
   
   return exp(-(x*x+y*y))*sin(t+x)*cos(y-t);
 }
+
 
   class TimerCallback : public vtkCommand
   {

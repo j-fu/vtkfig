@@ -19,18 +19,23 @@
 namespace vtkfig
 {
   
+  /// 
+  /// Grid visualization.
+  /// 
+  /// This uses only the grid data from the DataSet. Optionally,
+  /// the "cellregions" are used.
   class GridView: public Figure
   {
-    
   public:
     GridView();
     static std::shared_ptr<GridView> New() { return std::make_shared<GridView>();}
-    virtual std::string SubClassName() {return std::string("GridView");}
     
     
   private:
+    friend class Client;
+    virtual std::string SubClassName() {return std::string("GridView");}
     
-    virtual void RTBuild(
+    virtual void RTBuildVTKPipeline(
       vtkSmartPointer<vtkRenderWindow> window,
       vtkSmartPointer<vtkRenderWindowInteractor> interactor,
       vtkSmartPointer<vtkRenderer> renderer);
@@ -49,13 +54,13 @@ namespace vtkfig
     
     
     template <class GRIDFUNC, class FILTER>
-      void RTBuild2D(vtkSmartPointer<vtkRenderWindow> window,
+      void RTBuildVTKPipeline2D(vtkSmartPointer<vtkRenderWindow> window,
                      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
                      vtkSmartPointer<vtkRenderer> renderer,
                      vtkSmartPointer<GRIDFUNC> gridfunc);
     
     template <class GRIDFUNC, class FILTER>
-      void RTBuild3D(vtkSmartPointer<vtkRenderWindow> window,
+      void RTBuildVTKPipeline3D(vtkSmartPointer<vtkRenderWindow> window,
                      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
                      vtkSmartPointer<vtkRenderer> renderer,
                      vtkSmartPointer<GRIDFUNC> gridfunc);

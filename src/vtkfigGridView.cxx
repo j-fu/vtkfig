@@ -43,7 +43,7 @@ namespace vtkfig
   /// 2D Filter
 
   template <class DATA, class FILTER>
-  void GridView::RTBuild2D(
+  void GridView::RTBuildVTKPipeline2D(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer,
@@ -163,7 +163,7 @@ namespace vtkfig
   /// 3D Filter
 
   template <class DATA,class FILTER>
-  void GridView::RTBuild3D(
+  void GridView::RTBuildVTKPipeline3D(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer,
@@ -292,7 +292,7 @@ namespace vtkfig
   
   /////////////////////////////////////////////////////////////////////
   /// Generic access to filter
-  void  GridView::RTBuild(
+  void  GridView::RTBuildVTKPipeline(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer)
@@ -304,9 +304,9 @@ namespace vtkfig
     {
       
       if (state.spacedim==2)
-        this->RTBuild2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,udata);
+        this->RTBuildVTKPipeline2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,udata);
       else
-        this->RTBuild3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,udata); 
+        this->RTBuildVTKPipeline3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,udata); 
       return;
     }
 
@@ -314,9 +314,9 @@ namespace vtkfig
     if (rdata)
     {
       if (state.spacedim==2)
-        this->RTBuild2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,rdata);
+        this->RTBuildVTKPipeline2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,rdata);
       else
-        this->RTBuild3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,rdata);
+        this->RTBuildVTKPipeline3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,rdata);
       return;
     }
   }

@@ -1,3 +1,4 @@
+/// \file vtkfig-exec.cxx
 ///
 /// Client code for server-client interaction
 /// 
@@ -16,11 +17,11 @@
 
 
 
-/**
+/*
 Idea: 
 Figure gets 2 new methods: ClientMTReceive and ServerRTSend
 
-Istead of RTBuild, render thread calls RTSend.
+Istead of RTBuildVTKPipeline, render thread calls RTSend.
 
 MTRecieve then is called on the client side in the main thread.
 
@@ -50,10 +51,13 @@ Aim:
 
 namespace vtkfig
 {
-  
+
+  ///
+  /// Client side visualization setup
+  ///
   class Client
   {
-
+    
     int debug_level=0;
     int port=35000;
     std::string remotecmd;
@@ -213,6 +217,7 @@ namespace vtkfig
       
     }
 
+    /// Client receive-and-render loop
     int spin()
     {
       while (1)
@@ -374,7 +379,7 @@ namespace vtkfig
         {
           std::string fname;
           communicator->ReceiveString(fname);
-          frame->Dump(fname);
+          frame->WritePNG(fname);
         }
         break;
 

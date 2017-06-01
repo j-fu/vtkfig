@@ -1,3 +1,10 @@
+///
+///   \example   examples/example-gridview.cxx
+///
+///  2D Grid visualization
+///
+
+
 #include <chrono>
 #include <vtkMath.h>
 #include "vtkfigFrame.h"

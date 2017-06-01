@@ -1,4 +1,4 @@
-# SEE https://cmake.org/Wiki/CMake/Tutorials/How_to_create_a_ProjectConfig.cmake_file
+# See https://cmake.org/Wiki/CMake/Tutorials/How_to_create_a_ProjectConfig.cmake_file
 # see also https://github.com/forexample/package-example
 # https://cmake.org/Wiki/CMake/Tutorials/Exporting_and_Importing_Targets
 
@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.0)
 PROJECT(VTKFIG C CXX)
 
 set(VTKFIG_MAJOR_VERSION 0)
-set(VTKFIG_MINOR_VERSION 10)
+set(VTKFIG_MINOR_VERSION 11)
 set(VTKFIG_PATCH_VERSION 0)
 set(VTKFIG_VERSION    ${VTKFIG_MAJOR_VERSION}.${VTKFIG_MINOR_VERSION}.${VTKFIG_PATCH_VERSION})
 

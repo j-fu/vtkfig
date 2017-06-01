@@ -15,7 +15,7 @@
 namespace vtkfig
 {
 
-  ///////////////////////////////////////////
+  /// Experimental class for 2D elevation plot - don't use
   class Surf2D: public Figure
     {
     public:
@@ -69,7 +69,7 @@ namespace vtkfig
 
     private:
       
-      virtual void RTBuild(
+      virtual void RTBuildVTKPipeline(
         vtkSmartPointer<vtkRenderWindow> window,
         vtkSmartPointer<vtkRenderWindowInteractor> interactor,
         vtkSmartPointer<vtkRenderer> renderer);

@@ -21,8 +21,10 @@ namespace vtkfig
   class MainThread;
 
   ///
-  /// Provide Window+interactor+renderers 
+  /// Provide a framwork wrapping window+interactor+renderers  from vtk
   /// 
+  /// A frame contains a grid of subframes. Each subframe can contain
+  /// several overlapping figures.
   class Frame
   {
   public:
@@ -43,6 +45,15 @@ namespace vtkfig
     ///
     Frame(): Frame(1,1){};
     
+    
+    ///
+    /// Create frame with multiple subframes 
+    ///
+    /// Viewports are arranged in a rectagular scheme
+    ///
+    /// \param nvpx  number of viewport columns
+    /// \param nvpx  number of viewport rows
+    /// \return Smart pointer to frame object
     static std::shared_ptr<Frame> New(int nvpx, int nvpy) 
     {
       return std::make_shared<Frame>(nvpx,nvpy);
@@ -55,125 +66,275 @@ namespace vtkfig
 
     ~Frame();
     
-    void Dump(std::string fname);
-        
+    ///
+    /// Write png image of frame content.
+    /// 
+    /// \param fname Image file name
+    void WritePNG(std::string fname);
+
+
+    /// 
+    /// Add figure at position (0,0)
+    /// 
     void AddFigure(Figure *figure) {AddFigure(figure, 0,0);};
+
+    /// 
+    /// Add figure at position (0,0)
+    /// 
     void AddFigure(Figure &figure) {AddFigure(&figure, 0,0);};
+
+    /// 
+    /// Add figure at position (0,0)
+    /// 
     void AddFigure(std::shared_ptr<Figure> figure) {AddFigure(figure.get(),0,0);}
 
+
+
+    /// 
+    /// Add figure at position in frame
+    /// 
+    /// \param figure Figure to be added
+    /// \param ivpx Column in viewport grid
+    /// \param ivpy Row in viewport grid
+    ///
     void AddFigure(Figure *figure, int ivpx, int ivpy);
+
+    /// 
+    /// Add figure at position in frame
+    /// 
+    /// \param figure Figure to be added
+    /// \param ivpx Column in viewport grid
+    /// \param ivpy Row in viewport grid
+    ///
     void AddFigure(Figure &figure, int ivpx, int ivpy) {AddFigure(&figure,ivpx, ivpy);};
+
+    /// 
+    /// Add figure at position in frame
+    /// 
+    /// \param figure Figure to be added
+    /// \param ivpx Column in viewport grid
+    /// \param ivpy Row in viewport grid
+    ///
     void AddFigure(std::shared_ptr<Figure> figure, int ivpx, int ivpy){AddFigure(figure.get(),ivpx,ivpy);};
 
+    /// 
+    /// Add figure at position in frame
+    /// 
+    /// \param figure Figure to be added
+    /// \param ipos Number of position in frame grid
+    ///
     void AddFigure(Figure *figure, int ipos);
+
+    /// 
+    /// Add figure at position in frame
+    /// 
+    /// \param figure Figure to be added
+    /// \param ipos Number of position in frame grid
+    ///
     void AddFigure(Figure &figure, int ipos) {AddFigure(&figure,ipos);};
+
+    /// 
+    /// Add figure at position in frame
+    /// 
+    /// \param figure Figure to be added
+    /// \param ipos Number of position in frame grid
+    ///
     void AddFigure(std::shared_ptr<Figure> figure, int ipos){AddFigure(figure.get(),ipos);};
 
-
+    /// Link camera to other camera
+    ///
+    /// \param ivpx  x  coordinate of viewport
+    /// \param ivpx  y  coordinate of viewport
+    /// \param frame other frame to be linked with 
+    /// \param livpx  x  coordinate of viewport to be linked with
+    /// \param livpx  y  coordinate of viewport to be linked with
     void LinkCamera(int ivpx, int ivpy,Frame& frame, int livpx, int livpy);
-    void LinkCamera(Frame& frame)  {LinkCamera(0,0,frame,0,0);}
+
+    /// Link camera to other camera
+    ///
+    /// \param ivpx  x  coordinate of viewport
+    /// \param ivpx  y  coordinate of viewport
+    /// \param frame other frame to be linked with 
+    /// \param livpx  x  coordinate of viewport to be linked with
+    /// \param livpx  y  coordinate of viewport to be linked with
     void LinkCamera(int ivpx, int ivpy,std::shared_ptr<Frame> frame, int livpx, int livpy) {LinkCamera(ivpx,ivpy,*frame,livpx,livpy);}
+
+    /// Link camera to other camera
+    ///
+    /// \param ivpx  x  coordinate of viewport
+    /// \param ivpx  y  coordinate of viewport
+    /// \param frame other frame to be linked with 
+    /// \param livpx  x  coordinate of viewport to be linked with
+    /// \param livpx  y  coordinate of viewport to be linked with
     void LinkCamera(int ivpx, int ivpy, Frame*frame, int livpx, int livpy) {LinkCamera(ivpx,ivpy,*frame,livpx,livpy);}
+
+    /// Link camera to other frame at default positions
+    ///
+    /// \param frame other frame to be linked with 
     void LinkCamera(std::shared_ptr<Frame> frame)  {LinkCamera(0,0,*frame,0,0);}
 
+    /// Link camera to other frame at default positions
+    ///
+    /// \param frame other frame to be linked with 
+    void LinkCamera(Frame& frame)  {LinkCamera(0,0,frame,0,0);}
 
+    /// Set frame size in pixels
+    ///
+    /// \param x  Pixels in x direction
+    /// \param y  Pixels in y direction
     void SetSize(int x, int y);
 
+    ///
+    /// Set window title
+    /// 
+    /// This title will show up in the title bar of the window.
+    /// 
+    /// \param title Title
     void SetWindowTitle(const std::string title);
 
+    ///
+    ///  Set Frame title
+    /// 
+    /// This title will show up within the frame
+    ///
+    ///  \param title Title
     void SetFrameTitle(const std::string title);
 
+    ///
+    /// Set frame position on screen
+    ///
+    /// \param x  x origin in pixels
+    /// \param y  y origin in pixels
     void SetPosition(int x, int y);
-
-    std::vector<Figure*>figures;
     
+    ///
+    /// Show frame content and continue 
+    ///
+    /// Without interaction, this triggers a non-blocking run
+    /// of the event loop. It can be blocked however by the space key.
+    ///
     void Show();
 
+    ///
+    /// Show frame content and wait for interaction. 
+    ///
+    /// This performs a blocking run
+    /// of the event loop. It can be unblocked however by the space key.
+    ///
     void Interact();
 
 
-    int framenum=-1;
-
-
-
+    ///
+    ///  Help string printed when pressing "h"/"?"
+    ///
     static constexpr const char* keyboard_help=
 R"(
 --------------------------------------
-   Key     Action
+   Key    Realm    Action
 
-    Space  Interrupt/continue calculation
-   Escape  Finish plane/level editing
-   Return  Store edited plane/level value
-BackSpace  Delete last plane/level value
-        a  Start arrow scale editing
-        l  Start isolevel editing
-        L  Generate 11 equally spaced isolevels.
-        i  Toggle isosurface view (3D only)
-        r  Reset camera
-        w  Toggle wireframe mode 
-        x  Start x plane editing (3D only)
-        y  Start y plane editing (3D only)
-        z  Start z plane editing (3D only)
+    Space Frame    Interrupt/continue calculation
+   Escape Figure   Finish plane/level editing
+   Return Figure   Store edited plane/level value
+BackSpace Figure   Delete last plane/level value
+        a Figure   Start arrow scale editing
+        h Frame    This help
+        l Figure   Start isolevel editing
+        L Figure   Generate 11 equally spaced isolevels.
+        i Figure   Toggle isosurface view (3D only)
+        r Figure   Reset camera
+        w Figure   Toggle wireframe mode 
+        x Figure   Start x plane editing (3D only)
+        y Figure   Start y plane editing (3D only)
+        z Figure   Start z plane editing (3D only)
+        ? Frame    This help
 
 In edit mode, left mouse, as well as
 cursor keys move value of plane/isolevel.
+Figures must be first clicked on before editing works.
 --------------------------------------
 )";
 
+  private:
+
+    friend class MainThread;
+    friend class MyInteractorStyle;
+    friend class Client;
+    friend class TimerCallback;
+
+
+    /// Number of this frame in global frame list
+    int number_in_frame_list=-1;
+
+    /// List of all figures in frame
+    std::vector<Figure*>figures;
+
+    /// Number of viewports in x direction
     const int nvpx;
 
+    /// Number of viewports in y direction
     const int nvpy;
 
-
-    /// File name to be passed 
-    std::string fname; 
-
-    /// window sizes
-    int win_x=400;
-    int win_y=400;
-    
-    int pos_x=0;
-    int pos_y=0;
-
-    std::string wintitle;
-    std::string frametitle;
-
-    int camlinkthisframepos;
-    int camlinkframepos;
-    int camlinkframenum;
-
-    vtkSmartPointer<vtkCornerAnnotation> title_actor;
-    
-    /// 
+    /// Data structure decribing subframe
+    /// Each subframe can hold several figures
     struct SubFrame
     {
       SubFrame(){};
+
       SubFrame(const double vp[4]):viewport{vp[0],vp[1],vp[2],vp[3]}{};
+      
+      /// Default camera data
       double default_camera_focal_point[3]={0.65,0.5,0};
       double default_camera_position[3]={0.65,0.5,10};
       double default_camera_zoom={1};
       double default_camera_view_angle={15};
+
+      /// vtkRenderer
       vtkSmartPointer<vtkRenderer>    renderer;
+
+      /// Viewport within frame
       double viewport[4]={0,0,1,1};
     };
-
-    MainThread *mainthread;
     
-    void SendCommand(std::string source, Communicator::Command cmd);
-    /// Each subframe can hold several figures
-
+    /// List of subframes
     std::vector<SubFrame> subframes;
 
-    vtkSmartPointer<vtkRenderWindow> window;
-    
+    /// Subframe position algebra
     int pos(const int ivpx, const int ivpy) { return (nvpy-ivpy-1)*nvpx+ivpx;}
     int ivpx(const int pos) { return pos%nvpx;}
     int ivpy(const int pos) { return nvpy-pos/nvpx-1;}
 
-    friend class  InteractorStyleTrackballCamera;
-    friend class  TimerCallback;
+    /// Parameters to be passed between threads
+    struct
+    {
+      std::string filename; 
+      std::string wintitle;
+      std::string frametitle;
+      
+      /// window sizes
+      int winsize_x=400;
+      int winsize_y=400;
+      
+      int winposition_x=0;
+      int winposition_y=0;
 
 
+      int camlinkthisframepos;
+      int camlinkframepos;
+      int camlinkframenum;
+
+    } parameter;
+
+    /// The spinning main thread
+    MainThread *mainthread;
+    
+    /// Blocking send of commands to main thread
+    void SendCommand(std::string source, Communicator::Command cmd);
+    
+    /// Window vontaining frame
+    vtkSmartPointer<vtkRenderWindow> window;
+    
+    /// Actor for frame title annotation
+    vtkSmartPointer<vtkCornerAnnotation> title_actor;
   };
 }
 

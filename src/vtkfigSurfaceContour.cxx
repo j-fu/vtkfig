@@ -42,13 +42,14 @@ namespace vtkfig
   /// 2D Filter
 
   template <class DATA, class FILTER>
-  void SurfaceContour::RTBuild2D(
+  void SurfaceContour::RTBuildVTKPipeline2D(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer,
     vtkSmartPointer<DATA> gridfunc)
   {
-    gridfunc->GetBounds(bounds);
+    auto transform=CalcTransform(gridfunc);
+
     renderer->GetActiveCamera()->SetParallelProjection(1);
 
     auto values=vtkFloatArray::SafeDownCast(gridfunc->GetPointData()->GetAbstractArray(dataname.c_str()));
@@ -68,7 +69,6 @@ namespace vtkfig
     geometry->SetInputConnection(scalar->GetOutputPort());
     
 
-    auto transform=CalcTransform(gridfunc);
     auto transgeometry=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
     transgeometry->SetInputConnection(geometry->GetOutputPort());
     transgeometry->SetTransform(transform);
@@ -117,7 +117,7 @@ namespace vtkfig
     if (true)
     {
       auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
-      axes->SetRanges(bounds);
+      axes->SetRanges(data_bounds);
       axes->SetUseRanges(1);
       axes->SetInputConnection(transgeometry->GetOutputPort());
       axes->GetProperty()->SetColor(0, 0, 0);
@@ -152,16 +152,13 @@ namespace vtkfig
   /// 3D Filter
 
   template <class DATA,class FILTER>
-  void SurfaceContour::RTBuild3D(
+  void SurfaceContour::RTBuildVTKPipeline3D(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer,
     vtkSmartPointer<DATA> gridfunc)
   {
 
-
-    gridfunc->GetBounds(bounds);
-    gridfunc->GetCenter(center);
     Figure::CalcTransform(gridfunc);
 
     auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
@@ -182,9 +179,9 @@ namespace vtkfig
 
 
 
-    planeX->SetOrigin(tcenter);
-    planeY->SetOrigin(tcenter);
-    planeZ->SetOrigin(tcenter);
+    planeX->SetOrigin(trans_center);
+    planeY->SetOrigin(trans_center);
+    planeZ->SetOrigin(trans_center);
     
     planecutX->SetInputConnection(transgeometry->GetOutputPort());
     planecutX->SetCutFunction(planeX);
@@ -310,7 +307,7 @@ namespace vtkfig
     if (true)
     {
       auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
-      axes->SetRanges(bounds);
+      axes->SetRanges(data_bounds);
       axes->SetUseRanges(1);
       axes->SetInputConnection(transgeometry->GetOutputPort());
       axes->GetProperty()->SetColor(0, 0, 0);
@@ -343,7 +340,7 @@ namespace vtkfig
   
   /////////////////////////////////////////////////////////////////////
   /// Generic access to filter
-  void  SurfaceContour::RTBuild(
+  void  SurfaceContour::RTBuildVTKPipeline(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer)
@@ -355,9 +352,9 @@ namespace vtkfig
       auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
       
       if (state.spacedim==2)
-        this->RTBuild2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,griddata);
+        this->RTBuildVTKPipeline2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,griddata);
       else
-        this->RTBuild3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,griddata); 
+        this->RTBuildVTKPipeline3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,griddata); 
     }
     else if (state.datatype==DataSet::DataType::RectilinearGrid)
     {
@@ -365,9 +362,9 @@ namespace vtkfig
       
       
       if (state.spacedim==2)
-        this->RTBuild2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
+        this->RTBuildVTKPipeline2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
       else
-        this->RTBuild3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
+        this->RTBuildVTKPipeline3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
     }
   }
   

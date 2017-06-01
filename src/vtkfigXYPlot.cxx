@@ -15,7 +15,7 @@ namespace vtkfig
     LineType("-");
   }
 
-  void XYPlot::RTBuild(vtkSmartPointer<vtkRenderWindow> window,
+  void XYPlot::RTBuildVTKPipeline(vtkSmartPointer<vtkRenderWindow> window,
                        vtkSmartPointer<vtkRenderWindowInteractor> interactor,
                        vtkSmartPointer<vtkRenderer> renderer)
   {

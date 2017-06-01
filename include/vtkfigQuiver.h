@@ -9,7 +9,9 @@ namespace vtkfig
 {
 
 
-  ///////////////////////////////////////////
+  ///
+  /// Experimental quiver view of vector fields
+  ///
   class Quiver: public Figure
     {
     public:
@@ -19,13 +21,13 @@ namespace vtkfig
 
     private:
      
-      virtual void RTBuild(
+      virtual void RTBuildVTKPipeline(
         vtkSmartPointer<vtkRenderWindow> window,
         vtkSmartPointer<vtkRenderWindowInteractor> interactor,
         vtkSmartPointer<vtkRenderer> renderer);
       
       template <class DATA, class FILTER>
-        void  RTBuild2D(
+        void  RTBuildVTKPipeline2D(
           vtkSmartPointer<vtkRenderWindow> window,
           vtkSmartPointer<vtkRenderWindowInteractor> interactor,
           vtkSmartPointer<vtkRenderer> renderer,

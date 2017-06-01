@@ -1,3 +1,9 @@
+///
+///   \example   examples/example-chartxy.cxx
+///
+///   Test of chartxy. Does not work properly.
+///
+
 #include <cstdio>
 #include "vtkfigFrame.h"
 #include "vtkfigChartXY.h"
@@ -65,7 +71,7 @@ int main()
     frame->Show();
     
     if (ii==3) 
-        frame->Dump("example-chartxy.png");
+        frame->WritePNG("example-chartxy.png");
 
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;
     double i1=ii;

@@ -1,3 +1,8 @@
+///
+///   \example   examples/example-multifig.cxx
+///
+/// Multiple figures in one frame
+///
 #include <chrono>
 #include "vtkfigFrame.h"
 #include "vtkfigDataSet.h"
@@ -119,7 +124,7 @@ int main(void)
     frame->Show();
 
     if (ii==3) 
-      frame->Dump("example-multifig.png");
+      frame->WritePNG("example-multifig.png");
 
     t+=dt;
     auto t1=std::chrono::system_clock::now();
