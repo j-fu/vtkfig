@@ -3,10 +3,9 @@ Installation
 
 ## Installation
 
-Prerequisite  is a  C++11 compiler  and an  installed version  of VTK.
-Nothing of this code has been tested with versions of VTK prior to
-7.0.  Build uses the standard CMake way. E.g. to configure with clang,
-use
+Prerequisite is a C++11 compiler and  an installed version of VTK.  So
+far, the codee been  tested with VTK 6.3 and VTK  7.0.  Build uses the
+standard CMake way. E.g. to configure with clang, use
 
 ```` 
 $ mkdir build
