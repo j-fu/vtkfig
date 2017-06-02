@@ -61,6 +61,19 @@ else()
 endif()
 
 configure_file(cmake/config.h.in   "${PROJECT_BINARY_DIR}/config.h" @ONLY)
+
+find_package(Doxygen)
+if (DOXYGEN_FOUND)
+  configure_file(${PROJECT_SOURCE_DIR}/doc/Doxyfile.in   "${PROJECT_BINARY_DIR}/Doxyfile" @ONLY)
+  # Somehow, doxygen seems to not recognise .md files properly from other
+  # than their directory
+  add_custom_target( doc_doxygen ALL
+    COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc/
+    COMMENT "Generating API documentation with Doxygen"
+    VERBATIM )
+endif()
+
 #include_directories(${PROJECT_BINARY_DIR})
 
 ########################################################
@@ -148,5 +161,5 @@ install(FILES
 # Install the export set for use with the install-tree
 install(EXPORT ${VTKFIG_EXPORT_NAME} DESTINATION  "${INSTALL_CMAKE_DIR}" COMPONENT dev)
 
-# .. an define an uninstall target.
+# .. and define an uninstall target.
 add_custom_target(uninstall cat ${PROJECT_BINARY_DIR}/install_manifest.txt | xargs rm -fv)
