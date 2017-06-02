@@ -1,7 +1,7 @@
 ///
 ///   \example   examples/example-custom1.cxx
 ///
-///   Custom vtk pipeline without vtkfit stuff
+///   Custom vtk pipeline without vtkfig stuff
 ///
 
 #include <chrono>
@@ -165,6 +165,7 @@ vtkfigFrame and vtkfigFigure base class.
   auto outline = vtkSmartPointer<vtkActor>::New();
   outline->SetMapper(outlineMapper);
   outline->GetProperty()->SetColor(0, 0, 0);
+
 
   auto window=vtkSmartPointer<vtkRenderWindow>::New();
   auto renderer=vtkSmartPointer<vtkRenderer>::New();

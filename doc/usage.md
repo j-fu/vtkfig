@@ -68,11 +68,12 @@ vtkfig::Frame::KeyboardHelp.
 ## Environment variables
 
 | Variable             |        Default | Semantics                                         |
-|----------------------|----------------|---------------------------------------------------|
+|----------------------+----------------+---------------------------------------------------|
 | VTKFIG_PORT_NUMBER   |          35000 | Port number passed from vtkfig-exec to client     |
 | VTKFIG_WAIT_SECONDS  |             10 | Waiting time before abandoning connection attempt |
 | VTKFIG_DEBUG         |              0 | Toggle debug output                               |
 | VTKFIG_MULTITHREADED | Mac:0, Linux:1 | Render from extra thread                          |
+| VTKFIG_DOUBLEBUFFER  |              1 | Use double buffering.                             |
 
 
 

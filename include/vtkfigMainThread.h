@@ -96,6 +96,10 @@ namespace vtkfig
       /// std::thread which runs rendering resp. communication
       std::shared_ptr<std::thread> thread;
 
+
+      /// Use of double buffering
+      bool double_buffering=true;
+
       /// Timer interval for timer callback
       double timer_interval=10;
 

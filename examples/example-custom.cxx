@@ -147,7 +147,6 @@ vtkfigFrame and vtkfigFigure base class.
   figure->RTAddActor(surfplot);
   figure->RTAddActor(outline);
   figure->RTAddActor2D(vtkfig::BuildColorBar(mapper));
-  
   frame->AddFigure(figure);
   
   

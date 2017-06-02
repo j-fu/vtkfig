@@ -52,6 +52,8 @@ namespace vtkfig
       char* wtime_string=getenv("VTKFIG_WAIT_SECONDS");
       char *debug_string=getenv("VTKFIG_DEBUG");
       char *multi_string=getenv("VTKFIG_MULTITHREADED");
+      char *dbuff_string=getenv("VTKFIG_DOUBLEBUFFER");
+
 
 
       if (debug_string!=0)
@@ -76,6 +78,9 @@ namespace vtkfig
       }
 #endif
 
+      if (dbuff_string!=0)
+        this->double_buffering=atoi(dbuff_string);
+      
 
       if (wtime_string!=0)
         wtime=atoi(wtime_string);
@@ -508,6 +513,9 @@ namespace vtkfig
       }
     };
   
+
+
+    ///////////////////////////////////////////////////////////////////
     /// Timer callback handling communication with render thread
     class MyTimerCallback : public vtkCommand
     {
@@ -528,6 +536,7 @@ namespace vtkfig
         )
       {
       
+
         if (this->mainthread->communication_blocked) return;
       
         if (
@@ -535,10 +544,12 @@ namespace vtkfig
           && this->mainthread->cmd!=Communicator::Command::Empty  // Check if command has been given
           )
         {        
+
+
           // Lock mutex
           if (this->mainthread->running_multithreaded)
             std::unique_lock<std::mutex> lock(this->mainthread->mutex);
-        
+
           // Command dispatch
           switch(mainthread->cmd)
           {
@@ -604,7 +615,7 @@ namespace vtkfig
 
             for (auto & framepair: mainthread->framemap)
               framepair.second->window->Render();
-//          this->Interactor->Render();
+            //this->Interactor->Render();
           }
           break;
         
@@ -713,7 +724,12 @@ namespace vtkfig
     {
       auto frame=mainthread->framemap[iframe];
       frame->window = vtkSmartPointer<vtkRenderWindow>::New();
-      frame->window->DoubleBufferOff();
+
+      if (mainthread->double_buffering)
+        frame->window->DoubleBufferOn();
+      else
+        frame->window->DoubleBufferOff();
+
       frame->window->SetSize(frame->parameter.winsize_x, frame->parameter.winsize_y);
       frame->window->SetPosition(frame->parameter.winposition_x, frame->parameter.winposition_y);
 
@@ -745,7 +761,6 @@ namespace vtkfig
 
     }
 
-
     void MainThread::PrepareRenderThread(MainThread* mainthread)
     {
       RTAddFrame(mainthread,0);
@@ -772,8 +787,8 @@ namespace vtkfig
     {
 
       MainThread::PrepareRenderThread(mainthread);
-  
       mainthread->running_multithreaded=true;
+
       mainthread->interactor->Start();
       mainthread->running_multithreaded=false;
       mainthread->condition_variable.notify_all();
