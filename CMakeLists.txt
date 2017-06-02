@@ -35,8 +35,9 @@ find_package(Threads REQUIRED)
 find_package(VTK REQUIRED)
 
 
-#message(STATUS "VTK_USE_FILE= ${VTK_USE_FILE}")
 include(${VTK_USE_FILE})
+get_filename_component(VTK_CMAKE_DIR "${VTK_USE_FILE}" PATH)
+message(STATUS "VTK Configuration:" ${VTK_CMAKE_DIR})
 
 # Add include directories needed to use VTK.
 include_directories(${VTK_INCLUDE_DIRS})
