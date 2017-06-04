@@ -2,6 +2,7 @@
 #define VTKFIG_DATASET_H
 
 #include <memory>
+#include <map>
 
 #include "vtkSmartPointer.h"
 #include "vtkUnstructuredGrid.h"
@@ -77,6 +78,59 @@ namespace vtkfig
     template<typename V>
       void SetRectilinearGrid(const V &x, const V &y, const V &z);
 
+
+
+    ///
+    /// Set cell region data (for multiregion grids)
+    ///
+    /// \tparam V Vector class counting from zero with member functions
+    ///  size() and operator[]. std::vector will work.
+    ///
+    /// \param cr Cell region numbers
+    ///
+    /// \param name Name of function
+    template <class V>
+      void SetCellRegions(const V& cr);
+    
+
+    /// 
+    /// Mask cells which shall be shown
+    ///
+    /// \tparam IV Vector class counting from zero with member functions
+    ///  size() and operator[]. std::vector will work.
+    /// \param mask_in Flag array indicating if cell is in 
+    /// \param name Name of the mask for later reference
+    ///
+    template <class IV>
+      void SetCellMaskByMask(const  IV& mask_in, const std::string name);
+
+    /// 
+    /// Mask cells which shall be shown
+    ///
+    /// \tparam IV Vector class counting from zero with member functions
+    ///  size() and operator[]. std::vector will work.
+    /// \param cells_in List of cells which shall be shown
+    /// \param name Name of the mask for later reference
+    ///
+    template <class IV>
+      void SetCellMaskByList(const  IV& cells_in, const std::string name);
+
+    
+
+    /// 
+    /// Mask cells which shall be shown.
+    ///
+    /// Assumes that DataSet::SetCellRegions() was called.
+    ///
+    /// \tparam IV Vector class counting from zero with member functions
+    ///  size() and operator[]. std::vector will work.
+    /// \param regions_omitted List of regions which shall be omitted
+    /// \param name Name of the mask for later reference
+    ///
+    template <class IV>
+      void SetCellMaskByRegionsOmitted(const  IV& regions_omitted, const std::string name);
+
+
     ///
     /// Set data of a scalar function defined on the points of the grid
     ///
@@ -88,6 +142,7 @@ namespace vtkfig
     /// \param name Name of function
     template <class V>
       void SetPointScalar(const V&f , const std::string name);
+
 
     ///
     /// Set data of a vector function defined on the points on a 2D grid
@@ -131,17 +186,6 @@ namespace vtkfig
     template <class V>
       void SetCellScalar(const V&f, const std::string name);
 
-    ///
-    /// Set cell region data (for multiregion grids)
-    ///
-    /// \tparam V Vector class counting from zero with member functions
-    ///  size() and operator[]. std::vector will work.
-    ///
-    /// \param cr Cell region numbers
-    ///
-    /// \param name Name of function
-    template <class V>
-      void SetCellRegions(const V& cr);
 
     ///
     /// Write dataset to disk in VTK format
@@ -180,6 +224,14 @@ namespace vtkfig
     /// \return vtkDataset
     vtkSmartPointer<vtkDataSet> GetVTKDataSet() { return data;}
     
+
+    /// 
+    /// Request celllist
+    /// 
+    /// \return Cell List
+    vtkSmartPointer<vtkIdList> GetCellList(std::string name) {return masks[name];}
+    
+
   private:
     
     vtkSmartPointer<vtkDataSet> data=NULL;
@@ -187,6 +239,9 @@ namespace vtkfig
     
     template<class DATA, class WRITER>
       void WriteVTK(vtkSmartPointer<DATA> data, std::string fname);
+
+
+    std::map<std::string,vtkSmartPointer<vtkIdList>> masks;
     
   };    
   
@@ -376,7 +431,62 @@ namespace vtkfig
       gridvalues->InsertComponent(i,0,values[i]);
     gridvalues->Modified();
   }    
+  
+  
+  
+  template <class IV>
+    inline
+    void DataSet::SetCellMaskByRegionsOmitted(const  IV& regions_omitted, const std::string name)
+  {
+    auto celllist=vtkSmartPointer<vtkIdList>::New();
+    auto cellregions=vtkFloatArray::SafeDownCast(this->data->GetCellData()->GetAbstractArray("cellregions"));
+    assert(cellregions);
+    int ncells=this->data->GetNumberOfCells();
+    int icelllist=0;
+    for (int icell=0;icell<ncells;icell++)
+    {
+      int ireg=cellregions->GetComponent(icell,0);
+      bool use_cell=true;
+      
+      for (int io=0;io<regions_omitted.size();io++)
+        if (ireg==regions_omitted[io])
+        {
+          use_cell=false;
+          continue;
+        }
+      if (use_cell)
+        celllist->InsertId(icelllist++,icell);
+    }
+    masks[name]=celllist;
+  }
+  
     
+    
+  template <class IV>
+    inline
+    void DataSet::SetCellMaskByMask(const  IV& cells_in, const std::string name)
+  {
+    assert(cells_in.size()==this->data->GetNumberOfCells());
+    auto celllist=vtkSmartPointer<vtkIdList>::New();
+    int j=0;
+    for (int i=0;i<cells_in.size();i++)
+      if (cells_in[i]) celllist->InsertId(j++,i);
+    masks[name]=celllist;
+  }
+  
+  template <class IV>
+    inline
+    void DataSet::SetCellMaskByList(const  IV& cells_in, const std::string name)
+  {
+    auto celllist=vtkSmartPointer<vtkIdList>::New();
+    int j=0;
+    for (int i=0;i<cells_in.size();i++)
+      celllist->InsertId(j++,cells_in[i]);
+    masks[name]=celllist;
+  }
+  
+    
+  
   
   template <class V>
     inline

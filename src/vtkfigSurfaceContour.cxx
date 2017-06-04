@@ -22,6 +22,9 @@
 #include "vtkClipPolyData.h"
 #include "vtkWarpScalar.h"
 
+#include "vtkExtractCells.h"
+#include "vtkIdList.h"
+
 
 #include "vtkfigSurfaceContour.h"
 
@@ -51,29 +54,58 @@ namespace vtkfig
   {
     auto transform=CalcTransform(gridfunc);
 
+    /// should react on elevation view
     renderer->GetActiveCamera()->SetParallelProjection(1);
 
+
     auto values=vtkFloatArray::SafeDownCast(gridfunc->GetPointData()->GetAbstractArray(dataname.c_str()));
+
     double range[2];
     values->GetRange(range);
     SetVMinMax(range[0],range[1]);
     GenIsolevels();
 
 
+    vtkSmartPointer<vtkExtractCells> subgrid;
+    if (celllist)
+    {
+      subgrid=vtkSmartPointer<vtkExtractCells>::New();
+      subgrid->SetInputDataObject(gridfunc);
+      subgrid->SetCellList(celllist);
+    }
+
+
     auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
     scalar->Assign(dataname.c_str(),vtkDataSetAttributes::SCALARS,vtkAssignAttribute::POINT_DATA);
-    scalar->SetInputDataObject(gridfunc);
-
-
+    if (celllist)
+      scalar->SetInputConnection(subgrid->GetOutputPort());
+    else
+      scalar->SetInputDataObject(gridfunc);
 
     auto geometry=vtkSmartPointer<FILTER>::New();
     geometry->SetInputConnection(scalar->GetOutputPort());
-    
+
+
 
     auto transgeometry=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
     transgeometry->SetInputConnection(geometry->GetOutputPort());
     transgeometry->SetTransform(transform);
 
+    /// if we cut away a part of the ouline by vtkExtractCells, 
+    /// we still need the axes to  be correct, so they 
+    /// must be created using the original geometry
+    vtkSmartPointer<vtkTransformPolyDataFilter> transallgeometry;
+    if (celllist)
+    {
+      auto allgeometry=vtkSmartPointer<FILTER>::New();
+      allgeometry->SetInputDataObject(gridfunc);
+
+      transallgeometry=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+      transallgeometry->SetTransform(transform);
+      transallgeometry->SetInputConnection(allgeometry->GetOutputPort());
+    }
+    else 
+      transallgeometry=transgeometry;
 
     if (true) // Elevation
     {
@@ -144,7 +176,7 @@ namespace vtkfig
       auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
       axes->SetRanges(data_bounds);
       axes->SetUseRanges(1);
-      axes->SetInputConnection(transgeometry->GetOutputPort());
+      axes->SetInputConnection(transallgeometry->GetOutputPort());
       axes->GetProperty()->SetColor(0, 0, 0);
       axes->SetFontFactor(1.25);
       axes->SetCornerOffset(0); 
@@ -184,11 +216,7 @@ namespace vtkfig
     vtkSmartPointer<DATA> gridfunc)
   {
 
-    Figure::CalcTransform(gridfunc);
-
-    auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
-    scalar->Assign(dataname.c_str(),vtkDataSetAttributes::SCALARS,vtkAssignAttribute::POINT_DATA);
-    scalar->SetInputDataObject(gridfunc);
+    auto transform=CalcTransform(gridfunc);
 
     auto values=vtkFloatArray::SafeDownCast(gridfunc->GetPointData()->GetAbstractArray(dataname.c_str()));
     double range[2];
@@ -196,11 +224,44 @@ namespace vtkfig
     SetVMinMax(range[0],range[1]);
     GenIsolevels();
 
+        
+    vtkSmartPointer<vtkExtractCells> subgrid;
+    if (celllist)
+    {
+      subgrid=vtkSmartPointer<vtkExtractCells>::New();
+      subgrid->SetInputDataObject(gridfunc);
+      subgrid->SetCellList(celllist);
+    }
 
-    auto transform=CalcTransform(gridfunc);
+    
+    
+    auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
+    scalar->Assign(dataname.c_str(),vtkDataSetAttributes::SCALARS,vtkAssignAttribute::POINT_DATA);
+    if (celllist)
+      scalar->SetInputConnection(subgrid->GetOutputPort());
+    else
+      scalar->SetInputDataObject(gridfunc);
+    
+
+
+
     auto transgeometry=vtkSmartPointer<vtkTransformFilter>::New();
     transgeometry->SetInputConnection(scalar->GetOutputPort());
     transgeometry->SetTransform(transform);
+
+    vtkSmartPointer<vtkTransformFilter> transallgeometry;
+    if (celllist)
+    {
+      auto allgeometry=vtkSmartPointer<FILTER>::New();
+      allgeometry->SetInputDataObject(gridfunc);
+
+      transallgeometry=vtkSmartPointer<vtkTransformFilter>::New();
+      transallgeometry->SetTransform(transform);
+      transallgeometry->SetInputConnection(allgeometry->GetOutputPort());
+    }
+    else 
+      transallgeometry=transgeometry;
+
 
 
 
@@ -224,7 +285,7 @@ namespace vtkfig
       
 
     vtkSmartPointer<vtkClipPolyData> clipgeometry=0;
-    if (false) // plot complete outline
+    if (false) // plot complete outline surface
     {
       
       clipgeometry=vtkSmartPointer<vtkClipPolyData>::New();
@@ -334,7 +395,7 @@ namespace vtkfig
       auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
       axes->SetRanges(data_bounds);
       axes->SetUseRanges(1);
-      axes->SetInputConnection(transgeometry->GetOutputPort());
+      axes->SetInputConnection(transallgeometry->GetOutputPort());
       axes->GetProperty()->SetColor(0, 0, 0);
       axes->SetFontFactor(1.0);
       axes->SetCornerOffset(0); 

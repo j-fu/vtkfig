@@ -66,13 +66,26 @@ namespace vtkfig
     data=xgriddata.GetVTKDataSet();
     state.datatype=xgriddata.GetDataType();
     dataname=xdataname;
+    celllist=0;
     title=xdataname;
   }
   
-  
+
   void Figure::SetData(std::shared_ptr<DataSet> xgriddata, const std::string xdataname)
   {
     SetData(*xgriddata,xdataname);
+  }
+  
+  void Figure::SetMaskedData(DataSet& dataset, const std::string name, const std::string maskname)
+  {
+    SetData(dataset,name);
+    celllist=dataset.GetCellList(maskname);
+  }
+  
+
+  void Figure::SetMaskedData(std::shared_ptr<DataSet> xgriddata, const std::string xdataname,const std::string maskname)
+  {
+    SetMaskedData(*xgriddata,xdataname,maskname);
   }
 
 

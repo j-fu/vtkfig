@@ -22,6 +22,7 @@
 #include "vtkTransform.h"
 #include "vtkCornerAnnotation.h"
 #include "vtkGlyphSource2D.h"
+#include "vtkIdList.h"
 
 #include "vtkfigCommunicator.h"
 #include "vtkfigTools.h"
@@ -70,12 +71,26 @@ namespace vtkfig
     ///
     /// \param name Name of scalar or vector to be shown
     void SetData(DataSet& ddata, const std::string name="");
-    
+
+  
     /// Add Dataset to figure
     ///
     /// \param name Name of scalar or vector to be shown
     void SetData(std::shared_ptr<DataSet> data, const std::string name="");    
 
+
+    /// Add Dataset with mask to figure
+    ///
+    /// \param name Name of scalar or vector to be shown
+    void SetMaskedData(DataSet& ddata, const std::string name, const std::string maskname);
+
+  
+    /// Add Dataset with mask to figure
+    ///
+    /// \param name Name of scalar or vector to be shown
+    void SetMaskedData(std::shared_ptr<DataSet> data, const std::string name, const std::string maskname);
+
+    
 
     ///
     /// Set Surface RGB table from vector
@@ -246,6 +261,9 @@ namespace vtkfig
 
     /// Name of data item in data set 
     std::string dataname;
+
+    /// Cell mask
+    vtkSmartPointer<vtkIdList> celllist=0;
 
     /// Title of figure
     std::string title;
