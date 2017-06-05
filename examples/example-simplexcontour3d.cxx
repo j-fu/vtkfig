@@ -57,18 +57,12 @@ int main(void)
       {1.0, 1.0, 0.0, 0.0}
     };
 
-  double t=0;
-  double dt=0.1;
-  size_t ii=0;
-  auto t0=std::chrono::system_clock::now();
-  double i0=ii;
-
+  auto frame=vtkfig::Frame::New();
 
   auto griddata=vtkfig::DataSet::New();
   griddata->SetSimplexGrid(3,points,cells);
   griddata->SetPointScalar(values,"V");
 
-  auto frame=vtkfig::Frame::New();
   auto contour=vtkfig::SurfaceContour::New();
   contour->SetData(griddata,"V");
   contour->SetSurfaceRGBTable(colors,255);
@@ -76,6 +70,12 @@ int main(void)
   frame->AddFigure(contour);
 
 
+
+  double t=0;
+  double dt=0.1;
+  size_t ii=0;
+  auto t0=std::chrono::system_clock::now();
+  double i0=ii;
 
   while (ii<nspin)
   {

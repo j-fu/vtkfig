@@ -105,6 +105,7 @@ int main(void)
   auto quiver=vtkfig::Quiver::New();
   quiver->SetQuiverArrowScale(ascale);
   quiver->SetData(griddata,"grad");
+  quiver->SetQuiverGrid(15,15);
 
   contour->KeepXYAspect(false);
   quiver->KeepXYAspect(false);

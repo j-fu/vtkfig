@@ -546,7 +546,7 @@ namespace vtkfig
     inline
     void DataSet::SetPointVector(const V&u, const V& v, const V& w, const std::string name)
   {
-    assert(this->spacedim==2);
+    assert(this->spacedim==3);
     assert(this->data!=NULL);
     int npoints=this->data->GetNumberOfPoints();
     assert(npoints==u.size());

@@ -13,15 +13,13 @@
 #include "vtkAssignAttribute.h"
 #include "vtkProbeFilter.h"
 #include "vtkTransformPolyDataFilter.h"
-
+#include "vtkTransformFilter.h"
 #include "vtkfigQuiver.h"
 
 namespace vtkfig
 {
-////////////////////////////////////////////////////////////
 
 
-  ////////////////////////////////////////////////////////////
   Quiver::Quiver(): Figure()  
   {  
     RGBTable quiver_rgb={{0,0,0,0},{1,0,0,0}};
@@ -29,8 +27,63 @@ namespace vtkfig
   }
   
 
-  template <class DATA, class FILTER>
-  void  Quiver::RTBuildVTKPipeline2D(
+
+  void Quiver::SetQuiverGrid(int nx, int ny)
+  {
+    assert(data);
+    assert(state.spacedim==2);
+    double bounds[6];
+    data->GetBounds(bounds);
+    
+    auto probePoints =  vtkSmartPointer<vtkPoints>::New();
+    double dx=(bounds[1]-bounds[0])/((double)nx);
+    double dy=(bounds[3]-bounds[2])/((double)ny);
+    
+    double x=bounds[0];
+    for (int ix=0; ix<nx;ix++,x+=dx )
+    {
+      double  y=bounds[2];
+      for ( int iy=0;iy<ny;iy++,y+=dy )
+        probePoints->InsertNextPoint ( x, y, 0);
+    }
+
+    probePolyData =vtkSmartPointer<vtkPolyData>::New();
+    probePolyData->SetPoints(probePoints);
+  }
+  
+  void Quiver::SetQuiverGrid(int nx, int ny, int nz)
+  {
+    assert(data);
+    assert(state.spacedim==3);
+    double bounds[6];
+    data->GetBounds(bounds);
+    
+    auto probePoints =  vtkSmartPointer<vtkPoints>::New();
+    double dx=(bounds[1]-bounds[0])/((double)nx);
+    double dy=(bounds[3]-bounds[2])/((double)ny);
+    double dz=(bounds[5]-bounds[4])/((double)nz);
+    
+    double x=bounds[0];
+    for (int ix=0; ix<nx;ix++,x+=dx )
+    {
+      double  y=bounds[2];
+      for ( int iy=0;iy<ny;iy++,y+=dy )
+      {
+        double  z=bounds[4];
+        for ( int iz=0;iz<nz;iz++,z+=dz )
+        {
+          probePoints->InsertNextPoint ( x, y, z);
+        }
+      }
+    }
+    
+    probePolyData =vtkSmartPointer<vtkPolyData>::New();
+    probePolyData->SetPoints(probePoints);
+  }
+
+
+  template <class DATA>
+  void  Quiver::RTBuildVTKPipeline(
         vtkSmartPointer<vtkRenderWindow> window,
         vtkSmartPointer<vtkRenderWindowInteractor> interactor,
         vtkSmartPointer<vtkRenderer> renderer,
@@ -39,57 +92,41 @@ namespace vtkfig
     auto transform=CalcTransform(gridfunc);
     
 
-
-    
-
     auto vector = vtkSmartPointer<vtkAssignAttribute>::New();
     vector->Assign(dataname.c_str(),vtkDataSetAttributes::VECTORS,vtkAssignAttribute::POINT_DATA);
     vector->SetInputDataObject(gridfunc);
-
-    // filter to geometry primitive
-    auto geometry = vtkSmartPointer<FILTER>::New();
-    geometry->SetInputConnection(vector->GetOutputPort());
-
-    auto transgeometry=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
-    transgeometry->SetInputConnection(geometry->GetOutputPort());
+    
+    auto transgeometry=vtkSmartPointer<vtkTransformFilter>::New();
+    transgeometry->SetInputConnection(vector->GetOutputPort());
     transgeometry->SetTransform(transform);
 
 
-    auto probePoints =  vtkSmartPointer<vtkPoints>::New();
-    double dx=(trans_bounds[1]-trans_bounds[0])/( (int)state.qv_nx);
-    double dy=(trans_bounds[3]-trans_bounds[2])/( (int)state.qv_ny);
-
-    double x,y;
-    x=trans_bounds[0];
-    for (int ix=0; ix<state.qv_nx;ix++,x+=dx )
-    {
-      y=trans_bounds[2];
-      for ( int iy=0;iy<state.qv_ny;iy++,y+=dy )
-      {
-        probePoints->InsertNextPoint ( x, y, 0);
-      }
-    }
-
-    auto probePolyData =vtkSmartPointer<vtkPolyData>::New();
-    probePolyData->SetPoints(probePoints);
-    
+    auto transprobe=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+    transprobe->SetInputDataObject(probePolyData);
+    transprobe->SetTransform(transform);
 
     auto probeFilter = vtkSmartPointer<vtkProbeFilter>::New();
     probeFilter->SetSourceConnection(transgeometry->GetOutputPort());
-    probeFilter->SetInputData(probePolyData);
+    probeFilter->SetInputConnection(transprobe->GetOutputPort());
     probeFilter->PassPointArraysOn();
-
-
-    arrow->SetScale(state.qv_arrow_scale);
 
     auto glyph = vtkSmartPointer<vtkGlyph3D>::New();
     glyph->SetInputConnection(probeFilter->GetOutputPort());
-    glyph->SetSourceConnection(arrow->GetOutputPort());
     glyph->SetColorModeToColorByVector();
     glyph->SetScaleModeToScaleByVector();
+   
 
-
-
+    
+    if (state.spacedim==2)
+    {    
+      glyph->SetSourceConnection(arrow2d->GetOutputPort());
+      arrow2d->SetScale(state.qv_arrow_scale);
+    }
+    else
+    {    
+      glyph->SetSourceConnection(arrow3d->GetOutputPort());
+      arrow3dt->Scale(state.qv_arrow_scale,state.qv_arrow_scale,state.qv_arrow_scale);
+    }
 
     // map gridfunction
     auto  mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -133,22 +170,12 @@ namespace vtkfig
     if (state.datatype==DataSet::DataType::UnstructuredGrid)
     {
       auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
-      
-      if (state.spacedim==2)
-        this->RTBuildVTKPipeline2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,griddata);
-
-      // else
-      //   this->RTBuildVTKPipeline3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,griddata); 
+      this->RTBuildVTKPipeline<vtkUnstructuredGrid>(window, interactor,renderer,griddata);
     }
     else if (state.datatype==DataSet::DataType::RectilinearGrid)
     {
       auto griddata=vtkRectilinearGrid::SafeDownCast(data);
-      
-      
-      if (state.spacedim==2)
-        this->RTBuildVTKPipeline2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
-      // else
-      //   this->RTBuildVTKPipeline3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
+      this->RTBuildVTKPipeline<vtkRectilinearGrid>(window, interactor,renderer,griddata);
     }
   }
 

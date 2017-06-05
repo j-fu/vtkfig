@@ -38,6 +38,13 @@ namespace vtkfig
 
   template <class V, class IV> inline  void Delaunay2D(const V & points_in,  V & points, IV & cells);
 
+  template <class V, class IV> inline  void Delaunay3D(const V & points_in,  V & points, IV & cells);
+
+  void PrintPoints(vtkSmartPointer<vtkPoints> pts, std::ostream & os);
+
+  void PrintArray(vtkSmartPointer<vtkDataArray> data, std::ostream & os);
+
+
 
 
   template <class V, class IV> inline void Delaunay2D(const V & points_in,  V & points, IV & cells)

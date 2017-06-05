@@ -18,6 +18,34 @@ namespace vtkfig
       return atoi(spinstr);
   }
 
+
+  void PrintArray(vtkSmartPointer<vtkDataArray> data, std::ostream & os)
+  {
+    auto nt=data->GetNumberOfTuples();
+    auto nc=data->GetNumberOfComponents();
+    assert(nc<32);
+    for (int it=0;it<nt;it++)
+    {
+      double tuple[32];
+      data->GetTuple(it,tuple);
+      for (int ic=0;ic<nc ; ic++)
+      {
+        cout << tuple[ic] << " ";
+      }
+      cout << endl;
+    }
+
+  }
+
+
+  void PrintPoints(vtkSmartPointer<vtkPoints> pts, std::ostream & os)
+  {
+    PrintArray(pts->GetData(),os);
+  }
+
+
+
+
   vtkSmartPointer<vtkLookupTable>  BuildLookupTable(std::vector<RGBPoint> & xrgb, size_t size)
   {
     vtkSmartPointer<vtkColorTransferFunction> ctf = vtkSmartPointer<vtkColorTransferFunction>::New();

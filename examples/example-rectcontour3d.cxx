@@ -45,16 +45,6 @@ int main(void)
   const double dy = (y_upp-y_low)/(Ny-1);
   const double dz = (z_upp-z_low)/(Nz-1);
 
-  auto frame=vtkfig::Frame::New();
-
-
-  auto colors=vtkfig::RGBTable
-    { 
-      {0.0, 0.0, 0.0, 1.0},
-      {0.5, 0.0, 1.0, 0.0},
-      {1.0, 1.0, 0.0, 0.0}
-    };
-
   for (int i=0; i<Nx; i++)
     x[i] = x_low+i*dx;
   
@@ -67,20 +57,33 @@ int main(void)
 
 
 
-  double t=0;
-  double dt=0.1;
-  size_t ii=0;
-  auto t0=std::chrono::system_clock::now();
-  double i0=ii;
+
+  auto colors=vtkfig::RGBTable
+    { 
+      {0.0, 0.0, 0.0, 1.0},
+      {0.5, 0.0, 1.0, 0.0},
+      {1.0, 1.0, 0.0, 0.0}
+    };
+
+
+  auto frame=vtkfig::Frame::New();
+
   
   auto griddata=vtkfig::DataSet::New();
   griddata->SetRectilinearGrid(x,y,z);
   griddata->SetPointScalar(v ,"V");
+
   auto contour=vtkfig::SurfaceContour::New();
   contour->SetData(griddata,"V");
   contour->SetSurfaceRGBTable(colors,255);
   contour->SetValueRange(-1,1);
   frame->AddFigure(contour);
+
+  double t=0;
+  double dt=0.1;
+  size_t ii=0;
+  auto t0=std::chrono::system_clock::now();
+  double i0=ii;
 
   while (ii<nspin)
   {

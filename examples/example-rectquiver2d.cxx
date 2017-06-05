@@ -87,6 +87,7 @@ int main(void)
   auto quiver=vtkfig::Quiver::New();
   quiver->SetQuiverArrowScale(0.4);
   quiver->SetData(griddata,"grad");
+  quiver->SetQuiverGrid(10,10);
 
   frame->AddFigure(contour);
   frame->AddFigure(quiver);

@@ -34,8 +34,20 @@ namespace vtkfig
 
 
     // make a vector glyph
-    arrow = vtkSmartPointer<vtkGlyphSource2D>::New();
-    arrow->SetGlyphTypeToArrow();
+    arrow2d = vtkSmartPointer<vtkGlyphSource2D>::New();
+    arrow2d->SetGlyphTypeToArrow();
+
+    auto arrow3ds= vtkSmartPointer<vtkArrowSource>::New();
+    arrow3ds->SetTipResolution(8);
+    arrow3ds->SetTipLength(0.3);
+    arrow3ds->SetTipRadius(0.1);
+
+    arrow3dt=vtkSmartPointer<vtkTransform>::New();
+    arrow3d=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+    arrow3d->SetTransform(arrow3dt);
+    arrow3d->SetInputConnection(arrow3ds->GetOutputPort());
+
+
 
     
     planeX= vtkSmartPointer<vtkPlane>::New();
@@ -443,12 +455,13 @@ namespace vtkfig
     if (edit)
     {
       double ascale=state.qv_arrow_scale;
-      ascale*=pow(10.0,((double)dx)/10.0);
+      ascale*=pow(10.0,((double)dx)/100.0);
       ascale=std::min(ascale,1.0e20);
       ascale=std::max(ascale,1.0e-20);
       state.qv_arrow_scale=ascale;
       RTShowArrowScale();
-      arrow->SetScale(state.qv_arrow_scale);
+      arrow2d->SetScale(state.qv_arrow_scale);
+      arrow3dt->Scale(state.qv_arrow_scale,state.qv_arrow_scale,state.qv_arrow_scale);
       return 1;
     }
     return 0;

@@ -16,12 +16,14 @@
 #include "vtkSliderRepresentation2D.h"
 #include "vtkContourFilter.h"
 #include "vtkPolyDataAlgorithm.h"
+#include "vtkTransformPolyDataFilter.h"
 #include "vtkRenderer.h"
 #include "vtkCutter.h"
 #include "vtkPlane.h"
 #include "vtkTransform.h"
 #include "vtkCornerAnnotation.h"
 #include "vtkGlyphSource2D.h"
+#include "vtkArrowSource.h"
 #include "vtkIdList.h"
 
 #include "vtkfigCommunicator.h"
@@ -143,9 +145,6 @@ namespace vtkfig
     /// Set number of isocontours to show
     void SetNumberOfIsocontours(int n) {state.num_contours=n; state.max_num_contours= std::max(n,state.max_num_contours);}
 
-    /// Set size of quiver grid 
-    void SetQuiverGridSize(int nx, int ny) { state.qv_nx=nx; state.qv_ny=ny;}
-
     /// Scale arrow for quiver view
     void SetQuiverArrowScale(double scale) { state.qv_arrow_scale=scale;}
 
@@ -228,7 +227,9 @@ namespace vtkfig
     vtkSmartPointer<vtkPlane> planeZ;
 
     /// Arrow glyph source
-    vtkSmartPointer<vtkGlyphSource2D> arrow;    
+    vtkSmartPointer<vtkGlyphSource2D> arrow2d;    
+    vtkSmartPointer<vtkTransformPolyDataFilter> arrow3d;    
+    vtkSmartPointer<vtkTransform> arrow3dt;
 
     /// Items for isosurface plot
     vtkSmartPointer<vtkActor>     isosurface_plot;
@@ -386,10 +387,6 @@ namespace vtkfig
       
       double isoline_width=2;
       
-
-      int qv_nx=15;
-      int qv_ny=15;
-      int qv_nz=15;
       double qv_arrow_scale=0.333;
 
       DataSet::DataType datatype;
