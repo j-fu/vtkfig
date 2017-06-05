@@ -57,7 +57,6 @@ namespace vtkfig
     /// should react on elevation view
     renderer->GetActiveCamera()->SetParallelProjection(1);
 
-
     auto values=vtkFloatArray::SafeDownCast(gridfunc->GetPointData()->GetAbstractArray(dataname.c_str()));
 
     double range[2];

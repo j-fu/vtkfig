@@ -10,6 +10,7 @@
 #include "vtkfigTools.h"
 #include "vtkfigDataSet.h"
 #include "vtkfigSurfaceContour.h"
+#include "vtkfigBoundary.h"
 #include "vtkfigTools.h"
 
 #include <vtkMath.h>
@@ -58,6 +59,7 @@ int main(void)
     };
 
   auto frame=vtkfig::Frame::New();
+  auto boundary=vtkfig::Boundary::New();
 
   auto griddata=vtkfig::DataSet::New();
   griddata->SetSimplexGrid(3,points,cells);
@@ -67,7 +69,11 @@ int main(void)
   contour->SetData(griddata,"V");
   contour->SetSurfaceRGBTable(colors,255);
   contour->SetValueRange(-1,1);
+
+  boundary->SetData(griddata);
+
   frame->AddFigure(contour);
+  frame->AddFigure(boundary);
 
 
 

@@ -8,7 +8,9 @@ add_library(vtkfig
   vtkfigSurfaceContour.cxx  
   vtkfigGridView.cxx  
   vtkfigQuiver.cxx  
+  vtkfigStream.cxx  
   vtkfigXYPlot.cxx
+  vtkfigBoundary.cxx
   
   vtkfigChartXY.cxx
   vtkfigSurf2D.cxx

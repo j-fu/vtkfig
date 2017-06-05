@@ -389,6 +389,10 @@ namespace vtkfig
       
       double qv_arrow_scale=0.333;
 
+      double streamcolor[3]={0.8,0.8,0.8};
+      double streamlength=1.0;
+      double streamribbonwidth=0.01;
+
       DataSet::DataType datatype;
 
     } state;

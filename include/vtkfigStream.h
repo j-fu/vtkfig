@@ -1,5 +1,5 @@
-#ifndef VTKFIG_QUIVER_H
-#define VTKFIG_QUIVER_H
+#ifndef VTKFIG_STREAM_H
+#define VTKFIG_STREAM_H
 
 #include "vtkPolyData.h"
 #include "vtkFloatArray.h"
@@ -13,24 +13,24 @@ namespace vtkfig
   ///
   /// Experimental quiver view of vector fields
   ///
-  class Quiver: public Figure
+  class Stream: public Figure
     {
     public:
       
-      Quiver();
-      static std::shared_ptr<Quiver> New() { return std::make_shared<Quiver>(); }
+      Stream();
+      static std::shared_ptr<Stream> New() { return std::make_shared<Stream>(); }
 
       
-      void SetQuiverGrid(int nx, int ny);
+      void SetStreamGrid(int nx, int ny);
 
-      void SetQuiverGrid(int nx, int ny, int nz);
+      void SetStreamGrid(int nx, int ny, int nz);
       
       template <class V>
-        void SetQuiverPoints( const V&p);
+        void SetStreamPoints( const V&p);
       
-
+      
     private:
-     
+
       virtual void RTBuildVTKPipeline(
         vtkSmartPointer<vtkRenderWindow> window,
         vtkSmartPointer<vtkRenderWindowInteractor> interactor,
@@ -53,7 +53,7 @@ namespace vtkfig
 
   template <class V>
     inline
-    void Quiver::SetQuiverPoints( const V&p)
+    void Stream::SetStreamPoints( const V&p)
   {
     assert(data);
     auto probePoints =  vtkSmartPointer<vtkPoints>::New();
