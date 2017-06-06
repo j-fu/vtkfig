@@ -66,7 +66,7 @@ namespace vtkfig
       {
         if (debug_level>0)
           cout << "overriding multithreading default (off) on APPLE" << endl;
-        try_running_multithreaded=false;
+        try_running_multithreaded=true;
       }
 #else
       try_running_multithreaded=true;
