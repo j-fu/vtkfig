@@ -92,28 +92,6 @@ namespace vtkfig
     /// \param name Name of scalar or vector to be shown
     void SetMaskedData(std::shared_ptr<DataSet> data, const std::string name, const std::string maskname);
 
-    
-
-    ///
-    /// Set Surface RGB table from vector
-    /// 
-    /// \tparam V Vector class counting from zero with member functions
-    ///  size() and operator[]. std::vector will work.
-    /// 
-    /// \param tab Vector containg data. 
-    ///    One RGB point is described by x, r, g, b between 0 and 1
-    ///    RGB point i is contained in '(tab[4*i],tab[4*i+1],tab[4*i+2],tab[4*i+3])
-    /// \param lutsize  Size of lookup table created.
-    template <class V> 
-      void  SetSurfaceRGBTable(const V & tab, int lutsize);
-
-    ///
-    /// Set surface RGB table from RGBtable
-    /// 
-    /// \param tab RGB table containg data. 
-    /// \param lutsize  Size of lookup table created.
-    void SetSurfaceRGBTable(RGBTable & tab, int lutsize);
-
     ///
     /// Set contour RGB table from RGBtable
     /// 
@@ -121,42 +99,25 @@ namespace vtkfig
     /// \param lutsize  Size of lookup table created.
     void SetContourRGBTable(RGBTable & tab, int lutsize);
 
-    void ShowDomainAxes(bool b) { state.show_domain_axes=b;}
-
-    void ShowDomainBox(bool b) { state.show_domain_box=b;}
-
-    void ShowDomainBoundary(bool b) { state.show_domain_boundary=b;}
-
-
-    /// Toggle isoline rendering
-    void ShowIsolines(bool b) {state.show_isolines=b;}
-
-    /// Toggle isosurface rendering
-    void ShowIsosurfaces(bool b) {state.show_isosurfaces=b;}
-
-    /// Toggle colorbar visualization
-    void ShowSurfaceColorbar(bool b) {state.show_surface_colorbar=b;}
-
-    /// Toggle elevation view  (yet to be implemented)
-    void ShowElevation(bool b) {state.show_elevation=b;}
-
     /// Set figure title
     void SetTitle(std::string xtitle) { title=xtitle;}
     
-    /// Set Range of values
-    void SetValueRange(double vmin, double vmax){state.vmin_set=vmin; state.vmax_set=vmax;}
-
-    /// Set number of isocontours to show
-    void SetNumberOfIsocontours(int n) {state.num_contours=n; state.max_num_contours= std::max(n,state.max_num_contours);}
-
-    /// Set width of isolines
-    void SetIsolineWidth(double w) {state.isoline_width=w;}
 
     ///  Set fixed  xy aspect ratio
     void SetXYAspect(double a) {state.aspect=a;}
     
     /// Keep aspect ratio
     void KeepXYAspect(bool b) {state.keep_aspect=b;}
+
+
+    /// Toggle rendering of domain axes
+    void ShowDomainAxes(bool b) { state.show_domain_axes=b;}
+
+    /// Toggle rendering of domain bounding box
+    void ShowDomainBox(bool b) { state.show_domain_box=b;}
+
+    /// Toggle rendering of domain boundary as transparent surface
+    void ShowDomainBoundary(bool b) { state.show_domain_boundary=b;}
 
     
     /// Add vtk Actor to renderer showing figure
@@ -188,6 +149,12 @@ namespace vtkfig
     /// Usually, this is called from the render thread, it
     /// can however be useful in custom pipelines
     void RTAddAnnotations();
+
+    /// Init annotations
+    /// 
+    /// Called by RTAddAnnotations() or RTMessage()
+    void RTInitAnnotations();
+
 
     
   protected:
@@ -298,6 +265,32 @@ namespace vtkfig
       vtkSmartPointer<vtkRenderWindowInteractor> interactor,
       vtkSmartPointer<vtkRenderer> renderer) {};
 
+
+    void RTBuildDomainPipeline(
+      vtkSmartPointer<vtkRenderWindow> window,
+      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+      vtkSmartPointer<vtkRenderer> renderer);
+    
+
+    template <class DATA>
+    void RTBuildDomainPipeline(
+      vtkSmartPointer<vtkRenderWindow> window,
+      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+      vtkSmartPointer<vtkRenderer> renderer,
+      vtkSmartPointer<DATA> gridfunc);
+
+    void RTBuildAllVTKPipelines(
+      vtkSmartPointer<vtkRenderWindow> window,
+      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+      vtkSmartPointer<vtkRenderer> renderer) 
+    {
+      RTBuildVTKPipeline(window,interactor,renderer);
+      RTBuildDomainPipeline(window,interactor,renderer);
+      RTAddAnnotations();
+    };
+
+
+
     /// These two need to re-implemented in subclasses 
     /// in order to get server-client communication
     virtual void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator) {};
@@ -398,7 +391,9 @@ namespace vtkfig
       
       double isoline_width=2;
       
-      double qv_arrow_scale=0.333;
+      double quiver_arrow_scale=0.333;
+
+      double quiver_surface_distance=1.0e-10;
 
       double streamcolor[3]={0.8,0.8,0.8};
 
@@ -443,26 +438,6 @@ namespace vtkfig
 
   
 
-////////////////////////////////////////////////////////////////
-  template <class V> 
-    inline
-    void  Figure::SetSurfaceRGBTable(const V & tab, int lutsize)
-  {
-    RGBTable rgbtab;
-    rgbtab.resize(tab.size()/4);
-    for (int i=0,j=0; i<tab.size(); i+=4,j++)
-    {
-      rgbtab[j].x=tab[i+0];
-      rgbtab[j].r=tab[i+1];
-      rgbtab[j].g=tab[i+2];
-      rgbtab[j].b=tab[i+3];
-    }
-    SetSurfaceRGBTable(rgbtab, lutsize);
-  }
-  
-  
-};
-
-
+}
 
 #endif

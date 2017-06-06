@@ -9,7 +9,6 @@
 #include "vtkfigSurfaceContour.h"
 #include "vtkfigQuiver.h"
 #include "vtkfigTools.h"
-#include "vtkfigDomain.h"
 
 double xscale=1;
 double yscale=1;
@@ -110,9 +109,6 @@ int main(void)
   contour->KeepXYAspect(false);
   quiver->KeepXYAspect(false);
 
-  auto domain=vtkfig::Domain::New();
-  domain->SetData(griddata);
-  frame->AddFigure(domain);
   
   frame->AddFigure(contour);
   frame->AddFigure(quiver);

@@ -46,20 +46,26 @@ namespace vtkfig
     subframe.viewport[2]=1.0;
     subframe.viewport[3]=1.0;
 
-    title_actor= vtkSmartPointer<vtkCornerAnnotation>::New();
-    auto textprop=title_actor->GetTextProperty();
-    textprop->ItalicOff();
-    textprop->BoldOff();
-    textprop->SetFontSize(12);
-    textprop->SetFontFamilyToArial();
-    textprop->SetColor(0,0,0);
-    
 
     mainthread->AddFrame(this);
 
   }
   
+  void Frame::RTInit()
+  {
+    if (!this->title_actor)
+    {
+      this->title_actor= vtkSmartPointer<vtkCornerAnnotation>::New();
+      auto textprop=this->title_actor->GetTextProperty();
+      textprop->ItalicOff();
+      textprop->BoldOn();
+      textprop->SetFontSize(10);
+      textprop->SetFontFamilyToCourier();
+      textprop->SetColor(0,0,0);
+    }
 
+
+  }
   
   void Frame::Show() { mainthread->Show();}
 

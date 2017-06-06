@@ -7,7 +7,6 @@
 #include "vtkfigFrame.h"
 #include "vtkfigQuiver.h"
 #include "vtkfigStream.h"
-#include "vtkfigDomain.h"
 #include "vtkfigTools.h"
 
 
@@ -97,8 +96,6 @@ int main(void)
 
 
 
-  auto bounds=vtkfig::Domain::New();
-  bounds->SetData(griddata);
   
   auto quiver=vtkfig::Quiver::New();
   quiver->SetQuiverArrowScale(0.1);
@@ -108,13 +105,12 @@ int main(void)
   auto stream=vtkfig::Stream::New();
   stream->SetData(griddata,"flow");
 
-  stream->SetStreamPoints(seeds);
+  stream->SetSeedPoints(seeds);
 
 
 
   frame->AddFigure(quiver);
   frame->AddFigure(stream);
-  frame->AddFigure(bounds);
 
   while (ii<nspin)
   {

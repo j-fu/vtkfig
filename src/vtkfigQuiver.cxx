@@ -44,7 +44,7 @@ namespace vtkfig
     {
       double  y=bounds[2];
       for ( int iy=0;iy<ny;iy++,y+=dy )
-        probePoints->InsertNextPoint ( x, y, 0);
+        probePoints->InsertNextPoint ( x, y, state.quiver_surface_distance);
     }
 
     probePolyData =vtkSmartPointer<vtkPolyData>::New();
@@ -100,7 +100,10 @@ namespace vtkfig
     transgeometry->SetInputConnection(vector->GetOutputPort());
     transgeometry->SetTransform(transform);
 
-
+    if (!probePolyData)
+    {
+      throw std::runtime_error("Please dont't forget to set quiver points/grid");
+    }
     auto transprobe=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
     transprobe->SetInputDataObject(probePolyData);
     transprobe->SetTransform(transform);
@@ -120,12 +123,12 @@ namespace vtkfig
     if (state.spacedim==2)
     {    
       glyph->SetSourceConnection(arrow2d->GetOutputPort());
-      arrow2d->SetScale(state.qv_arrow_scale);
+      arrow2d->SetScale(state.quiver_arrow_scale);
     }
     else
     {    
       glyph->SetSourceConnection(arrow3d->GetOutputPort());
-      arrow3dt->Scale(state.qv_arrow_scale,state.qv_arrow_scale,state.qv_arrow_scale);
+      arrow3dt->Scale(state.quiver_arrow_scale,state.quiver_arrow_scale,state.quiver_arrow_scale);
     }
 
     // map gridfunction

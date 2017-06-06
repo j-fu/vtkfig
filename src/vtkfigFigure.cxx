@@ -3,6 +3,10 @@
 #include "vtkProperty2D.h"
 #include "vtkTextProperty.h"
 #include "vtkCommand.h"
+#include "vtkDataSetSurfaceFilter.h"
+#include "vtkTransformFilter.h"
+#include "vtkOutlineFilter.h"
+#include "vtkCubeAxesActor2D.h"
 
 #include "vtkfigFigure.h"
 
@@ -58,18 +62,6 @@ namespace vtkfig
     planeZ->SetNormal(0,0,1);
 
 
-    
-    
-
-
-
-    annot= vtkSmartPointer<vtkCornerAnnotation>::New();
-    auto textprop=annot->GetTextProperty();
-    textprop->ItalicOff();
-    textprop->BoldOff();
-    textprop->SetFontSize(8);
-    textprop->SetFontFamilyToArial();
-    textprop->SetColor(0,0,0);
   };
 
   void Figure::SetData(DataSet& xgriddata, const std::string xdataname)
@@ -231,7 +223,7 @@ namespace vtkfig
 
   void Figure::RTShowArrowScale()
   {
-    RTMessage("arrow_scale="+std::to_string(state.qv_arrow_scale));
+    RTMessage("arrow_scale="+std::to_string(state.quiver_arrow_scale));
   }
 
   
@@ -454,14 +446,14 @@ namespace vtkfig
   {
     if (edit)
     {
-      double ascale=state.qv_arrow_scale;
+      double ascale=state.quiver_arrow_scale;
       ascale*=pow(10.0,((double)dx)/100.0);
       ascale=std::min(ascale,1.0e20);
       ascale=std::max(ascale,1.0e-20);
-      state.qv_arrow_scale=ascale;
+      state.quiver_arrow_scale=ascale;
       RTShowArrowScale();
-      arrow2d->SetScale(state.qv_arrow_scale);
-      arrow3dt->Scale(state.qv_arrow_scale,state.qv_arrow_scale,state.qv_arrow_scale);
+      arrow2d->SetScale(state.quiver_arrow_scale);
+      arrow3dt->Scale(state.quiver_arrow_scale,state.quiver_arrow_scale,state.quiver_arrow_scale);
       return 1;
     }
     return 0;
@@ -489,13 +481,6 @@ namespace vtkfig
 
   
   
-  void Figure::SetSurfaceRGBTable(RGBTable & tab, int tabsize)
-  {
-    state.surface_rgbtab_size=tabsize;
-    state.surface_rgbtab_modified=true;
-    surface_rgbtab=tab;
-    surface_lut=BuildLookupTable(tab,tabsize);
-  }
   
   void Figure::SetContourRGBTable(RGBTable & tab, int tabsize)
   {
@@ -590,9 +575,27 @@ namespace vtkfig
     RTUpdateIsoSurfaceFilter();
   }
 
+  // this will see the right text size
+  void Figure::RTInitAnnotations()
+  {
+    if (!annot)
+    {
 
+      annot= vtkSmartPointer<vtkCornerAnnotation>::New();
+      auto textprop=annot->GetTextProperty();
+      annot->SetMinimumFontSize(8);
+      annot->SetMaximumFontSize(20);
+      textprop->ItalicOff();
+      textprop->BoldOn();
+      textprop->SetFontSize(8);
+      textprop->SetFontFamilyToCourier();
+      textprop->SetColor(0,0,0);
+    }
+
+  }
   void Figure::RTAddAnnotations()
   {
+    RTInitAnnotations();
     annot->SetText(7,title.c_str());
     annot->SetText(4,"");
     Figure::RTAddActor2D(annot);
@@ -600,6 +603,7 @@ namespace vtkfig
 
   void Figure::RTMessage(std::string msg)
   {
+    RTInitAnnotations();
     annot->SetText(4,msg.c_str());
     annot->Modified();
   }
@@ -611,6 +615,123 @@ namespace vtkfig
     for (auto actor: ctxactors) {auto m=actor->GetScene(); if (m) m->SetDirty(true);}
     for (auto actor: actors2d){auto m=actor->GetMapper(); if (m) m->Update();}
   }
+
+
+  /// \todo add filter to extract boundary edges
+  template <class DATA>
+  void Figure::RTBuildDomainPipeline(
+    vtkSmartPointer<vtkRenderWindow> window,
+    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+    vtkSmartPointer<vtkRenderer> renderer,
+    vtkSmartPointer<DATA> gridfunc)
+  {
+    auto transform=CalcTransform(gridfunc);
+    auto geometry=vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
+    geometry->SetInputDataObject(gridfunc);
+    
+    auto transgeometry=vtkSmartPointer<vtkTransformFilter>::New();
+    transgeometry->SetInputConnection(geometry->GetOutputPort());
+    transgeometry->SetTransform(transform);
+
+    /// if boundary cell color set, use this one!
+    if (state.show_domain_boundary && state.spacedim==3)
+    {
+      vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+      mapper->SetInputConnection(transgeometry->GetOutputPort());
+      auto splot=vtkSmartPointer<vtkActor>::New();
+      if (state.spacedim==3)
+      {
+        splot->GetProperty()->SetOpacity(state.domain_opacity);
+        splot->GetProperty()->SetColor(state.domain_surface_color);
+      }
+      else // TODO add filter to extract boundary edges
+      {
+        splot->GetProperty()->SetOpacity(1.0);
+        splot->GetProperty()->SetColor(0,0,0);
+      }
+
+      splot->SetMapper(mapper);
+      Figure::RTAddActor(splot);
+    }
+
+
+    
+    if (state.show_domain_box&& state.spacedim==3)
+    {
+      // create outline
+      vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
+      outlinefilter->SetInputConnection(transgeometry->GetOutputPort());
+      vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+      outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
+      vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
+      outline->SetMapper(outlineMapper);
+      outline->GetProperty()->SetColor(0, 0, 0);
+      Figure::RTAddActor(outline);
+    }
+
+    if (state.show_domain_axes)
+    {
+      auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
+      axes->SetRanges(data_bounds);
+      axes->SetUseRanges(1);
+      axes->SetInputConnection(transgeometry->GetOutputPort());
+      axes->GetProperty()->SetColor(0, 0, 0);
+      axes->SetFontFactor(5);
+      axes->SetCornerOffset(0); 
+      axes->SetNumberOfLabels(3); 
+      axes->SetInertia(100);
+      axes->SetLabelFormat("%9.2e");
+
+      axes->SetCamera(renderer->GetActiveCamera());
+      
+      if (state.spacedim==2)
+      {
+        axes->SetXLabel("");
+        axes->SetYLabel("");
+        axes->ZAxisVisibilityOff();
+      }
+      else
+      {
+        axes->SetXLabel("x");
+        axes->SetYLabel("y");
+        axes->SetZLabel("z");
+      }
+      auto textprop=axes->GetAxisLabelTextProperty();
+      textprop->ItalicOff();
+      textprop->BoldOn();
+      textprop->SetFontFamilyToCourier();
+      textprop->SetColor(0,0,0);
+
+      textprop=axes->GetAxisTitleTextProperty();
+      textprop->ItalicOff();
+      textprop->BoldOn();
+      textprop->SetFontFamilyToCourier();
+      textprop->SetColor(0,0,0);
+      
+      Figure::RTAddActor2D(axes);
+    }
+  } 
+  
+  
+  /////////////////////////////////////////////////////////////////////
+  /// Generic access to filter
+  void  Figure::RTBuildDomainPipeline(
+    vtkSmartPointer<vtkRenderWindow> window,
+    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
+    vtkSmartPointer<vtkRenderer> renderer)
+  {
+    if (state.datatype==DataSet::DataType::UnstructuredGrid)
+    {
+      auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
+      this->RTBuildDomainPipeline<vtkUnstructuredGrid>(window,interactor,renderer,griddata); 
+    }
+    else if (state.datatype==DataSet::DataType::RectilinearGrid)
+    {
+      auto griddata=vtkRectilinearGrid::SafeDownCast(data);
+      this->RTBuildDomainPipeline<vtkRectilinearGrid>(window, interactor,renderer,griddata);
+    }
+  }
+  
 
 
 }

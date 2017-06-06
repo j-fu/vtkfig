@@ -9,7 +9,6 @@
 #include "vtkfigSurfaceContour.h"
 #include "vtkfigQuiver.h"
 #include "vtkfigTools.h"
-#include "vtkfigDomain.h"
 
 inline double G(double x,double y, double z, double t) 
 {
@@ -100,9 +99,6 @@ int main(void)
   frame->AddFigure(contour);
   frame->AddFigure(quiver);
 
-  auto domain=vtkfig::Domain::New();
-  domain->SetData(griddata);
-  frame->AddFigure(domain);
 
   
   double t=0;

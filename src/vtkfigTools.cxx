@@ -76,33 +76,36 @@ namespace vtkfig
 // vtkScalarBarActor::GetAnnotationTextProperty
 // vtkScalarBarActor::SetUnconstrainedFontSize
 
-
-        vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
-
-        //colorbar->UnconstrainedFontSizeOn();
-        //colorbar->AnnotationTextScalingOff();
-        colorbar->SetLookupTable(mapper->GetLookupTable());
-        colorbar->SetWidth(0.175);
-        colorbar->SetHeight(0.8);
-        colorbar->SetMaximumWidthInPixels(150);
-        colorbar->SetBarRatio(0.1);
-        colorbar->SetVerticalTitleSeparation(0);
-        colorbar->SetTitleRatio(0.1);
-        colorbar->SetNumberOfLabels(11);
-        colorbar->SetPosition(0.8, 0.1);
-        colorbar->GetTitleTextProperty()->ItalicOff();
-        colorbar->GetLabelTextProperty()->ItalicOff();
-        colorbar->GetTitleTextProperty()->SetFontSize(10);
-        colorbar->GetLabelTextProperty()->SetFontSize(80);
-        colorbar->SetLabelFormat("%.2e");
-
+    
+    vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
+    
+    //colorbar->UnconstrainedFontSizeOn();
+    //colorbar->AnnotationTextScalingOff();
+    colorbar->SetLookupTable(mapper->GetLookupTable());
+    colorbar->SetWidth(0.175);
+    colorbar->SetHeight(0.8);
+    colorbar->SetLabelFormat(" %+9.2e");
+    colorbar->SetMaximumWidthInPixels(150);
+    colorbar->SetBarRatio(0.1);
+    colorbar->SetVerticalTitleSeparation(0);
+    colorbar->SetNumberOfLabels(11);
+    colorbar->SetPosition(0.8, 0.1);
+    colorbar->GetTitleTextProperty()->ItalicOff();
+    colorbar->GetLabelTextProperty()->ItalicOff();
+    colorbar->GetTitleTextProperty()->BoldOn();
+    colorbar->GetLabelTextProperty()->BoldOn();
+    colorbar->GetTitleTextProperty()->SetFontSize(10);
+    colorbar->GetLabelTextProperty()->SetFontSize(80);
+    
 //        colorbar->GetAnnotationTextProperty()->SetFontSize(80);
-
-        colorbar->GetTitleTextProperty()->SetColor(0,0,0);     
-        colorbar->GetLabelTextProperty()->SetColor(0,0,0);     
+    
+    colorbar->GetTitleTextProperty()->SetColor(0,0,0);     
+    colorbar->GetTitleTextProperty()->SetFontFamilyToCourier();     
+    colorbar->GetLabelTextProperty()->SetColor(0,0,0);     
+    colorbar->GetLabelTextProperty()->SetFontFamilyToCourier();     
 //        colorbar->GetAnnotationTextProperty()->SetColor(1,0,0);
-
-        return colorbar;
+    
+    return colorbar;
   }
 
 }

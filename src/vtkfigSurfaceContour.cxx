@@ -41,6 +41,13 @@ namespace vtkfig
   }
   
 
+  void SurfaceContour::SetSurfaceRGBTable(RGBTable & tab, int tabsize)
+  {
+    state.surface_rgbtab_size=tabsize;
+    state.surface_rgbtab_modified=true;
+    surface_rgbtab=tab;
+    surface_lut=BuildLookupTable(tab,tabsize);
+  }
 
   /////////////////////////////////////////////////////////////////////
   /// 2D Filter
@@ -170,36 +177,6 @@ namespace vtkfig
       
     } 
 
-    if (false)
-    {
-      auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
-      axes->SetRanges(data_bounds);
-      axes->SetUseRanges(1);
-      axes->SetInputConnection(transallgeometry->GetOutputPort());
-      axes->GetProperty()->SetColor(0, 0, 0);
-      axes->SetFontFactor(1.25);
-      axes->SetCornerOffset(0); 
-      axes->SetNumberOfLabels(3); 
-
-      axes->SetCamera(renderer->GetActiveCamera());
-      axes->ZAxisVisibilityOff();
-      axes->SetXLabel("");
-      axes->SetYLabel("");
-
-      auto textprop=axes->GetAxisLabelTextProperty();
-      textprop->ItalicOff();
-      textprop->SetFontFamilyToArial();
-      textprop->SetColor(0,0,0);
-
-      textprop=axes->GetAxisTitleTextProperty();
-      textprop->ItalicOff();
-      textprop->SetFontFamilyToArial();
-      textprop->SetColor(0,0,0);
-
-      Figure::RTAddActor2D(axes);
-    }
-
-    Figure::RTAddAnnotations();  
 
   }
   
@@ -373,52 +350,6 @@ namespace vtkfig
       
     }
 
-
-
-    
-    if (false)
-    {
-      // create outline
-      vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
-      outlinefilter->SetInputConnection(transgeometry->GetOutputPort());
-      vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
-      vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
-      outline->SetMapper(outlineMapper);
-      outline->GetProperty()->SetColor(0, 0, 0);
-      Figure::RTAddActor(outline);
-    }
-
-    if (false)
-    {
-      auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
-      axes->SetRanges(data_bounds);
-      axes->SetUseRanges(1);
-      axes->SetInputConnection(transallgeometry->GetOutputPort());
-      axes->GetProperty()->SetColor(0, 0, 0);
-      axes->SetFontFactor(1.0);
-      axes->SetCornerOffset(0); 
-      axes->SetNumberOfLabels(3); 
-      axes->SetInertia(100);
-
-      axes->SetCamera(renderer->GetActiveCamera());
-      axes->SetXLabel("x");
-      axes->SetYLabel("y");
-      axes->SetZLabel("z");
-
-      auto textprop=axes->GetAxisLabelTextProperty();
-      textprop->ItalicOff();
-      textprop->SetFontFamilyToArial();
-      textprop->SetColor(0,0,0);
-
-      textprop=axes->GetAxisTitleTextProperty();
-      textprop->ItalicOff();
-      textprop->SetFontFamilyToArial();
-      textprop->SetColor(0,0,0);
-      
-      Figure::RTAddActor2D(axes);
-    }
-    Figure::RTAddAnnotations();  
     
   } 
   

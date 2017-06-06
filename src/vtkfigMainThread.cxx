@@ -15,6 +15,7 @@
 
 
 
+
 #include "vtkfigFrame.h"
 #include "vtkfigFigure.h"
 #include "vtkfigMainThread.h"
@@ -592,7 +593,7 @@ namespace vtkfig
                   || renderer->GetActors()->GetNumberOfItems()==0
                   )
                 {
-                  figure->RTBuildVTKPipeline(window,Interactor,renderer);
+                  figure->RTBuildAllVTKPipelines(window,Interactor,renderer);
 
                   for (auto & actor: figure->actors) 
                     renderer->AddActor(actor);
@@ -657,6 +658,7 @@ namespace vtkfig
           case Communicator::Command::FrameTitle:
           {
             auto frame=mainthread->framemap[mainthread->iframe];
+            frame->RTInit();
             frame->title_actor->SetText(7,frame->parameter.frametitle.c_str());
             frame->title_actor->Modified();
                                       
@@ -756,6 +758,7 @@ namespace vtkfig
       }
 
       auto & subframe=frame->subframes[frame->nvpx*frame->nvpy];
+      frame->RTInit();
       subframe.renderer->AddActor(frame->title_actor);
       frame->title_actor->SetText(7,frame->parameter.frametitle.c_str());
 

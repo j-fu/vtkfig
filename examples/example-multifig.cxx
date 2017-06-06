@@ -9,7 +9,6 @@
 #include "vtkfigSurfaceContour.h"
 #include "vtkfigXYPlot.h"
 #include "vtkfigTools.h"
-#include "vtkfigDomain.h"
 
 inline double GU(double x,double y, double t) 
 {
@@ -80,24 +79,17 @@ int main(void)
   griddata->SetPointScalar(u ,"u");
   griddata->SetPointScalar(v ,"v");
 
-  auto domain_u=vtkfig::Domain::New();
-  domain_u->SetData(griddata);
-  auto domain_v=vtkfig::Domain::New();
-  domain_v->SetData(griddata);
-
 
 
   auto contour_u=vtkfig::SurfaceContour::New();
   contour_u->SetData(griddata,"u");
   contour_u->SetSurfaceRGBTable(colors,255);
   frame->AddFigure(contour_u,1,0);
-  frame->AddFigure(domain_u,1,0);
 
   auto contour_v=vtkfig::SurfaceContour::New();
   contour_v->SetData(griddata,"v");
   contour_v->SetSurfaceRGBTable(colors,255);
   frame->AddFigure(contour_v,0,0);
-  frame->AddFigure(domain_v,0,0);
 
   auto xyplot=vtkfig::XYPlot::New();
   xyplot->SetYRange(-0.5,0.5);

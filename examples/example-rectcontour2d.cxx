@@ -9,7 +9,6 @@
 #include "vtkfigDataSet.h"
 #include "vtkfigSurfaceContour.h"
 #include "vtkfigTools.h"
-#include "vtkfigDomain.h"
 
 
 inline double G(double x,double y, double t) 
@@ -65,9 +64,6 @@ int main(void)
   contour->SetData(griddata,"V");
   contour->SetSurfaceRGBTable(colors,255);
 
-  auto domain=vtkfig::Domain::New();
-  domain->SetData(griddata);
-  frame->AddFigure(domain);
 
   frame->AddFigure(contour);
 

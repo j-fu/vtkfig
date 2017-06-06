@@ -112,49 +112,7 @@ namespace vtkfig
       Figure::RTAddActor2D(cbar);
     }
 
-    if (true)
-    {
-      auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
-      axes->SetRanges(bounds);
-      axes->SetUseRanges(1);
-      axes->SetInputConnection(transgeometry->GetOutputPort());
-      axes->GetProperty()->SetColor(0, 0, 0);
-      axes->SetFontFactor(1.25);
-      axes->SetCornerOffset(0); 
-      axes->SetNumberOfLabels(3); 
-
-      axes->SetCamera(renderer->GetActiveCamera());
-      axes->ZAxisVisibilityOff();
-      axes->SetXLabel("");
-      axes->SetYLabel("");
-
-      auto textprop=axes->GetAxisLabelTextProperty();
-      textprop->ItalicOff();
-      textprop->SetFontFamilyToArial();
-      textprop->SetColor(0,0,0);
-
-      textprop=axes->GetAxisTitleTextProperty();
-      textprop->ItalicOff();
-      textprop->SetFontFamilyToArial();
-      textprop->SetColor(0,0,0);
-
-      Figure::RTAddActor2D(axes);
-    }
     
-    if (true)
-    {
-      auto tactor= vtkSmartPointer<vtkCornerAnnotation>::New();
-      tactor->SetText(7,title.c_str());
-      tactor->SetMinimumFontSize(8);
-      tactor->SetMaximumFontSize(16);
-      auto textprop=tactor->GetTextProperty();
-      textprop->ItalicOff();
-      textprop->BoldOn();
-      textprop->SetFontSize(8);
-      textprop->SetFontFamilyToArial();
-      textprop->SetColor(0,0,0);
-      Figure::RTAddActor2D(tactor);
-    }
 
   }
   
@@ -233,60 +191,6 @@ namespace vtkfig
     
     Figure::RTAddActor2D(BuildColorBar(mapper));
     
-    
-    if (true)
-    {
-      // create outline
-      vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
-      outlinefilter->SetInputConnection(scalar->GetOutputPort());;
-      vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
-      vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
-      outline->SetMapper(outlineMapper);
-      outline->GetProperty()->SetColor(0, 0, 0);
-      Figure::RTAddActor(outline);
-    }
-
-    if (true)
-    {
-      auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
-      axes->GetProperty()->SetColor(0, 0, 0);
-      axes->SetFontFactor(1.0);
-      axes->SetCornerOffset(0); 
-      axes->SetNumberOfLabels(3); 
-      axes->SetInertia(100);
-
-      axes->SetCamera(renderer->GetActiveCamera());
-      axes->SetXLabel("x");
-      axes->SetYLabel("y");
-      axes->SetZLabel("z");
-
-      auto textprop=axes->GetAxisLabelTextProperty();
-      textprop->ItalicOff();
-      textprop->SetFontFamilyToArial();
-      textprop->SetColor(0,0,0);
-
-      textprop=axes->GetAxisTitleTextProperty();
-      textprop->ItalicOff();
-      textprop->SetFontFamilyToArial();
-      textprop->SetColor(0,0,0);
-      
-      Figure::RTAddActor2D(axes);
-    }
-
-    if (true)
-    {
-      auto tactor= vtkSmartPointer<vtkCornerAnnotation>::New();
-      tactor->SetText(7,title.c_str());
-      auto textprop=tactor->GetTextProperty();
-      textprop->ItalicOff();
-      textprop->BoldOff();
-      textprop->SetFontSize(8);
-      textprop->SetFontFamilyToArial();
-      textprop->SetColor(0,0,0);
-      Figure::RTAddActor2D(tactor);
-    }
-
   } 
   
   
@@ -297,7 +201,7 @@ namespace vtkfig
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer)
   {
-    SetNumberOfIsocontours(state.num_contours);
+
 
     auto udata=vtkUnstructuredGrid::SafeDownCast(data);
     if (udata)
@@ -352,20 +256,6 @@ namespace vtkfig
 
     communicator->ReceiveCharBuffer((char*)&state,sizeof(state));
     communicator->ReceiveString(dataname);
-
-    if (state.surface_rgbtab_modified)
-    {
-      RGBTable new_rgbtab;
-      ReceiveRGBTable(communicator, new_rgbtab);
-      SetSurfaceRGBTable(new_rgbtab,state.surface_rgbtab_size);
-    }
-
-    if (state.contour_rgbtab_modified)
-    {
-      RGBTable new_rgbtab;
-      ReceiveRGBTable(communicator, new_rgbtab);
-      SetContourRGBTable(new_rgbtab,state.contour_rgbtab_size);
-    }
 
     if (data==NULL)
     {

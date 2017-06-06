@@ -344,7 +344,11 @@ Figures must be first clicked on before editing works.
     vtkSmartPointer<vtkRenderWindow> window;
     
     /// Actor for frame title annotation
-    vtkSmartPointer<vtkCornerAnnotation> title_actor;
+    vtkSmartPointer<vtkCornerAnnotation> title_actor=0;
+
+    /// Init title actor
+    void RTInit();
+
   };
 }
 

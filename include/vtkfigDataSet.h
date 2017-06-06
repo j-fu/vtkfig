@@ -232,10 +232,12 @@ namespace vtkfig
     vtkSmartPointer<vtkIdList> GetCellList(std::string name) {return masks[name];}
     
 
+  protected:
+    int spacedim=0;
+
   private:
     
     vtkSmartPointer<vtkDataSet> data=NULL;
-    int spacedim=0;
     
     template<class DATA, class WRITER>
       void WriteVTK(vtkSmartPointer<DATA> data, std::string fname);

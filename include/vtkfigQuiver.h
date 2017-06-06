@@ -20,7 +20,12 @@ namespace vtkfig
       Quiver();
       static std::shared_ptr<Quiver> New() { return std::make_shared<Quiver>(); }
 
-      void SetQuiverArrowScale(double scale) { state.qv_arrow_scale=scale;}
+
+      /// Set scaling of arrows
+      void SetQuiverArrowScale(double scale) { state.quiver_arrow_scale=scale;}
+
+      /// Set 
+      void SetQuiverSurfaceDistance(double dist) { state.quiver_surface_distance=dist;}
       
       void SetQuiverGrid(int nx, int ny);
 
@@ -49,6 +54,7 @@ namespace vtkfig
       vtkSmartPointer<vtkPolyData> probePolyData;
       vtkSmartPointer<vtkLookupTable> lut;
       bool show_colorbar=false;
+
     };  
   
 
@@ -60,7 +66,7 @@ namespace vtkfig
     auto probePoints =  vtkSmartPointer<vtkPoints>::New();
     if (state.spacedim==2)
       for (int i=0;i<p.size();i+=2)
-        probePoints->InsertNextPoint (p[i+0],p[i+1],0);
+        probePoints->InsertNextPoint (p[i+0],p[i+1],state.quiver_surface_distance);
     
     if (state.spacedim==3)
       for (int i=0;i<p.size();i+=3)

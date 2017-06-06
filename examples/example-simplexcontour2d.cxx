@@ -11,7 +11,6 @@
 #include "vtkfigDataSet.h"
 #include "vtkfigSurfaceContour.h"
 #include "vtkfigTools.h"
-#include "vtkfigDomain.h"
 
 #include <vtkMath.h>
 double scalefac=1.0;
@@ -75,9 +74,6 @@ int main(void)
   contour->SetValueRange(-1,1);
   frame->AddFigure(contour);
 
-  auto domain=vtkfig::Domain::New();
-  domain->SetData(griddata);
-  frame->AddFigure(domain);
 
 
   while (ii<nspin)

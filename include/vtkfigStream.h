@@ -11,7 +11,7 @@ namespace vtkfig
 
 
   ///
-  /// Experimental quiver view of vector fields
+  /// Experimental streamline view of vector fields
   ///
   class Stream: public Figure
     {
@@ -19,29 +19,26 @@ namespace vtkfig
       
       Stream();
       static std::shared_ptr<Stream> New() { return std::make_shared<Stream>(); }
-
       
-      void SetStreamGrid(int nx, int ny);
-
-      void SetStreamGrid(int nx, int ny, int nz);
-
-
-
-      
-      template <class V>
-        void SetStreamPoints( const V&p);
-
+      /// Set color of streamlines
       void SetStreamLineColor(double r, double b, double g) 
       {
         state.streamcolor[0]=r;
         state.streamcolor[1]=g;
         state.streamcolor[2]=b;
       }
-
-      void SetStreamLineLenght(double l){ state.streamlength=l;}
       
+      /// Set length of stream lines
+      void SetStreamLineLength(double l){ state.streamlength=l;}
+      
+      /// Set width of stream ribbons
       void SetStreamLineWidth(double w){state.streamribbonwidth=0.01;}
+
       
+      /// Set seed points
+      template <class V>
+        void SetSeedPoints( const V&p);
+
       
     private:
 
@@ -67,7 +64,7 @@ namespace vtkfig
 
   template <class V>
     inline
-    void Stream::SetStreamPoints( const V&p)
+    void Stream::SetSeedPoints( const V&p)
   {
     assert(data);
     auto probePoints =  vtkSmartPointer<vtkPoints>::New();

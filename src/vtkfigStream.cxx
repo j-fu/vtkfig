@@ -29,59 +29,6 @@ namespace vtkfig
   
 
 
-  void Stream::SetStreamGrid(int nx, int ny)
-  {
-    assert(data);
-    assert(state.spacedim==2);
-    double bounds[6];
-    data->GetBounds(bounds);
-    
-    auto probePoints =  vtkSmartPointer<vtkPoints>::New();
-    double dx=(bounds[1]-bounds[0])/((double)nx);
-    double dy=(bounds[3]-bounds[2])/((double)ny);
-    
-    double x=bounds[0];
-    for (int ix=0; ix<nx;ix++,x+=dx )
-    {
-      double  y=bounds[2];
-      for ( int iy=0;iy<ny;iy++,y+=dy )
-        probePoints->InsertNextPoint ( x, y, 0);
-    }
-
-    probePolyData =vtkSmartPointer<vtkPolyData>::New();
-    probePolyData->SetPoints(probePoints);
-  }
-  
-  void Stream::SetStreamGrid(int nx, int ny, int nz)
-  {
-    assert(data);
-    assert(state.spacedim==3);
-    double bounds[6];
-    data->GetBounds(bounds);
-    
-    auto probePoints =  vtkSmartPointer<vtkPoints>::New();
-    double dx=(bounds[1]-bounds[0])/((double)nx);
-    double dy=(bounds[3]-bounds[2])/((double)ny);
-    double dz=(bounds[5]-bounds[4])/((double)nz);
-    
-    double x=bounds[0];
-    for (int ix=0; ix<nx;ix++,x+=dx )
-    {
-      double  y=bounds[2];
-      for ( int iy=0;iy<ny;iy++,y+=dy )
-      {
-        double  z=bounds[4];
-        for ( int iz=0;iz<nz;iz++,z+=dz )
-        {
-          probePoints->InsertNextPoint ( x, y, z);
-        }
-      }
-    }
-    
-    probePolyData =vtkSmartPointer<vtkPolyData>::New();
-    probePolyData->SetPoints(probePoints);
-  }
-
 
   template <class DATA>
   void  Stream::RTBuildVTKPipeline(
