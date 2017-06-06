@@ -24,9 +24,23 @@ namespace vtkfig
       void SetStreamGrid(int nx, int ny);
 
       void SetStreamGrid(int nx, int ny, int nz);
+
+
+
       
       template <class V>
         void SetStreamPoints( const V&p);
+
+      void SetStreamLineColor(double r, double b, double g) 
+      {
+        state.streamcolor[0]=r;
+        state.streamcolor[1]=g;
+        state.streamcolor[2]=b;
+      }
+
+      void SetStreamLineLenght(double l){ state.streamlength=l;}
+      
+      void SetStreamLineWidth(double w){state.streamribbonwidth=0.01;}
       
       
     private:

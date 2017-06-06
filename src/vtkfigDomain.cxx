@@ -15,7 +15,7 @@
 #include "vtkTransformFilter.h"
 #include "vtkCamera.h"
 
-#include "vtkfigBoundary.h"
+#include "vtkfigDomain.h"
 
 
 namespace vtkfig
@@ -23,102 +23,54 @@ namespace vtkfig
 
 
 
-  Boundary::Boundary(): Figure()
+  Domain::Domain(): Figure()
   {
   }
   
 
-
-  /////////////////////////////////////////////////////////////////////
-  /// 2D Filter
-
-  template <class DATA, class FILTER>
-  void Boundary::RTBuildVTKPipeline2D(
-    vtkSmartPointer<vtkRenderWindow> window,
-    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-    vtkSmartPointer<vtkRenderer> renderer,
-    vtkSmartPointer<DATA> gridfunc)
-  {
-    auto transform=CalcTransform(gridfunc);
-
-    /// should react on elevation view
-    renderer->GetActiveCamera()->SetParallelProjection(1);
-
-    auto geometry=vtkSmartPointer<FILTER>::New();
-    geometry->SetInputDataObject(gridfunc);
-    auto transgeometry=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
-    transgeometry->SetInputDataObject(gridfunc);
-    transgeometry->SetTransform(transform);
-
-
-    if (true)
-    {
-      auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
-      axes->SetRanges(data_bounds);
-      axes->SetUseRanges(1);
-      axes->SetInputConnection(transgeometry->GetOutputPort());
-      axes->GetProperty()->SetColor(0, 0, 0);
-      axes->SetFontFactor(1.25);
-      axes->SetCornerOffset(0); 
-      axes->SetNumberOfLabels(3); 
-
-      axes->SetCamera(renderer->GetActiveCamera());
-      axes->ZAxisVisibilityOff();
-      axes->SetXLabel("");
-      axes->SetYLabel("");
-
-      auto textprop=axes->GetAxisLabelTextProperty();
-      textprop->ItalicOff();
-      textprop->SetFontFamilyToArial();
-      textprop->SetColor(0,0,0);
-
-      textprop=axes->GetAxisTitleTextProperty();
-      textprop->ItalicOff();
-      textprop->SetFontFamilyToArial();
-      textprop->SetColor(0,0,0);
-
-      Figure::RTAddActor2D(axes);
-    }
-
-    Figure::RTAddAnnotations();  
-
-  }
-  
- 
-  /////////////////////////////////////////////////////////////////////
-  /// 3D Filter
-
+  /// \todo add filter to extract boundary edges
   template <class DATA,class FILTER>
-  void Boundary::RTBuildVTKPipeline3D(
+  void Domain::RTBuildVTKPipeline(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer,
     vtkSmartPointer<DATA> gridfunc)
   {
+  
 
     auto transform=CalcTransform(gridfunc);
-
+    
     auto geometry=vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
     geometry->SetInputDataObject(gridfunc);
-
+    
     auto transgeometry=vtkSmartPointer<vtkTransformFilter>::New();
     transgeometry->SetInputConnection(geometry->GetOutputPort());
     transgeometry->SetTransform(transform);
 
+    /// if boundary cell color set, use this one!
+    if (state.show_domain_boundary && state.spacedim==3)
+    {
+      vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+      mapper->SetInputConnection(transgeometry->GetOutputPort());
+      auto splot=vtkSmartPointer<vtkActor>::New();
+      if (state.spacedim==3)
+      {
+        splot->GetProperty()->SetOpacity(state.domain_opacity);
+        splot->GetProperty()->SetColor(state.domain_surface_color);
+      }
+      else // TODO add filter to extract boundary edges
+      {
+        splot->GetProperty()->SetOpacity(1.0);
+        splot->GetProperty()->SetColor(0,0,0);
+      }
 
-    vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-
-    mapper->SetInputConnection(transgeometry->GetOutputPort());
-    auto splot=vtkSmartPointer<vtkActor>::New();
-    splot->GetProperty()->SetOpacity(0.1);
-    splot->GetProperty()->SetColor(0.8,0.8,0.8);
-    splot->SetMapper(mapper);
-    Figure::RTAddActor(splot);
-  
+      splot->SetMapper(mapper);
+      Figure::RTAddActor(splot);
+    }
 
 
     
-    if (true)
+    if (state.show_domain_box&& state.spacedim==3)
     {
       // create outline
       vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
@@ -131,7 +83,7 @@ namespace vtkfig
       Figure::RTAddActor(outline);
     }
 
-    if (true)
+    if (state.show_domain_axes)
     {
       auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
       axes->SetRanges(data_bounds);
@@ -144,10 +96,19 @@ namespace vtkfig
       axes->SetInertia(100);
 
       axes->SetCamera(renderer->GetActiveCamera());
-      axes->SetXLabel("x");
-      axes->SetYLabel("y");
-      axes->SetZLabel("z");
-
+      
+      if (state.spacedim==2)
+      {
+        axes->SetXLabel("");
+        axes->SetYLabel("");
+        axes->ZAxisVisibilityOff();
+      }
+      else
+      {
+        axes->SetXLabel("x");
+        axes->SetYLabel("y");
+        axes->SetZLabel("z");
+      }
       auto textprop=axes->GetAxisLabelTextProperty();
       textprop->ItalicOff();
       textprop->SetFontFamilyToArial();
@@ -167,7 +128,7 @@ namespace vtkfig
   
   /////////////////////////////////////////////////////////////////////
   /// Generic access to filter
-  void  Boundary::RTBuildVTKPipeline(
+  void  Domain::RTBuildVTKPipeline(
     vtkSmartPointer<vtkRenderWindow> window,
     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
     vtkSmartPointer<vtkRenderer> renderer)
@@ -177,21 +138,12 @@ namespace vtkfig
     if (state.datatype==DataSet::DataType::UnstructuredGrid)
     {
       auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
-      
-      if (state.spacedim==2)
-        this->RTBuildVTKPipeline2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,griddata);
-      else
-        this->RTBuildVTKPipeline3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,griddata); 
+      this->RTBuildVTKPipeline<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,griddata); 
     }
     else if (state.datatype==DataSet::DataType::RectilinearGrid)
     {
       auto griddata=vtkRectilinearGrid::SafeDownCast(data);
-      
-      
-      if (state.spacedim==2)
-        this->RTBuildVTKPipeline2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
-      else
-        this->RTBuildVTKPipeline3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
+      this->RTBuildVTKPipeline<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
     }
   }
   
@@ -201,7 +153,7 @@ namespace vtkfig
   /////////////////////////////////////////////////////////////////////
   /// Client-Server communication
 
-  void Boundary::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator)
+  void Domain::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator)
   {
     communicator->SendCharBuffer((char*)&state,sizeof(state));
     communicator->SendString(dataname);
@@ -220,7 +172,7 @@ namespace vtkfig
     communicator->Send(data,1,1);
   }
 
-  void Boundary::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator)
+  void Domain::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator)
   {
 
     communicator->ReceiveCharBuffer((char*)&state,sizeof(state));

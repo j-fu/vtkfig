@@ -20,6 +20,7 @@ namespace vtkfig
       Quiver();
       static std::shared_ptr<Quiver> New() { return std::make_shared<Quiver>(); }
 
+      void SetQuiverArrowScale(double scale) { state.qv_arrow_scale=scale;}
       
       void SetQuiverGrid(int nx, int ny);
 

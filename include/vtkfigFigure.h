@@ -121,8 +121,12 @@ namespace vtkfig
     /// \param lutsize  Size of lookup table created.
     void SetContourRGBTable(RGBTable & tab, int lutsize);
 
-    /// Toggle surface rendering
-    void ShowSurface(bool b) {state.show_surface=b;}
+    void ShowDomainAxes(bool b) { state.show_domain_axes=b;}
+
+    void ShowDomainBox(bool b) { state.show_domain_box=b;}
+
+    void ShowDomainBoundary(bool b) { state.show_domain_boundary=b;}
+
 
     /// Toggle isoline rendering
     void ShowIsolines(bool b) {state.show_isolines=b;}
@@ -144,9 +148,6 @@ namespace vtkfig
 
     /// Set number of isocontours to show
     void SetNumberOfIsocontours(int n) {state.num_contours=n; state.max_num_contours= std::max(n,state.max_num_contours);}
-
-    /// Scale arrow for quiver view
-    void SetQuiverArrowScale(double scale) { state.qv_arrow_scale=scale;}
 
     /// Set width of isolines
     void SetIsolineWidth(double w) {state.isoline_width=w;}
@@ -382,7 +383,17 @@ namespace vtkfig
 
       
       bool wireframe=false;
+
+      bool show_domain_axes=true;
       
+      bool show_domain_boundary=true;
+      
+      bool show_domain_box=true;
+      
+      double domain_opacity=0.1;
+      
+      double domain_surface_color[3]={0.8,0.8,0.8};
+
       int spacedim=2;
       
       double isoline_width=2;
@@ -390,7 +401,9 @@ namespace vtkfig
       double qv_arrow_scale=0.333;
 
       double streamcolor[3]={0.8,0.8,0.8};
+
       double streamlength=1.0;
+
       double streamribbonwidth=0.01;
 
       DataSet::DataType datatype;

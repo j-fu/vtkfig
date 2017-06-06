@@ -1,5 +1,5 @@
-#ifndef VTKFIG_BOUNDARY_H
-#define VTKFIG_BOUNDARY_H
+#ifndef VTKFIG_DOMAIN_H
+#define VTKFIG_DOMAIN_H
 
 #include "vtkDataSetAttributes.h"
 #include "vtkGeometryFilter.h"
@@ -17,13 +17,13 @@ namespace vtkfig
   /// 
   /// Surface and contour plot of 2/3D scalar data
   ///
-  class Boundary: public Figure
+  class Domain: public Figure
   {
     
   public:
-    Boundary();
-    static std::shared_ptr<Boundary> New() { return std::make_shared<Boundary>();}
-    virtual std::string SubClassName() {return std::string("Boundary");}
+    Domain();
+    static std::shared_ptr<Domain> New() { return std::make_shared<Domain>();}
+    virtual std::string SubClassName() {return std::string("Domain");}
     
     
   private:
@@ -39,14 +39,9 @@ namespace vtkfig
     void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator);
     
     
-    template <class GRIDFUNC, class FILTER>
-      void RTBuildVTKPipeline2D(vtkSmartPointer<vtkRenderWindow> window,
-                     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-                     vtkSmartPointer<vtkRenderer> renderer,
-                     vtkSmartPointer<GRIDFUNC> gridfunc);
     
     template <class GRIDFUNC, class FILTER>
-      void RTBuildVTKPipeline3D(vtkSmartPointer<vtkRenderWindow> window,
+      void RTBuildVTKPipeline(vtkSmartPointer<vtkRenderWindow> window,
                      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
                      vtkSmartPointer<vtkRenderer> renderer,
                      vtkSmartPointer<GRIDFUNC> gridfunc);

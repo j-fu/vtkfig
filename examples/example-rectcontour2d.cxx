@@ -9,6 +9,7 @@
 #include "vtkfigDataSet.h"
 #include "vtkfigSurfaceContour.h"
 #include "vtkfigTools.h"
+#include "vtkfigDomain.h"
 
 
 inline double G(double x,double y, double t) 
@@ -55,6 +56,7 @@ int main(void)
   size_t ii=0;
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
+
   
   auto griddata=vtkfig::DataSet::New();
   griddata->SetRectilinearGrid(x,y);
@@ -62,6 +64,11 @@ int main(void)
   auto contour=vtkfig::SurfaceContour::New();
   contour->SetData(griddata,"V");
   contour->SetSurfaceRGBTable(colors,255);
+
+  auto domain=vtkfig::Domain::New();
+  domain->SetData(griddata);
+  frame->AddFigure(domain);
+
   frame->AddFigure(contour);
 
   while (ii<nspin)

@@ -10,7 +10,7 @@ add_library(vtkfig
   vtkfigQuiver.cxx  
   vtkfigStream.cxx  
   vtkfigXYPlot.cxx
-  vtkfigBoundary.cxx
+  vtkfigDomain.cxx
   
   vtkfigChartXY.cxx
   vtkfigSurf2D.cxx

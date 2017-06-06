@@ -7,7 +7,7 @@
 #include "vtkfigFrame.h"
 #include "vtkfigQuiver.h"
 #include "vtkfigStream.h"
-#include "vtkfigBoundary.h"
+#include "vtkfigDomain.h"
 #include "vtkfigTools.h"
 
 
@@ -97,7 +97,7 @@ int main(void)
 
 
 
-  auto bounds=vtkfig::Boundary::New();
+  auto bounds=vtkfig::Domain::New();
   bounds->SetData(griddata);
   
   auto quiver=vtkfig::Quiver::New();

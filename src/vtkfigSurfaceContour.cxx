@@ -170,7 +170,7 @@ namespace vtkfig
       
     } 
 
-    if (true)
+    if (false)
     {
       auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
       axes->SetRanges(data_bounds);
@@ -376,7 +376,7 @@ namespace vtkfig
 
 
     
-    if (true)
+    if (false)
     {
       // create outline
       vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
@@ -389,7 +389,7 @@ namespace vtkfig
       Figure::RTAddActor(outline);
     }
 
-    if (true)
+    if (false)
     {
       auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
       axes->SetRanges(data_bounds);

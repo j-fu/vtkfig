@@ -8,6 +8,7 @@
 #include "vtkfigQuiver.h"
 #include "vtkfigStream.h"
 #include "vtkfigTools.h"
+#include "vtkfigDomain.h"
 
 
 inline double UX(double x, double y, double t)
@@ -95,6 +96,11 @@ int main(void)
 
   frame->AddFigure(quiver);
   frame->AddFigure(stream);
+
+  auto domain=vtkfig::Domain::New();
+  domain->SetData(griddata);
+  frame->AddFigure(domain);
+ 
 
   while (ii<nspin)
   {
