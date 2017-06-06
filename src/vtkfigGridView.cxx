@@ -43,15 +43,11 @@ namespace vtkfig
   /// 2D Filter
 
   template <class DATA, class FILTER>
-  void GridView::RTBuildVTKPipeline2D(
-    vtkSmartPointer<vtkRenderWindow> window,
-    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-    vtkSmartPointer<vtkRenderer> renderer,
-    vtkSmartPointer<DATA> gridfunc)
+  void GridView::RTBuildVTKPipeline2D(vtkSmartPointer<DATA> gridfunc)
   {
     double bounds[6];
     gridfunc->GetBounds(bounds);
-    renderer->GetActiveCamera()->SetParallelProjection(1);
+    //renderer->GetActiveCamera()->SetParallelProjection(1);
     double range[2];
     auto cr=vtkFloatArray::SafeDownCast(gridfunc->GetCellData()->GetAbstractArray("cellregions"));
     auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
@@ -121,11 +117,7 @@ namespace vtkfig
   /// 3D Filter
 
   template <class DATA,class FILTER>
-  void GridView::RTBuildVTKPipeline3D(
-    vtkSmartPointer<vtkRenderWindow> window,
-    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-    vtkSmartPointer<vtkRenderer> renderer,
-    vtkSmartPointer<DATA> gridfunc)
+  void GridView::RTBuildVTKPipeline3D(vtkSmartPointer<DATA> gridfunc)
   {
 
     cout << "3D Gridview not yet implemented" << endl;
@@ -196,10 +188,7 @@ namespace vtkfig
   
   /////////////////////////////////////////////////////////////////////
   /// Generic access to filter
-  void  GridView::RTBuildVTKPipeline(
-    vtkSmartPointer<vtkRenderWindow> window,
-    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-    vtkSmartPointer<vtkRenderer> renderer)
+  void  GridView::RTBuildVTKPipeline()
   {
 
 
@@ -208,9 +197,9 @@ namespace vtkfig
     {
       
       if (state.spacedim==2)
-        this->RTBuildVTKPipeline2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,udata);
+        this->RTBuildVTKPipeline2D<vtkUnstructuredGrid,vtkGeometryFilter>(udata);
       else
-        this->RTBuildVTKPipeline3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,udata); 
+        this->RTBuildVTKPipeline3D<vtkUnstructuredGrid,vtkGeometryFilter>(udata); 
       return;
     }
 
@@ -218,9 +207,9 @@ namespace vtkfig
     if (rdata)
     {
       if (state.spacedim==2)
-        this->RTBuildVTKPipeline2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,rdata);
+        this->RTBuildVTKPipeline2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(rdata);
       else
-        this->RTBuildVTKPipeline3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,rdata);
+        this->RTBuildVTKPipeline3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(rdata);
       return;
     }
   }

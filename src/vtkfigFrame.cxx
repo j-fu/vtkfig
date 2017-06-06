@@ -1,6 +1,9 @@
 #include <cassert>
 
 #include "vtkTextProperty.h"
+#include "vtkPropCollection.h"
+#include "vtkCamera.h"
+#include "vtkRenderWindow.h"
 
 #include "vtkfigFrame.h"
 #include "vtkfigFigure.h"
@@ -12,21 +15,118 @@ namespace vtkfig
   /////////////////////////////////////
   /// Public API 
   
-  Frame::Frame(const int nvpx, const int nvpy):
-    nvpx(nvpx),
-    nvpy(nvpy)
+  Frame::Frame()
   {
     mainthread=internals::MainThread::CreateMainThread();
-
+    this->nvpx=1;
+    this->nvpy=1;
     figures.clear();
-    double dy= 0.925/(double)nvpy;
-    double dx= 1.0/(double)nvpx;
-    subframes.resize(nvpx*nvpy+1);
+    subframes.resize(nvpx*nvpy);
+    RTCalculateViewports(nvpx, nvpy);
+
+    title_subframe.viewport[0]=0;
+    title_subframe.viewport[1]=0.925;
+    title_subframe.viewport[2]=1.0;
+    title_subframe.viewport[3]=1.0;
+    mainthread->AddFrame(this);
+  }
+
+  void Frame::RTSetLayout(int xnvpx, int xnvpy)
+  {
+    this->nvpx=xnvpx;
+    this->nvpy=xnvpy;
+    subframes.resize(nvpx*nvpy);
+    if (single_subframe_view)
+      RTSetSingleViewport(nvpx,nvpy);
+    else
+      RTCalculateViewports(nvpx, nvpy);
+
+  }
+
+
+
+  void Frame::RTSetSingleViewport(int xnvpx, int xnvpy)
+  {
+    for (int ivpy=0;ivpy<xnvpy;ivpy++)
+      for (int ivpx=0 ;ivpx<xnvpx;ivpx++)
+      {
+        int ipos=pos(ivpx,ivpy);
+        auto & subframe=subframes[ipos];
+        subframe.viewport[0]=0;
+        subframe.viewport[1]=0;
+        subframe.viewport[2]=1;
+        subframe.viewport[3]=0.925;
+      }
+
+  }
+
+  void Frame::RTAddFigures()
+  {
+    for (auto & figure: this->figures)
+    {
+      if (!this->subframes[figure->framepos].hidden)
+      {
+        auto &renderer=this->subframes[figure->framepos].renderer;
+        
+        auto &window=this->window;
+        
+        if (
+          figure->IsEmpty()  
+          || renderer->GetActors()->GetNumberOfItems()==0
+          )
+        {
+          figure->RTBuildAllVTKPipelines(renderer);
+          
+          for (auto & actor: figure->actors) 
+            renderer->AddActor(actor);
+          
+          for (auto & actor: figure->ctxactors) 
+            renderer->AddActor(actor);
+          
+          for (auto & actor: figure->actors2d) 
+            renderer->AddActor(actor);
+          
+        }
+        
+        figure->RTUpdateActors();
+      
+        renderer->SetBackground(figure->bgcolor[0],
+                                figure->bgcolor[1],
+                                figure->bgcolor[2]);
+        
+      }
+    }
+  }
+
+
+  void Frame::RTHideSubframe(SubFrame &subframe)
+  {
+    subframe.hidden=true;
+  }
+  
+  void Frame::RTUnHideSubframe(SubFrame &subframe)
+  {
+    subframe.hidden=false;
+  }
+  
+
+  void Frame::RTSetVisibleSubFrame(int isub, bool hide_old)
+  {
+    if (!single_subframe_view) return;
+    if (hide_old)  this->RTHideSubframe(this->subframes[this->visible_subframe]);
+    this->visible_subframe=(isub+this->subframes.size())%(this->subframes.size());
+    this->RTUnHideSubframe(this->subframes[this->visible_subframe]);
+    this->RTResetRenderers(false);
+  }
+  void Frame::RTCalculateViewports(int xnvpx, int xnvpy)
+  {
+    double dy= 0.925/(double)xnvpy;
+    double dx= 1.0/(double)xnvpx;
     double y=0.0;
-    for (int ivpy=0;ivpy<nvpy;ivpy++, y+=dy)
+    for (int ivpy=0;ivpy<xnvpy;ivpy++, y+=dy)
     {
       double x=0.0;
-      for (int ivpx=0 ;ivpx<nvpx;ivpx++, x+=dx)
+      for (int ivpx=0 ;ivpx<xnvpx;ivpx++, x+=dx)
       {
         int ipos=pos(ivpx,ivpy);
         
@@ -40,15 +140,67 @@ namespace vtkfig
         subframe.viewport[3]=y+dy;
       }
     }
-    auto & subframe=subframes[nvpx*nvpy];
-    subframe.viewport[0]=0;
-    subframe.viewport[1]=0.925;
-    subframe.viewport[2]=1.0;
-    subframe.viewport[3]=1.0;
+  }
 
+  void Frame::RTResetCamera(SubFrame& subframe)
+  {
+    subframe.renderer->GetActiveCamera()->SetPosition(subframe.default_camera_position);
+    subframe.renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
+    subframe.renderer->GetActiveCamera()->OrthogonalizeViewUp();
+    subframe.renderer->GetActiveCamera()->SetRoll(0);
+    subframe.renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
+    subframe.renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
+  }
 
-    mainthread->AddFrame(this);
+  void Frame::RTResetRenderers(bool from_scratch)
+  {
+    if (from_scratch)
+    {
+       title_subframe.renderer = vtkSmartPointer<vtkRenderer>::New();
+       title_subframe.renderer->SetBackground(1., 1., 1.);
+       RTResetCamera(title_subframe);
+       title_subframe.renderer->SetViewport(title_subframe.viewport);
+       this->window->AddRenderer(title_subframe.renderer);
+    }
 
+    for (auto & subframe : this->subframes)
+    {
+      if (!from_scratch&& subframe.renderer)
+      {
+        subframe.renderer->Clear();
+        this->window->RemoveRenderer(subframe.renderer);
+      }
+      else
+      {
+       subframe.renderer = vtkSmartPointer<vtkRenderer>::New();
+       subframe.renderer->SetBackground(1., 1., 1.);
+       RTResetCamera(subframe);
+      }
+      if (!subframe.hidden)
+      {        
+        subframe.renderer->SetViewport(subframe.viewport);
+        this->window->AddRenderer(subframe.renderer);
+      }
+    }
+  }
+
+  void Frame::RTSetSingleView(bool single_view)
+  {
+    single_subframe_view=single_view;
+    if (single_view)
+    {
+     this->RTSetSingleViewport(this->nvpx, this->nvpy);
+      for (int i=0;i<this->subframes.size();i++)
+        if (i!=this->visible_subframe)
+          this->RTHideSubframe(this->subframes[i]);
+    }
+    else
+    {
+      this->RTCalculateViewports(this->nvpx, this->nvpy);
+      for (int i=0;i<this->subframes.size();i++)
+        this->RTUnHideSubframe(this->subframes[i]);
+    }
+    this->RTResetRenderers(false);
   }
   
   void Frame::RTInit()
@@ -71,25 +223,59 @@ namespace vtkfig
 
   void Frame::Interact() { mainthread->Interact();}
 
-  void Frame::AddFigure(Figure* fig, int ivpx, int ivpy)
+  void Frame::SetAutoLayout(int nfig)
   {
-    assert(ivpx<this->nvpx);
-    assert(ivpy<this->nvpy);
-    this->figures.push_back(fig);
-    fig->framepos=this->pos(ivpx,ivpy);
-    SendCommand("AddFigure", internals::Communicator::Command::FrameAddFigure);
+    int nrow=0;
+    int ncol=0;
+    switch(nfig)
+    {
+    case 1: ncol=1; nrow=1; break;
+    case 2: ncol=2; nrow=1; break;
+    case 3: ncol=3; nrow=1; break;
+    case 4: ncol=2; nrow=2; break;
+    case 5: ncol=3; nrow=2; break;
+    case 6: ncol=3; nrow=2; break;
+    case 7: ncol=3; nrow=2; break;
+    case 8: ncol=3; nrow=3; break;
+    case 9: ncol=3; nrow=3; break;
+    case 10: ncol=4; nrow=3; break;
+    case 11: ncol=4; nrow=3; break;
+    case 12: ncol=4; nrow=3; break;
+    case 13: ncol=4; nrow=4; break;
+    case 14: ncol=4; nrow=4; break;
+    case 15: ncol=4; nrow=4; break;
+    case 16: ncol=4; nrow=4; break;
+    default:
+      throw std::runtime_error("Currently not more than 16 subframes in frame");
+    }
+    SetLayout(ncol,nrow);
   }
-  
+
+
   void Frame::AddFigure(Figure* fig, int ipos)
   {
-    AddFigure(fig,ivpx(ipos),ivpy(ipos));
+    if (ipos>=subframes.size())
+      SetAutoLayout(ipos+1);
+    
+    this->figures.push_back(fig);
+    fig->framepos=ipos;
+    SendCommand("AddFigure", internals::Communicator::Command::FrameAddFigure);
+  }
+
+  void Frame::SetVisibleSubFrame(int ipos)
+  {
+    if (ipos>=subframes.size())
+      SetAutoLayout(ipos+1);
+    
+    parameter.visible_subframe=ipos;
+    SendCommand("VisibleSubframe", internals::Communicator::Command::FrameVisibleSubFrame);
   }
 
 
-  void Frame::LinkCamera(int ivpx, int ivpy, Frame& frame, int livpx, int livpy)
+  void Frame::LinkCamera(int ivp, Frame& frame, int livp)
   {
-    parameter.camlinkthisframepos=pos(ivpx,ivpy);
-    parameter.camlinkframepos=frame.pos(livpx,livpy);
+    parameter.camlinkthisframepos=ivp;
+    parameter.camlinkframepos=livp;
     parameter.camlinkframenum=frame.number_in_frame_list;
     SendCommand("LinkCamera", internals::Communicator::Command::FrameLinkCamera);
   }
@@ -126,6 +312,21 @@ namespace vtkfig
     parameter.frametitle=title;
     SendCommand("FrameTitle", internals::Communicator::Command::FrameTitle);
   }
+
+
+  void Frame::SetLayout(int xnvpx, int xnvpy)
+  {
+    parameter.nvpx=xnvpx;
+    parameter.nvpy=xnvpy;
+    SendCommand("Layout", internals::Communicator::Command::FrameLayout);
+  }
+
+  void Frame::SetSingleSubFrameView(bool view)
+  {
+    parameter.single_subframe_view=view;
+    SendCommand("Layout", internals::Communicator::Command::FrameSingleView);
+  }
+
 
 
   void Frame::SendCommand(std::string source, internals::Communicator::Command comm)

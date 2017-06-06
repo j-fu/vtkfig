@@ -53,16 +53,12 @@ namespace vtkfig
   /// 2D Filter
 
   template <class DATA, class FILTER>
-  void SurfaceContour::RTBuildVTKPipeline2D(
-    vtkSmartPointer<vtkRenderWindow> window,
-    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-    vtkSmartPointer<vtkRenderer> renderer,
-    vtkSmartPointer<DATA> gridfunc)
+  void SurfaceContour::RTBuildVTKPipeline2D(vtkSmartPointer<DATA> gridfunc)
   {
     auto transform=CalcTransform(gridfunc);
 
     /// should react on elevation view
-    renderer->GetActiveCamera()->SetParallelProjection(1);
+    //renderer->GetActiveCamera()->SetParallelProjection(1);
 
     auto values=vtkFloatArray::SafeDownCast(gridfunc->GetPointData()->GetAbstractArray(dataname.c_str()));
 
@@ -172,8 +168,8 @@ namespace vtkfig
       // if (state.show_contour_colorbar)
       //   Figure::RTAddActor2D(BuildColorBar(mapper));
       
-      if (state.show_slider)
-        AddSlider(interactor,renderer);
+      // if (state.show_slider)
+      //   AddSlider(interactor,renderer);
       
     } 
 
@@ -185,11 +181,7 @@ namespace vtkfig
   /// 3D Filter
 
   template <class DATA,class FILTER>
-  void SurfaceContour::RTBuildVTKPipeline3D(
-    vtkSmartPointer<vtkRenderWindow> window,
-    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-    vtkSmartPointer<vtkRenderer> renderer,
-    vtkSmartPointer<DATA> gridfunc)
+  void SurfaceContour::RTBuildVTKPipeline3D(vtkSmartPointer<DATA> gridfunc)
   {
 
     auto transform=CalcTransform(gridfunc);
@@ -356,10 +348,7 @@ namespace vtkfig
   
   /////////////////////////////////////////////////////////////////////
   /// Generic access to filter
-  void  SurfaceContour::RTBuildVTKPipeline(
-    vtkSmartPointer<vtkRenderWindow> window,
-    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-    vtkSmartPointer<vtkRenderer> renderer)
+  void  SurfaceContour::RTBuildVTKPipeline()
   {
     SetNumberOfIsocontours(state.num_contours);
 
@@ -368,9 +357,9 @@ namespace vtkfig
       auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
       
       if (state.spacedim==2)
-        this->RTBuildVTKPipeline2D<vtkUnstructuredGrid,vtkGeometryFilter>(window, interactor,renderer,griddata);
+        this->RTBuildVTKPipeline2D<vtkUnstructuredGrid,vtkGeometryFilter>(griddata);
       else
-        this->RTBuildVTKPipeline3D<vtkUnstructuredGrid,vtkGeometryFilter>(window,interactor,renderer,griddata); 
+        this->RTBuildVTKPipeline3D<vtkUnstructuredGrid,vtkGeometryFilter>(griddata); 
     }
     else if (state.datatype==DataSet::DataType::RectilinearGrid)
     {
@@ -378,9 +367,9 @@ namespace vtkfig
       
       
       if (state.spacedim==2)
-        this->RTBuildVTKPipeline2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
+        this->RTBuildVTKPipeline2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(griddata);
       else
-        this->RTBuildVTKPipeline3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(window, interactor,renderer,griddata);
+        this->RTBuildVTKPipeline3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(griddata);
     }
   }
   

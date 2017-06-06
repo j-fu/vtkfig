@@ -19,7 +19,8 @@ namespace vtkfig
       
       Quiver();
       static std::shared_ptr<Quiver> New() { return std::make_shared<Quiver>(); }
-
+      virtual std::string SubClassName() {return std::string("Quiver");}
+    
 
       /// Set scaling of arrows
       void SetQuiverArrowScale(double scale) { state.quiver_arrow_scale=scale;}
@@ -37,18 +38,11 @@ namespace vtkfig
 
     private:
      
-      virtual void RTBuildVTKPipeline(
-        vtkSmartPointer<vtkRenderWindow> window,
-        vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-        vtkSmartPointer<vtkRenderer> renderer);
+      virtual void RTBuildVTKPipeline();
       
 
       template <class DATA>
-        void  RTBuildVTKPipeline(
-          vtkSmartPointer<vtkRenderWindow> window,
-          vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-          vtkSmartPointer<vtkRenderer> renderer,
-          vtkSmartPointer<DATA> gridfunc);
+        void  RTBuildVTKPipeline(vtkSmartPointer<DATA> gridfunc);
 
         
       vtkSmartPointer<vtkPolyData> probePolyData;

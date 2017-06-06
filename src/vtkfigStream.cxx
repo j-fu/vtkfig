@@ -31,11 +31,7 @@ namespace vtkfig
 
 
   template <class DATA>
-  void  Stream::RTBuildVTKPipeline(
-        vtkSmartPointer<vtkRenderWindow> window,
-        vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-        vtkSmartPointer<vtkRenderer> renderer,
-        vtkSmartPointer<DATA> gridfunc)
+  void  Stream::RTBuildVTKPipeline(vtkSmartPointer<DATA> gridfunc)
   {
     auto transform=CalcTransform(gridfunc);
     
@@ -132,21 +128,18 @@ namespace vtkfig
 
   /////////////////////////////////////////////////////////////////////
   /// Generic access to filter
-  void  Stream::RTBuildVTKPipeline(
-    vtkSmartPointer<vtkRenderWindow> window,
-    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-    vtkSmartPointer<vtkRenderer> renderer)
+  void  Stream::RTBuildVTKPipeline()
   {
 
     if (state.datatype==DataSet::DataType::UnstructuredGrid)
     {
       auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
-      this->RTBuildVTKPipeline<vtkUnstructuredGrid>(window, interactor,renderer,griddata);
+      this->RTBuildVTKPipeline<vtkUnstructuredGrid>(griddata);
     }
     else if (state.datatype==DataSet::DataType::RectilinearGrid)
     {
       auto griddata=vtkRectilinearGrid::SafeDownCast(data);
-      this->RTBuildVTKPipeline<vtkRectilinearGrid>(window, interactor,renderer,griddata);
+      this->RTBuildVTKPipeline<vtkRectilinearGrid>(griddata);
     }
   }
 

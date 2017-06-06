@@ -20,10 +20,7 @@ namespace vtkfig
   }
 
 
-  void Surf2D::RTBuildVTKPipeline(
-    vtkSmartPointer<vtkRenderWindow> window,
-    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-    vtkSmartPointer<vtkRenderer> renderer)
+  void Surf2D::RTBuildVTKPipeline()
   {
 
     bool do_warp=true;

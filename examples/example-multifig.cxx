@@ -66,11 +66,13 @@ int main(void)
   double i0=ii;
 
 
-  auto frame=vtkfig::Frame::New(2,2);
-
-//  frame->LinkCamera(1,0,frame,0,0);
+  auto frame=vtkfig::Frame::New();
+  frame->SetLayout(2,2);
+  frame->LinkCamera(1,frame,0);
 
   frame->SetSize(800,400);
+  frame->SetSingleSubFrameView(true);
+  frame->SetVisibleSubFrame(1);
   frame->SetWindowTitle("vtkfig");
   frame->SetFrameTitle("Multiple figures in one frame");
 
@@ -84,16 +86,16 @@ int main(void)
   auto contour_u=vtkfig::SurfaceContour::New();
   contour_u->SetData(griddata,"u");
   contour_u->SetSurfaceRGBTable(colors,255);
-  frame->AddFigure(contour_u,1,0);
+  frame->AddFigure(contour_u,0);
 
   auto contour_v=vtkfig::SurfaceContour::New();
   contour_v->SetData(griddata,"v");
   contour_v->SetSurfaceRGBTable(colors,255);
-  frame->AddFigure(contour_v,0,0);
+  frame->AddFigure(contour_v,1);
 
   auto xyplot=vtkfig::XYPlot::New();
   xyplot->SetYRange(-0.5,0.5);
-  frame->AddFigure(xyplot,0,1);
+  frame->AddFigure(xyplot,2);
 
   while (ii<nspin)
   {

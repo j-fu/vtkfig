@@ -15,11 +15,9 @@ namespace vtkfig
     LineType("-");
   }
 
-  void XYPlot::RTBuildVTKPipeline(vtkSmartPointer<vtkRenderWindow> window,
-                       vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-                       vtkSmartPointer<vtkRenderer> renderer)
+  void XYPlot::RTBuildVTKPipeline()
   {
-    widget->SetInteractor(interactor);
+//    widget->SetInteractor(interactor);
     xyplot->GetProperty()->SetColor(0.0, 0.0, 0.0);
     xyplot->SetBorder(20);
     xyplot->GetPositionCoordinate()->SetValue(0.0, 0.0, 0);

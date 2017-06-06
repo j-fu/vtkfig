@@ -7,7 +7,6 @@
 #include "vtkWindowToImageFilter.h"
 #include "vtkPNGWriter.h"
 #include "vtkCommand.h"
-#include "vtkCamera.h"
 #include "vtkProperty.h"
 #include "vtkProperty2D.h"
 #include "vtkObjectBase.h"
@@ -265,9 +264,11 @@ namespace vtkfig
       /// Last mouse  y position
       int lasty=0;
       
+
       /// Current frame
       Frame *frame=0;
 
+      
     public:
 
       
@@ -346,7 +347,9 @@ namespace vtkfig
         // Get the key pressed
         std::string key = this->Interactor->GetKeySym();
 
-        // disable some standard vtk key
+        //        cout << key << endl;
+
+        // disable some standard vtk keys
         if(key== "f")  {}
 
         // q -> abort
@@ -362,12 +365,7 @@ namespace vtkfig
           {
             if (subframe.renderer==this->CurrentRenderer)
             {
-              subframe.renderer->GetActiveCamera()->SetPosition(subframe.default_camera_position);
-              subframe.renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
-              subframe.renderer->GetActiveCamera()->OrthogonalizeViewUp();
-              subframe.renderer->GetActiveCamera()->SetRoll(0);
-              subframe.renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
-              subframe.renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
+              frame->RTResetCamera(subframe);
             }
           }
           this->Interactor->Render();
@@ -426,8 +424,23 @@ namespace vtkfig
             /// are those the same subframe which means that they have
             /// the same renderer
             for (auto &figure: frame->figures)
-              if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
+            {
+
+              if (
+                frame->subframes[figure->framepos].renderer==this->CurrentRenderer
+                &&(
+                  (key=="a" && figure->SubClassName()=="Quiver")
+                  ||
+                  (key=="x" && figure->SubClassName()=="SurfaceContour")
+                  ||
+                  (key=="y" && figure->SubClassName()=="SurfaceContour")
+                  ||
+                  (key=="z" && figure->SubClassName()=="SurfaceContour")
+                  ||
+                  (key=="l" && figure->SubClassName()=="SurfaceContour")
+                  ))
                 this->edited_figures.push_back(figure);
+            }
           } 
           
           /// Pass key to edited figures
@@ -499,6 +512,35 @@ namespace vtkfig
         {
           frame->mainthread->communication_blocked=!frame->mainthread->communication_blocked;
         }
+        
+        else if (key=="asterisk")
+        {
+          if (!frame->single_subframe_view)
+          for(int i=0;i<this->frame->subframes.size();i++)
+          {
+            if (this->frame->subframes[i].renderer==this->CurrentRenderer)
+              this->frame->visible_subframe=i;
+          }
+
+          frame->single_subframe_view=!frame->single_subframe_view;
+          frame->RTSetSingleView(frame->single_subframe_view);
+          this->Interactor->Render();
+        }
+
+
+        else if (frame->single_subframe_view && key=="Next")
+        {
+          frame->RTSetVisibleSubFrame(frame->visible_subframe-1,true);
+          this->Interactor->Render();
+        }
+
+        else if (frame->single_subframe_view && key=="Prior")
+        {
+          frame->RTSetVisibleSubFrame(frame->visible_subframe+1,true);
+          this->Interactor->Render();
+        }
+
+
         
         // Print help string
         else if(key == "h" or key == "question")
@@ -582,38 +624,7 @@ namespace vtkfig
           case Communicator::Command::MainThreadShow:
           {
             for (auto & framepair: mainthread->framemap)
-              for (auto & figure: framepair.second->figures)
-              {
-                auto &renderer=framepair.second->subframes[figure->framepos].renderer;
-
-                auto &window=framepair.second->window;
-
-                if (
-                  figure->IsEmpty()  
-                  || renderer->GetActors()->GetNumberOfItems()==0
-                  )
-                {
-                  figure->RTBuildAllVTKPipelines(window,Interactor,renderer);
-
-                  for (auto & actor: figure->actors) 
-                    renderer->AddActor(actor);
-  
-                  for (auto & actor: figure->ctxactors) 
-                    renderer->AddActor(actor);
-  
-                  for (auto & actor: figure->actors2d) 
-                    renderer->AddActor(actor);
-                
-                }
-
-                figure->RTUpdateActors();
-
-                renderer->SetBackground(figure->bgcolor[0],
-                                        figure->bgcolor[1],
-                                        figure->bgcolor[2]);
-
-              }
-
+              framepair.second->RTAddFigures();
             for (auto & framepair: mainthread->framemap)
               framepair.second->window->Render();
             //this->Interactor->Render();
@@ -638,6 +649,14 @@ namespace vtkfig
           }
           break;
 
+
+          case Communicator::Command::FrameLayout:
+          {
+            auto frame=mainthread->framemap[mainthread->iframe];
+            frame->RTSetLayout(frame->parameter.nvpx,frame->parameter.nvpy); 
+            frame->RTResetRenderers(false);
+          }
+          
           // Set frame size
           case Communicator::Command::FrameSize:
           {
@@ -646,6 +665,23 @@ namespace vtkfig
           }
           break;
         
+          // Set frame size
+          case Communicator::Command::FrameVisibleSubFrame:
+          {
+            auto frame=mainthread->framemap[mainthread->iframe];
+            frame->RTSetVisibleSubFrame(frame->parameter.visible_subframe,false);
+          }
+          break;
+        
+          case Communicator::Command::FrameSingleView:
+          {
+            auto frame=mainthread->framemap[mainthread->iframe];
+            frame->RTSetSingleView(frame->parameter.single_subframe_view);
+          }
+          break;
+        
+
+
           // Set frame position
           case Communicator::Command::FramePosition:
           {
@@ -734,32 +770,11 @@ namespace vtkfig
 
       frame->window->SetSize(frame->parameter.winsize_x, frame->parameter.winsize_y);
       frame->window->SetPosition(frame->parameter.winposition_x, frame->parameter.winposition_y);
-
-      for (auto & subframe : frame->subframes)
-      {
       
-        {
-          auto renderer = vtkSmartPointer<vtkRenderer>::New();
-          subframe.renderer=renderer;
-          renderer->SetViewport(subframe.viewport);
-          renderer->SetBackground(1., 1., 1.);
-          //      renderer->SetUseHiddenLineRemoval(1);
+      frame->RTResetRenderers(true);
 
-
-          renderer->GetActiveCamera()->SetPosition(subframe.default_camera_position);
-          renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
-          renderer->GetActiveCamera()->OrthogonalizeViewUp();
-          renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
-          renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
-          renderer->GetActiveCamera()->OrthogonalizeViewUp();
-          frame->window->AddRenderer(renderer);
-        
-        }
-      }
-
-      auto & subframe=frame->subframes[frame->nvpx*frame->nvpy];
       frame->RTInit();
-      subframe.renderer->AddActor(frame->title_actor);
+      frame->title_subframe.renderer->AddActor(frame->title_actor);
       frame->title_actor->SetText(7,frame->parameter.frametitle.c_str());
 
     }
@@ -847,13 +862,17 @@ namespace vtkfig
           
         case Communicator::Command::MainThreadAddFrame:
         {
-          auto frame=mainthread->framemap[mainthread->iframe];
-          mainthread->communicator->SendInt(frame->nvpx);
-          mainthread->communicator->SendInt(frame->nvpy);
 
         }
         break;
 
+        case Communicator::Command::FrameLayout:
+        {
+          auto frame=mainthread->framemap[mainthread->iframe];
+          mainthread->communicator->SendInt(frame->parameter.nvpx);
+          mainthread->communicator->SendInt(frame->parameter.nvpy);
+
+        }
         case Communicator::Command::MainThreadRemoveFrame:
         {
 
@@ -915,8 +934,7 @@ namespace vtkfig
           auto frame=mainthread->framemap[mainthread->iframe];
           auto figure=frame->figures.back();
           mainthread->communicator->SendString(figure->SubClassName());
-          mainthread->communicator->SendInt(frame->ivpx(figure->framepos));
-          mainthread->communicator->SendInt(frame->ivpy(figure->framepos));
+          mainthread->communicator->SendInt(figure->framepos);
         }
         break;
 

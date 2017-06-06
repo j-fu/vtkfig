@@ -83,11 +83,7 @@ namespace vtkfig
 
 
   template <class DATA>
-  void  Quiver::RTBuildVTKPipeline(
-        vtkSmartPointer<vtkRenderWindow> window,
-        vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-        vtkSmartPointer<vtkRenderer> renderer,
-        vtkSmartPointer<DATA> gridfunc)
+  void  Quiver::RTBuildVTKPipeline(vtkSmartPointer<DATA> gridfunc)
   {
     auto transform=CalcTransform(gridfunc);
     
@@ -115,7 +111,7 @@ namespace vtkfig
 
     auto glyph = vtkSmartPointer<vtkGlyph3D>::New();
     glyph->SetInputConnection(probeFilter->GetOutputPort());
-    glyph->SetColorModeToColorByVector();
+//    glyph->SetColorModeToColorByVector();
     glyph->SetScaleModeToScaleByVector();
    
 
@@ -134,51 +130,39 @@ namespace vtkfig
     // map gridfunction
     auto  mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(glyph->GetOutputPort());
-    mapper->SetLookupTable(lut);
-    mapper->UseLookupTableScalarRangeOn();
+    // mapper->SetLookupTable(lut);
+    // mapper->UseLookupTableScalarRangeOn();
 
 
     // create plot quiver actor
     vtkSmartPointer<vtkActor> quiver_actor = vtkSmartPointer<vtkActor>::New();
+    if (state.spacedim==3)
+      quiver_actor->GetProperty()->SetColor(0.5,0.5,0.5);
+    else
+      quiver_actor->GetProperty()->SetColor(0,0,0);
     quiver_actor->SetMapper(mapper);
 
 
-
-    // create outline
-    // vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
-    // outlinefilter->SetInputConnection(geometry->GetOutputPort());
-    // vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    // outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
-    // vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
-    // outline->SetMapper(outlineMapper);
-    // outline->GetProperty()->SetColor(0, 0, 0);
-    // Figure::AddActor(outline);
-
     // add actors to renderer
     Figure::RTAddActor(quiver_actor);
-    if (show_colorbar)
-      Figure::RTAddActor2D(BuildColorBar(mapper));
   }
 
 
 
   /////////////////////////////////////////////////////////////////////
   /// Generic access to filter
-  void  Quiver::RTBuildVTKPipeline(
-    vtkSmartPointer<vtkRenderWindow> window,
-    vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-    vtkSmartPointer<vtkRenderer> renderer)
+  void  Quiver::RTBuildVTKPipeline()
   {
 
     if (state.datatype==DataSet::DataType::UnstructuredGrid)
     {
       auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
-      this->RTBuildVTKPipeline<vtkUnstructuredGrid>(window, interactor,renderer,griddata);
+      this->RTBuildVTKPipeline<vtkUnstructuredGrid>(griddata);
     }
     else if (state.datatype==DataSet::DataType::RectilinearGrid)
     {
       auto griddata=vtkRectilinearGrid::SafeDownCast(data);
-      this->RTBuildVTKPipeline<vtkRectilinearGrid>(window, interactor,renderer,griddata);
+      this->RTBuildVTKPipeline<vtkRectilinearGrid>(griddata);
     }
   }
 

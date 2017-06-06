@@ -273,14 +273,23 @@ namespace vtkfig
         
           case Communicator::Command::MainThreadAddFrame:
           {
+            frame=new vtkfig::Frame();
+          
+            if (debug_level>0)
+              cout << "New frame" << endl;
+          }
+          break;
+
+          case Communicator::Command::FrameLayout:
+          {
             int nX, nY;
 //      assert(framenum==-1);
             communicator->ReceiveInt(nX);
             communicator->ReceiveInt(nY);
-            frame=new vtkfig::Frame(nX,nY);
+            frame->SetLayout(nX,nY);
           
             if (debug_level>0)
-              cout << "New frame" << endl;
+              cout << "frame layout" << endl;
           }
           break;
 
@@ -297,28 +306,27 @@ namespace vtkfig
           {
             std::string figtype;
             communicator->ReceiveString(figtype);
-            int iX, iY;
-            communicator->ReceiveInt(iX);
-            communicator->ReceiveInt(iY);
+            int ipos;
+            communicator->ReceiveInt(ipos);
           
             if (figtype=="Surf2D")
             {
               figure=new vtkfig::Surf2D();
-              frame->AddFigure(figure,iX,iY);
+              frame->AddFigure(figure,ipos);
               if (debug_level>0)
                 cout << "Add Surf2d" << endl;
             }
             else if (figtype=="SurfaceContour")
             {
               figure=new vtkfig::SurfaceContour();
-              frame->AddFigure(figure,iX,iY);
+              frame->AddFigure(figure,ipos);
               if (debug_level>0)
                 cout << "Add SurfaceContour" << endl;
             }
             else if (figtype=="XYPlot")
             {
               figure=new vtkfig::XYPlot();
-              frame->AddFigure(figure,iX,iY);
+              frame->AddFigure(figure,ipos);
               if (debug_level>0)
                 cout << "Add XYPlot" << endl;
             }
@@ -395,11 +403,9 @@ namespace vtkfig
             communicator->ReceiveInt(otherframepos);
             auto otherframe=MainThread::mainthread->framemap[otherframenum];
             frame->LinkCamera(
-              frame->ivpx(thisframepos),
-              frame->ivpy(thisframepos),
+              thisframepos,
               otherframe,
-              otherframe->ivpx(otherframepos),
-              otherframe->ivpy(otherframepos));
+              otherframepos);
           }
           break;
 

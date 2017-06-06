@@ -4,8 +4,10 @@
 #include <memory>
 #include <map>
 #include <condition_variable>
+#include "vtkRenderWindowInteractor.h"
 
 #include "vtkfigCommunicator.h"
+
 
 
 namespace vtkfig

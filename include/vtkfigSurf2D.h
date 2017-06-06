@@ -69,10 +69,7 @@ namespace vtkfig
 
     private:
       
-      virtual void RTBuildVTKPipeline(
-        vtkSmartPointer<vtkRenderWindow> window,
-        vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-        vtkSmartPointer<vtkRenderer> renderer);
+      virtual void RTBuildVTKPipeline();
 
 
       vtkSmartPointer<vtkStructuredGrid> 	    gridfunc;

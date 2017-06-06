@@ -77,10 +77,7 @@ namespace vtkfig
     void AddPlot();
     
   
-    virtual void RTBuildVTKPipeline(
-      vtkSmartPointer<vtkRenderWindow> window,
-      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-      vtkSmartPointer<vtkRenderer> renderer);
+    virtual void RTBuildVTKPipeline();
 
   
     

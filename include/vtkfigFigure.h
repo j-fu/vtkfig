@@ -5,15 +5,12 @@
 #include <vector>
 
 #include "vtkSmartPointer.h"
-#include "vtkRenderWindowInteractor.h"
 #include "vtkActor.h"
 #include "vtkContextActor.h"
 #include "vtkContextScene.h"
 #include "vtkActor2D.h"
 #include "vtkMapper.h"
 #include "vtkMapper2D.h"
-#include "vtkSliderWidget.h"
-#include "vtkSliderRepresentation2D.h"
 #include "vtkContourFilter.h"
 #include "vtkPolyDataAlgorithm.h"
 #include "vtkTransformPolyDataFilter.h"
@@ -176,11 +173,6 @@ namespace vtkfig
     /// The following items are declared in the base
     /// class in order to allow easy coding of interaction
     
-
-    /// Slider widget (deprecated)
-    vtkSmartPointer<vtkSliderWidget> sliderWidget;
-    friend class mySliderCallback;
-
     /// Title+message text fields
     vtkSmartPointer<vtkCornerAnnotation> annot;
 
@@ -221,10 +213,6 @@ namespace vtkfig
     vtkSmartPointer<vtkTransform> CalcTransform(vtkSmartPointer<vtkDataSet> data);
 
 
-    /// Add slider. Deprecated due to strange behavior for multifig
-    void AddSlider(vtkSmartPointer<vtkRenderWindowInteractor> i,
-                   vtkSmartPointer<vtkRenderer> r);
-    
     /// Data set visualized
     vtkSmartPointer<vtkDataSet> data=NULL;
 
@@ -260,32 +248,19 @@ namespace vtkfig
 
     /// Subclasses re-implement this in order to build
     /// the vtk rendering pipeline
-    virtual void RTBuildVTKPipeline(
-      vtkSmartPointer<vtkRenderWindow> window,
-      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-      vtkSmartPointer<vtkRenderer> renderer) {};
+    virtual void RTBuildVTKPipeline(){};
 
 
-    void RTBuildDomainPipeline(
-      vtkSmartPointer<vtkRenderWindow> window,
-      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-      vtkSmartPointer<vtkRenderer> renderer);
-    
+
+    void RTBuildDomainPipeline(vtkSmartPointer<vtkRenderer> renderer);
 
     template <class DATA>
-    void RTBuildDomainPipeline(
-      vtkSmartPointer<vtkRenderWindow> window,
-      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-      vtkSmartPointer<vtkRenderer> renderer,
-      vtkSmartPointer<DATA> gridfunc);
+      void RTBuildDomainPipeline(vtkSmartPointer<vtkRenderer> renderer,vtkSmartPointer<DATA> gridfunc);
 
-    void RTBuildAllVTKPipelines(
-      vtkSmartPointer<vtkRenderWindow> window,
-      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-      vtkSmartPointer<vtkRenderer> renderer) 
+    void RTBuildAllVTKPipelines(vtkSmartPointer<vtkRenderer> renderer) 
     {
-      RTBuildVTKPipeline(window,interactor,renderer);
-      RTBuildDomainPipeline(window,interactor,renderer);
+      RTBuildVTKPipeline();
+      RTBuildDomainPipeline(renderer);
       RTAddAnnotations();
     };
 

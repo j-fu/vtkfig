@@ -42,18 +42,11 @@ namespace vtkfig
       
     private:
 
-      virtual void RTBuildVTKPipeline(
-        vtkSmartPointer<vtkRenderWindow> window,
-        vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-        vtkSmartPointer<vtkRenderer> renderer);
+      virtual void RTBuildVTKPipeline();
       
 
       template <class DATA>
-        void  RTBuildVTKPipeline(
-          vtkSmartPointer<vtkRenderWindow> window,
-          vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-          vtkSmartPointer<vtkRenderer> renderer,
-          vtkSmartPointer<DATA> gridfunc);
+        void  RTBuildVTKPipeline(vtkSmartPointer<DATA> gridfunc);
 
         
       vtkSmartPointer<vtkPolyData> probePolyData;

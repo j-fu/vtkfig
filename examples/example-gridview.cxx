@@ -71,7 +71,7 @@ int main(void)
 
 
 
-  auto frame=vtkfig::Frame::New(2,1);
+  auto frame=vtkfig::Frame::New();
   frame->SetSize(800,400);
 
   auto ugriddata=vtkfig::DataSet::New();
@@ -86,7 +86,7 @@ int main(void)
   ugview->SetData(ugriddata);
   ugview->SetTitle("Unstructured Grid");
   rgview->SetTitle("Rectilinear Grid");
-  frame->AddFigure(rgview,0,0);
-  frame->AddFigure(ugview,1,0);
+  frame->AddFigure(rgview,0);
+  frame->AddFigure(ugview,1);
   frame->Interact();
 }

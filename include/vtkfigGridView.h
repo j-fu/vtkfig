@@ -1,11 +1,7 @@
 #ifndef VTKFIG_GRID_VIEW_H
 #define VTKFIG_GRID_VIEW_H
 
-#include "vtkSliderWidget.h"
-#include "vtkSliderRepresentation.h"
-#include "vtkRenderer.h"
 #include "vtkCommand.h"
-
 #include "vtkDataSetAttributes.h"
 #include "vtkGeometryFilter.h"
 #include "vtkRectilinearGridGeometryFilter.h"
@@ -35,10 +31,7 @@ namespace vtkfig
     friend class Client;
     virtual std::string SubClassName() {return std::string("GridView");}
     
-    virtual void RTBuildVTKPipeline(
-      vtkSmartPointer<vtkRenderWindow> window,
-      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-      vtkSmartPointer<vtkRenderer> renderer);
+    virtual void RTBuildVTKPipeline();
     
     RGBTable grid_rgbtab{
       {0.00,1,0,0},
@@ -54,19 +47,11 @@ namespace vtkfig
     
     
     template <class GRIDFUNC, class FILTER>
-      void RTBuildVTKPipeline2D(vtkSmartPointer<vtkRenderWindow> window,
-                     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-                     vtkSmartPointer<vtkRenderer> renderer,
-                     vtkSmartPointer<GRIDFUNC> gridfunc);
+      void RTBuildVTKPipeline2D( vtkSmartPointer<GRIDFUNC> gridfunc);
     
     template <class GRIDFUNC, class FILTER>
-      void RTBuildVTKPipeline3D(vtkSmartPointer<vtkRenderWindow> window,
-                     vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-                     vtkSmartPointer<vtkRenderer> renderer,
-                     vtkSmartPointer<GRIDFUNC> gridfunc);
+      void RTBuildVTKPipeline3D(vtkSmartPointer<GRIDFUNC> gridfunc);
     
-    vtkSmartPointer<vtkSliderWidget> sliderWidget;
-       
   };
   
 }

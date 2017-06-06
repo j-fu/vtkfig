@@ -79,10 +79,7 @@ namespace vtkfig
     
   private:
     
-    virtual void RTBuildVTKPipeline(
-      vtkSmartPointer<vtkRenderWindow> window,
-      vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-      vtkSmartPointer<vtkRenderer> renderer);
+    virtual void RTBuildVTKPipeline();
     
     
     void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator);
@@ -91,16 +88,10 @@ namespace vtkfig
     
     
     template <class GRIDFUNC, class FILTER>
-    void RTBuildVTKPipeline2D(vtkSmartPointer<vtkRenderWindow> window,
-                                vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-                                vtkSmartPointer<vtkRenderer> renderer,
-                                vtkSmartPointer<GRIDFUNC> gridfunc);
+    void RTBuildVTKPipeline2D(vtkSmartPointer<GRIDFUNC> gridfunc);
     
     template <class GRIDFUNC, class FILTER>
-    void RTBuildVTKPipeline3D(vtkSmartPointer<vtkRenderWindow> window,
-                                vtkSmartPointer<vtkRenderWindowInteractor> interactor,
-                                vtkSmartPointer<vtkRenderer> renderer,
-                                vtkSmartPointer<GRIDFUNC> gridfunc);
+    void RTBuildVTKPipeline3D(vtkSmartPointer<GRIDFUNC> gridfunc);
     
   };
   
