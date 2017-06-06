@@ -11,6 +11,7 @@
 #include "vtkPointData.h"
 #include "vtkCellData.h"
 #include "vtkCellType.h"
+#include "vtkIdList.h"
 
 namespace vtkfig
 {
