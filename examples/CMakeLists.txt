@@ -1,5 +1,5 @@
 function (add_vtkfig_example  EXAMPLE)
-  add_executable(${EXAMPLE} MACOSX_BUNDLE ${EXAMPLE}.cxx)
+  add_executable(${EXAMPLE} ${EXAMPLE}.cxx)
   target_link_libraries(${EXAMPLE} vtkfig ${VTK_LIBRARIES})
 endfunction()
 
