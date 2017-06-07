@@ -45,15 +45,15 @@ namespace vtkfig
     transgeometry->SetTransform(transform);
 
 
-    auto transprobe=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
-    transprobe->SetInputDataObject(probePolyData);
-    transprobe->SetTransform(transform);
+    auto transseed=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+    transseed->SetInputDataObject(seedPolyData);
+    transseed->SetTransform(transform);
 
 
 
     auto stream=vtkSmartPointer<vtkStreamTracer>::New();
     stream->SetInputConnection(transgeometry->GetOutputPort());
-    stream->SetSourceConnection(transprobe->GetOutputPort());
+    stream->SetSourceConnection(transseed->GetOutputPort());
     
     stream->SetMaximumPropagation(state.streamlength);
     stream->SetInitialIntegrationStep(.2);
@@ -143,6 +143,36 @@ namespace vtkfig
     }
   }
 
+
+  /////////////////////////////////////////////////////////////////////
+  /// Server-client
+  void Stream::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator)
+  {
+    communicator->SendCharBuffer((char*)&state,sizeof(state));
+    communicator->SendString(dataname);
+    communicator->Send(data,1,1);
+    communicator->Send(seedPolyData,1,1);
+  }
+
+  void Stream::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator)
+  {
+
+    communicator->ReceiveCharBuffer((char*)&state,sizeof(state));
+    communicator->ReceiveString(dataname);
+
+    if (data==NULL)
+    {
+      if (state.datatype==DataSet::DataType::RectilinearGrid)
+        data=vtkSmartPointer<vtkRectilinearGrid>::New();
+      else if (state.datatype==DataSet::DataType::UnstructuredGrid)
+        data=vtkSmartPointer<vtkUnstructuredGrid>::New();
+    }
+    communicator->Receive(data,1,1);
+    if (seedPolyData==NULL)
+      seedPolyData=vtkSmartPointer<vtkPolyData>::New();
+    communicator->Receive( seedPolyData,1,1);
+
+  }
 
 
 }

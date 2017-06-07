@@ -12,6 +12,9 @@
 #include "vtkfigCommunicator.h"
 #include "vtkfigSurf2D.h"
 #include "vtkfigSurfaceContour.h"
+#include "vtkfigQuiver.h"
+#include "vtkfigStream.h"
+#include "vtkfigGridView.h"
 #include "vtkfigXYPlot.h"
 #include "vtkfigMainThread.h"
 
@@ -283,13 +286,12 @@ namespace vtkfig
           case Communicator::Command::FrameLayout:
           {
             int nX, nY;
-//      assert(framenum==-1);
             communicator->ReceiveInt(nX);
             communicator->ReceiveInt(nY);
             frame->SetLayout(nX,nY);
           
-            if (debug_level>0)
-              cout << "frame layout" << endl;
+//            if (debug_level>0)
+            cout << "frame layout " << nX << " " << nY << endl;
           }
           break;
 
@@ -322,6 +324,27 @@ namespace vtkfig
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
                 cout << "Add SurfaceContour" << endl;
+            }
+            else if (figtype=="Quiver")
+            {
+              figure=new vtkfig::Quiver();
+              frame->AddFigure(figure,ipos);
+              if (debug_level>0)
+                cout << "Add Quiver" << endl;
+            }
+            else if (figtype=="Stream")
+            {
+              figure=new vtkfig::Stream();
+              frame->AddFigure(figure,ipos);
+              if (debug_level>0)
+                cout << "Add Stream" << endl;
+            }
+            else if (figtype=="GridView")
+            {
+              figure=new vtkfig::GridView();
+              frame->AddFigure(figure,ipos);
+              if (debug_level>0)
+                cout << "Add GridView" << endl;
             }
             else if (figtype=="XYPlot")
             {

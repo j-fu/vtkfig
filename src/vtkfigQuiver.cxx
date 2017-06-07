@@ -166,6 +166,36 @@ namespace vtkfig
     }
   }
 
+  /////////////////////////////////////////////////////////////////////
+  /// Client-Server communication
+
+  void Quiver::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator)
+  {
+    communicator->SendCharBuffer((char*)&state,sizeof(state));
+    communicator->SendString(dataname);
+    communicator->Send(data,1,1);
+    communicator->Send(probePolyData,1,1);
+  }
+
+  void Quiver::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator)
+  {
+
+    communicator->ReceiveCharBuffer((char*)&state,sizeof(state));
+    communicator->ReceiveString(dataname);
+
+    if (data==NULL)
+    {
+      if (state.datatype==DataSet::DataType::RectilinearGrid)
+        data=vtkSmartPointer<vtkRectilinearGrid>::New();
+      else if (state.datatype==DataSet::DataType::UnstructuredGrid)
+        data=vtkSmartPointer<vtkUnstructuredGrid>::New();
+    }
+    communicator->Receive(data,1,1);
+    if (probePolyData==NULL)
+      probePolyData=vtkSmartPointer<vtkPolyData>::New();
+    communicator->Receive( probePolyData,1,1);
+
+  }
 
 
 }

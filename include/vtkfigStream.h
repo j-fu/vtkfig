@@ -19,6 +19,7 @@ namespace vtkfig
       
       Stream();
       static std::shared_ptr<Stream> New() { return std::make_shared<Stream>(); }
+      virtual std::string SubClassName() {return std::string("Stream");}
       
       /// Set color of streamlines
       void SetStreamLineColor(double r, double b, double g) 
@@ -43,13 +44,15 @@ namespace vtkfig
     private:
 
       virtual void RTBuildVTKPipeline();
+      void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator);
+      void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator);
       
 
       template <class DATA>
         void  RTBuildVTKPipeline(vtkSmartPointer<DATA> gridfunc);
 
         
-      vtkSmartPointer<vtkPolyData> probePolyData;
+      vtkSmartPointer<vtkPolyData> seedPolyData;
       vtkSmartPointer<vtkLookupTable> lut;
       bool show_colorbar=false;
     };  
@@ -60,16 +63,16 @@ namespace vtkfig
     void Stream::SetSeedPoints( const V&p)
   {
     assert(data);
-    auto probePoints =  vtkSmartPointer<vtkPoints>::New();
+    auto seedPoints =  vtkSmartPointer<vtkPoints>::New();
     if (state.spacedim==2)
       for (int i=0;i<p.size();i+=2)
-        probePoints->InsertNextPoint (p[i+0],p[i+1],0);
+        seedPoints->InsertNextPoint (p[i+0],p[i+1],0);
     
     if (state.spacedim==3)
       for (int i=0;i<p.size();i+=3)
-        probePoints->InsertNextPoint (p[i+0],p[i+1],p[i+2]);
-    probePolyData =vtkSmartPointer<vtkPolyData>::New();
-    probePolyData->SetPoints(probePoints);
+        seedPoints->InsertNextPoint (p[i+0],p[i+1],p[i+2]);
+    seedPolyData =vtkSmartPointer<vtkPolyData>::New();
+    seedPolyData->SetPoints(seedPoints);
   };
   
 }

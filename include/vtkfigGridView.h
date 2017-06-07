@@ -25,11 +25,11 @@ namespace vtkfig
   public:
     GridView();
     static std::shared_ptr<GridView> New() { return std::make_shared<GridView>();}
-    
+    std::string SubClassName() {return std::string("GridView");}
+
     
   private:
     friend class Client;
-    virtual std::string SubClassName() {return std::string("GridView");}
     
     virtual void RTBuildVTKPipeline();
     

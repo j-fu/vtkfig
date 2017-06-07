@@ -254,7 +254,7 @@ namespace vtkfig
 
   void Frame::AddFigure(Figure* fig, int ipos)
   {
-    if (ipos>=subframes.size())
+    if (ipos>=nvpx*nvpy)
       SetAutoLayout(ipos+1);
     
     this->figures.push_back(fig);
@@ -264,7 +264,7 @@ namespace vtkfig
 
   void Frame::SetVisibleSubFrame(int ipos)
   {
-    if (ipos>=subframes.size())
+    if (ipos>=nvpx*nvpy)
       SetAutoLayout(ipos+1);
     
     parameter.visible_subframe=ipos;

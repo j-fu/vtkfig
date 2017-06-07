@@ -83,7 +83,6 @@ namespace vtkfig
     
     
     void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator);
-    
     void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator);
     
     

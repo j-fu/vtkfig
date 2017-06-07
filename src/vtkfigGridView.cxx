@@ -224,19 +224,6 @@ namespace vtkfig
   {
     communicator->SendCharBuffer((char*)&state,sizeof(state));
     communicator->SendString(dataname);
-
-    if (state.surface_rgbtab_modified)
-    {
-      SendRGBTable(communicator, surface_rgbtab);
-      state.surface_rgbtab_modified=false;
-    }
-
-    if (state.contour_rgbtab_modified)
-    {
-      SendRGBTable(communicator, contour_rgbtab);
-      state.contour_rgbtab_modified=false;
-    }
-
     communicator->Send(data,1,1);
   }
 
@@ -254,10 +241,6 @@ namespace vtkfig
         data=vtkSmartPointer<vtkUnstructuredGrid>::New();
     }
     communicator->Receive(data,1,1);
-
-
-    data->Modified();
-    data->GetPointData()->GetScalars()->Modified();
 
   }
   

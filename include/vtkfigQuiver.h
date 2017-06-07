@@ -38,7 +38,9 @@ namespace vtkfig
 
     private:
      
-      virtual void RTBuildVTKPipeline();
+      void RTBuildVTKPipeline();
+      void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator);
+      void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator);
       
 
       template <class DATA>

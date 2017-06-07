@@ -71,8 +71,6 @@ int main(void)
   frame->LinkCamera(1,frame,0);
 
   frame->SetSize(800,400);
-  frame->SetSingleSubFrameView(true);
-  frame->SetVisibleSubFrame(1);
   frame->SetWindowTitle("vtkfig");
   frame->SetFrameTitle("Multiple figures in one frame");
 

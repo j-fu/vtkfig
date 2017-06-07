@@ -871,8 +871,10 @@ namespace vtkfig
           auto frame=mainthread->framemap[mainthread->iframe];
           mainthread->communicator->SendInt(frame->parameter.nvpx);
           mainthread->communicator->SendInt(frame->parameter.nvpy);
-
+          frame->nvpx=frame->parameter.nvpx;
+          frame->nvpy=frame->parameter.nvpy;
         }
+
         case Communicator::Command::MainThreadRemoveFrame:
         {
 
