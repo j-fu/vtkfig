@@ -31,193 +31,6 @@ namespace vtkfig
     mainthread->AddFrame(this);
   }
 
-  void Frame::RTSetLayout(int xnvpx, int xnvpy)
-  {
-    this->nvpx=xnvpx;
-    this->nvpy=xnvpy;
-    subframes.resize(nvpx*nvpy);
-    if (single_subframe_view)
-      RTSetSingleViewport(nvpx,nvpy);
-    else
-      RTCalculateViewports(nvpx, nvpy);
-
-  }
-
-
-
-  void Frame::RTSetSingleViewport(int xnvpx, int xnvpy)
-  {
-    for (int ivpy=0;ivpy<xnvpy;ivpy++)
-      for (int ivpx=0 ;ivpx<xnvpx;ivpx++)
-      {
-        int ipos=pos(ivpx,ivpy);
-        auto & subframe=subframes[ipos];
-        subframe.viewport[0]=0;
-        subframe.viewport[1]=0;
-        subframe.viewport[2]=1;
-        subframe.viewport[3]=0.925;
-      }
-
-  }
-
-  void Frame::RTAddFigures()
-  {
-    for (auto & figure: this->figures)
-    {
-      if (!this->subframes[figure->framepos].hidden)
-      {
-        auto &renderer=this->subframes[figure->framepos].renderer;
-        
-        auto &window=this->window;
-        
-        if (
-          figure->IsEmpty()  
-          || renderer->GetActors()->GetNumberOfItems()==0
-          )
-        {
-          figure->RTBuildAllVTKPipelines(renderer);
-          
-          for (auto & actor: figure->actors) 
-            renderer->AddActor(actor);
-          
-          for (auto & actor: figure->ctxactors) 
-            renderer->AddActor(actor);
-          
-          for (auto & actor: figure->actors2d) 
-            renderer->AddActor(actor);
-          
-        }
-        
-        figure->RTUpdateActors();
-      
-        renderer->SetBackground(figure->bgcolor[0],
-                                figure->bgcolor[1],
-                                figure->bgcolor[2]);
-        
-      }
-    }
-  }
-
-
-  void Frame::RTHideSubframe(SubFrame &subframe)
-  {
-    subframe.hidden=true;
-  }
-  
-  void Frame::RTUnHideSubframe(SubFrame &subframe)
-  {
-    subframe.hidden=false;
-  }
-  
-
-  void Frame::RTSetVisibleSubFrame(int isub, bool hide_old)
-  {
-    if (!single_subframe_view) return;
-    if (hide_old)  this->RTHideSubframe(this->subframes[this->visible_subframe]);
-    this->visible_subframe=(isub+this->subframes.size())%(this->subframes.size());
-    this->RTUnHideSubframe(this->subframes[this->visible_subframe]);
-    this->RTResetRenderers(false);
-  }
-  void Frame::RTCalculateViewports(int xnvpx, int xnvpy)
-  {
-    double dy= 0.925/(double)xnvpy;
-    double dx= 1.0/(double)xnvpx;
-    double y=0.0;
-    for (int ivpy=0;ivpy<xnvpy;ivpy++, y+=dy)
-    {
-      double x=0.0;
-      for (int ivpx=0 ;ivpx<xnvpx;ivpx++, x+=dx)
-      {
-        int ipos=pos(ivpx,ivpy);
-        
-        assert(this->ivpx(ipos)==ivpx);
-        assert(this->ivpy(ipos)==ivpy);
-        
-        auto & subframe=subframes[ipos];
-        subframe.viewport[0]=x;
-        subframe.viewport[1]=y;
-        subframe.viewport[2]=x+dx;
-        subframe.viewport[3]=y+dy;
-      }
-    }
-  }
-
-  void Frame::RTResetCamera(SubFrame& subframe)
-  {
-    subframe.renderer->GetActiveCamera()->SetPosition(subframe.default_camera_position);
-    subframe.renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
-    subframe.renderer->GetActiveCamera()->OrthogonalizeViewUp();
-    subframe.renderer->GetActiveCamera()->SetRoll(0);
-    subframe.renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
-    subframe.renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
-  }
-
-  void Frame::RTResetRenderers(bool from_scratch)
-  {
-    if (from_scratch)
-    {
-       title_subframe.renderer = vtkSmartPointer<vtkRenderer>::New();
-       title_subframe.renderer->SetBackground(1., 1., 1.);
-       RTResetCamera(title_subframe);
-       title_subframe.renderer->SetViewport(title_subframe.viewport);
-       this->window->AddRenderer(title_subframe.renderer);
-    }
-
-    for (auto & subframe : this->subframes)
-    {
-      if (!from_scratch&& subframe.renderer)
-      {
-        subframe.renderer->Clear();
-        this->window->RemoveRenderer(subframe.renderer);
-      }
-      else
-      {
-       subframe.renderer = vtkSmartPointer<vtkRenderer>::New();
-       subframe.renderer->SetBackground(1., 1., 1.);
-       RTResetCamera(subframe);
-      }
-      if (!subframe.hidden)
-      {        
-        subframe.renderer->SetViewport(subframe.viewport);
-        this->window->AddRenderer(subframe.renderer);
-      }
-    }
-  }
-
-  void Frame::RTSetSingleView(bool single_view)
-  {
-    single_subframe_view=single_view;
-    if (single_view)
-    {
-     this->RTSetSingleViewport(this->nvpx, this->nvpy);
-      for (int i=0;i<this->subframes.size();i++)
-        if (i!=this->visible_subframe)
-          this->RTHideSubframe(this->subframes[i]);
-    }
-    else
-    {
-      this->RTCalculateViewports(this->nvpx, this->nvpy);
-      for (int i=0;i<this->subframes.size();i++)
-        this->RTUnHideSubframe(this->subframes[i]);
-    }
-    this->RTResetRenderers(false);
-  }
-  
-  void Frame::RTInit()
-  {
-    if (!this->title_actor)
-    {
-      this->title_actor= vtkSmartPointer<vtkCornerAnnotation>::New();
-      auto textprop=this->title_actor->GetTextProperty();
-      textprop->ItalicOff();
-      textprop->BoldOn();
-      textprop->SetFontSize(10);
-      textprop->SetFontFamilyToCourier();
-      textprop->SetColor(0,0,0);
-    }
-
-
-  }
   
   void Frame::Show() { mainthread->Show();}
 
@@ -235,7 +48,7 @@ namespace vtkfig
     case 4: ncol=2; nrow=2; break;
     case 5: ncol=3; nrow=2; break;
     case 6: ncol=3; nrow=2; break;
-    case 7: ncol=3; nrow=2; break;
+    case 7: ncol=3; nrow=3; break;
     case 8: ncol=3; nrow=3; break;
     case 9: ncol=3; nrow=3; break;
     case 10: ncol=4; nrow=3; break;
@@ -248,6 +61,8 @@ namespace vtkfig
     default:
       throw std::runtime_error("Currently not more than 16 subframes in frame");
     }
+
+    assert(nfig<=ncol*nrow);
     SetLayout(ncol,nrow);
   }
 
@@ -348,6 +163,203 @@ namespace vtkfig
   //   this->cv.wait(lock);
   // }
 
+
+  /// part of frame init from render thread
+  void Frame::RTInit()
+  {
+    if (!this->title_actor)
+    {
+      this->title_actor= vtkSmartPointer<vtkCornerAnnotation>::New();
+      auto textprop=this->title_actor->GetTextProperty();
+      textprop->ItalicOff();
+      textprop->BoldOn();
+      textprop->SetFontSize(10);
+      textprop->SetFontFamilyToCourier();
+      textprop->SetColor(0,0,0);
+    }
+
+
+  }
+  
+  /// Set subframe layout
+  void Frame::RTSetLayout(int xnvpx, int xnvpy)
+  {
+    this->nvpx=xnvpx;
+    this->nvpy=xnvpy;
+    subframes.resize(this->nvpx*this->nvpy);
+    if (single_subframe_view)
+      RTSetSingleViewport(nvpx,nvpy);
+    else
+      RTCalculateViewports(nvpx, nvpy);
+
+  }
+
+
+  /// Hide subframe
+  void Frame::RTHideSubframe(SubFrame &subframe)
+  {
+    subframe.hidden=true;
+  }
+  
+  /// Unhide subframe
+  void Frame::RTUnHideSubframe(SubFrame &subframe)
+  {
+    subframe.hidden=false;
+  }
+  
+  /// Set visible subframe
+  void Frame::RTSetVisibleSubFrame(int isub, bool hide_old)
+  {
+    if (!single_subframe_view) return;
+    if (hide_old)  this->RTHideSubframe(this->subframes[this->visible_subframe]);
+    this->visible_subframe=(isub+this->subframes.size())%(this->subframes.size());
+    this->RTUnHideSubframe(this->subframes[this->visible_subframe]);
+    this->RTResetRenderers(false);
+  }
+
+  /// Calculate viewports for multi subframe view
+  void Frame::RTCalculateViewports(int xnvpx, int xnvpy)
+  {
+    double dy= 0.925/(double)xnvpy;
+    double dx= 1.0/(double)xnvpx;
+    double y=0.0;
+    for (int ivpy=0;ivpy<xnvpy;ivpy++, y+=dy)
+    {
+      double x=0.0;
+      for (int ivpx=0 ;ivpx<xnvpx;ivpx++, x+=dx)
+      {
+        int ipos=pos(ivpx,ivpy);
+        
+        assert(this->ivpx(ipos)==ivpx);
+        assert(this->ivpy(ipos)==ivpy);
+        
+        auto & subframe=subframes[ipos];
+        subframe.viewport[0]=x;
+        subframe.viewport[1]=y;
+        subframe.viewport[2]=x+dx;
+        subframe.viewport[3]=y+dy;
+      }
+    }
+  }
+
+  /// Calculate viewports for single subframe view
+  void Frame::RTSetSingleViewport(int xnvpx, int xnvpy)
+  {
+    for (int ivpy=0;ivpy<xnvpy;ivpy++)
+      for (int ivpx=0 ;ivpx<xnvpx;ivpx++)
+      {
+        int ipos=pos(ivpx,ivpy);
+        auto & subframe=subframes[ipos];
+        subframe.viewport[0]=0;
+        subframe.viewport[1]=0;
+        subframe.viewport[2]=1;
+        subframe.viewport[3]=0.925;
+      }
+
+  }
+
+  
+  /// reset camera to default position
+  void Frame::RTResetCamera(SubFrame& subframe)
+  {
+    subframe.renderer->GetActiveCamera()->SetPosition(subframe.default_camera_position);
+    subframe.renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
+    subframe.renderer->GetActiveCamera()->OrthogonalizeViewUp();
+    subframe.renderer->GetActiveCamera()->SetRoll(0);
+    subframe.renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
+    subframe.renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
+  }
+
+  /// reset all renderers
+  void Frame::RTResetRenderers(bool from_scratch)
+  {
+    if (from_scratch)
+    {
+       title_subframe.renderer = vtkSmartPointer<vtkRenderer>::New();
+       title_subframe.renderer->SetBackground(1., 1., 1.);
+       RTResetCamera(title_subframe);
+       title_subframe.renderer->SetViewport(title_subframe.viewport);
+       this->window->AddRenderer(title_subframe.renderer);
+    }
+
+    for (auto & subframe : this->subframes)
+    {
+      if (subframe.renderer)
+      {
+        subframe.renderer->Clear();
+        if (!subframe.hidden)
+          this->window->RemoveRenderer(subframe.renderer);
+      }
+      else
+      {
+        subframe.renderer = vtkSmartPointer<vtkRenderer>::New();
+        subframe.renderer->SetBackground(1., 1., 1.);
+        RTResetCamera(subframe);
+      }
+      subframe.renderer->SetViewport(subframe.viewport);
+      this->window->AddRenderer(subframe.renderer);
+      if (subframe.hidden)
+        this->window->RemoveRenderer(subframe.renderer);
+
+    }
+  }
+
+  void Frame::RTSetSingleView(bool single_view)
+  {
+    single_subframe_view=single_view;
+    if (single_view)
+    {
+     this->RTSetSingleViewport(this->nvpx, this->nvpy);
+      for (int i=0;i<this->subframes.size();i++)
+        if (i!=this->visible_subframe)
+          this->RTHideSubframe(this->subframes[i]);
+    }
+    else
+    {
+      this->RTCalculateViewports(this->nvpx, this->nvpy);
+      for (int i=0;i<this->subframes.size();i++)
+        this->RTUnHideSubframe(this->subframes[i]);
+    }
+    this->RTResetRenderers(false);
+  }
+  
+  void Frame::RTAddFigures()
+  {
+    for (auto & figure: this->figures)
+    {
+      if (!this->subframes[figure->framepos].hidden)
+      {
+        auto &renderer=this->subframes[figure->framepos].renderer;
+        
+        auto &window=this->window;
+        
+        if (
+          figure->IsEmpty()  
+          || renderer->GetActors()->GetNumberOfItems()==0
+          )
+        {
+          figure->RTBuildAllVTKPipelines(renderer);
+          
+          for (auto & actor: figure->actors) 
+            renderer->AddActor(actor);
+          
+          for (auto & actor: figure->ctxactors) 
+            renderer->AddActor(actor);
+          
+          for (auto & actor: figure->actors2d) 
+            renderer->AddActor(actor);
+          
+        }
+        
+        figure->RTUpdateActors();
+      
+        renderer->SetBackground(figure->bgcolor[0],
+                                figure->bgcolor[1],
+                                figure->bgcolor[2]);
+        
+      }
+    }
+  }
 
 
 
