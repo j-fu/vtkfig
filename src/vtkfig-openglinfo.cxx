@@ -1,4 +1,5 @@
 #include "vtkSmartPointer.h"
+#include "vtkRenderingOpenGLConfigure.h"
 #include "vtkOpenGLRenderWindow.h"
 #include "vtkRenderWindow.h"
 #include "vtkRenderWindowInteractor.h"
@@ -19,7 +20,7 @@ int main()
   interactor->Initialize();
 
   int vmaj, vmin;
-  
+#ifdef VTK_USE_OPENGL_LIBRARY
   auto oglwin=vtkOpenGLRenderWindow::SafeDownCast(window);
   cout << "OpenGL supported: "<<  oglwin->SupportsOpenGL()  << endl;
 
@@ -33,5 +34,10 @@ int main()
 
   cout << "Capabilities: " <<endl<< oglwin->ReportCapabilities() << endl;
 #endif
+
+#else
+  cout << "VTK was not configured with OpenGL" << endl;
+#endif
+
   return 0;
 }
