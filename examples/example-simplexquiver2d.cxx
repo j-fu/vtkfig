@@ -101,7 +101,6 @@ int main(void)
   contour->ShowIsolines(false);
   
   auto quiver=vtkfig::Quiver::New();
-  quiver->SetQuiverArrowScale(1.0);
   quiver->SetData(griddata,"grad");
   quiver->SetQuiverGrid(15,15);
 

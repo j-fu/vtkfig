@@ -82,7 +82,6 @@ int main(void)
 
   
   auto quiver=vtkfig::Quiver::New();
-  quiver->SetQuiverArrowScale(1.0);
   quiver->SetData(griddata,"flow");
   quiver->SetQuiverGrid(5,5);
 

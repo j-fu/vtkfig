@@ -89,16 +89,21 @@ namespace vtkfig
   template <class DATA>
   void  Quiver::RTBuildVTKPipeline(vtkSmartPointer<DATA> gridfunc)
   {
-    auto transform=CalcTransform(gridfunc);
-    
+    CalcTransform();
 
+   
+    /// be careful here: transform filter transforms vectors as well
+    /// so one has to transform first without assiging the vector atrribute
+    /// an assign after transform.
+    auto transgeometry=vtkSmartPointer<vtkTransformFilter>::New();
+    transgeometry->SetInputData(gridfunc);
+    transgeometry->SetTransform(transform);
+
+   
     auto vector = vtkSmartPointer<vtkAssignAttribute>::New();
     vector->Assign(dataname.c_str(),vtkDataSetAttributes::VECTORS,vtkAssignAttribute::POINT_DATA);
-    vector->SetInputDataObject(gridfunc);
-    
-    auto transgeometry=vtkSmartPointer<vtkTransformFilter>::New();
-    transgeometry->SetInputConnection(vector->GetOutputPort());
-    transgeometry->SetTransform(transform);
+    vector->SetInputConnection(transgeometry->GetOutputPort());
+
 
     if (!probePolyData)
     {
@@ -109,7 +114,7 @@ namespace vtkfig
     transprobe->SetTransform(transform);
 
     auto probeFilter = vtkSmartPointer<vtkProbeFilter>::New();
-    probeFilter->SetSourceConnection(transgeometry->GetOutputPort());
+    probeFilter->SetSourceConnection(vector->GetOutputPort());
     probeFilter->SetInputConnection(transprobe->GetOutputPort());
     probeFilter->PassPointArraysOn();
 
@@ -119,21 +124,25 @@ namespace vtkfig
     glyph->SetInputConnection(probeFilter->GetOutputPort());
 //    glyph->SetColorModeToColorByVector();
     glyph->SetScaleModeToScaleByVector();
-   
 
     
-    // if (state.spacedim==2)
-    // {    
-    //   glyph->SetSourceConnection(arrow3d->GetOutputPort());
-    //   arrow2d->SetScale(state.quiver_arrow_scale);
-    // }
-    // else
-    
-    glyph->SetSourceConnection(arrow3d->GetOutputPort());
-    // arrow3dt->Identity();
-    // arrow3dt->Scale(state.quiver_arrow_scale/state.real_vmax,state.quiver_arrow_scale/state.real_vmax,state.quiver_arrow_scale/state.real_vmax);
+    if (state.spacedim==2)
+    {
+      arrow3ds->SetTipResolution(8);
+      arrow3ds->SetTipLength(0.35);
+      arrow3ds->SetTipRadius(0.15);
+      arrow3ds->SetShaftRadius(0.075);
 
-
+      glyph->SetSourceConnection(arrow3d->GetOutputPort());
+    }
+    else
+    {
+      glyph->SetSourceConnection(arrow3d->GetOutputPort());
+      arrow3ds->SetTipResolution(16);
+      arrow3ds->SetTipLength(0.3);
+      arrow3ds->SetTipRadius(0.1);
+      arrow3ds->SetShaftRadius(0.025);
+    }
     // map gridfunction
     auto  mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(glyph->GetOutputPort());

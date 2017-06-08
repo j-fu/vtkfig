@@ -55,7 +55,8 @@ namespace vtkfig
   template <class DATA, class FILTER>
   void SurfaceContour::RTBuildVTKPipeline2D(vtkSmartPointer<DATA> gridfunc)
   {
-    auto transform=CalcTransform(gridfunc);
+
+    CalcTransform();
 
     /// should react on elevation view
     //renderer->GetActiveCamera()->SetParallelProjection(1);
@@ -179,8 +180,9 @@ namespace vtkfig
   template <class DATA,class FILTER>
   void SurfaceContour::RTBuildVTKPipeline3D(vtkSmartPointer<DATA> gridfunc)
   {
+    CalcTransform();
 
-    auto transform=CalcTransform(gridfunc);
+
 
     vtkSmartPointer<vtkExtractCells> subgrid;
     if (celllist)

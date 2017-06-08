@@ -33,8 +33,9 @@ namespace vtkfig
   template <class DATA>
   void  Stream::RTBuildVTKPipeline(vtkSmartPointer<DATA> gridfunc)
   {
-    auto transform=CalcTransform(gridfunc);
-    
+
+    CalcTransform();
+        
 
     auto vector = vtkSmartPointer<vtkAssignAttribute>::New();
     vector->Assign(dataname.c_str(),vtkDataSetAttributes::VECTORS,vtkAssignAttribute::POINT_DATA);

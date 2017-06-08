@@ -183,6 +183,7 @@ namespace vtkfig
     
     /// Title+message text fields
     vtkSmartPointer<vtkCornerAnnotation> annot;
+    vtkSmartPointer<vtkTransform> transform;
 
     /// Cutters for plane sections
     vtkSmartPointer<vtkCutter> planecutX;
@@ -198,6 +199,7 @@ namespace vtkfig
     vtkSmartPointer<vtkGlyphSource2D> arrow2d;    
     vtkSmartPointer<vtkTransformPolyDataFilter> arrow3d;    
     vtkSmartPointer<vtkTransform> arrow3dt;
+    vtkSmartPointer<vtkArrowSource> arrow3ds;
 
     /// Items for isosurface plot
     vtkSmartPointer<vtkActor>     isosurface_plot;
@@ -218,7 +220,7 @@ namespace vtkfig
 
     /// Calculate transformation to unit cube
     /// This shall be applied to all data. Camera is fixed.
-    vtkSmartPointer<vtkTransform> CalcTransform(vtkSmartPointer<vtkDataSet> data);
+    void CalcTransform();
 
 
     /// Data set visualized
@@ -394,7 +396,7 @@ namespace vtkfig
       
       double quiver_arrowscale_user=1.0;
 
-      double quiver_arrowscale_geometry=1.0;
+      double quiver_arrowscale_geometry=0.1;
 
       double quiver_surface_distance=1.0e-10;
 

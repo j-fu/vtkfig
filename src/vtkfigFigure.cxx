@@ -37,16 +37,14 @@ namespace vtkfig
     planecutY= vtkSmartPointer<vtkCutter>::New();
     planecutZ= vtkSmartPointer<vtkCutter>::New();
 
-
-
     arrow2d = vtkSmartPointer<vtkGlyphSource2D>::New();
     arrow2d->SetGlyphTypeToArrow();
 
-    auto arrow3ds= vtkSmartPointer<vtkArrowSource>::New();
+    arrow3ds= vtkSmartPointer<vtkArrowSource>::New();
     arrow3ds->SetTipResolution(16);
-    arrow3ds->SetTipLength(0.3);
-    arrow3ds->SetTipRadius(0.1);
-    arrow3ds->SetShaftRadius(0.025);
+    arrow3ds->SetTipLength(0.4);
+    arrow3ds->SetTipRadius(0.2);
+    arrow3ds->SetShaftRadius(0.1);
 
     arrow3dt=vtkSmartPointer<vtkTransform>::New();
     arrow3d=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
@@ -431,10 +429,10 @@ namespace vtkfig
       ascale=std::max(ascale,1.0e-20);
       state.quiver_arrowscale_user=ascale;
       RTShowArrowScale();
-      arrow2d->SetScale(state.quiver_arrowscale_user);
       arrow3dt->Identity();
       double scalefac=state.quiver_arrowscale_geometry*state.quiver_arrowscale_user/state.real_vmax;
       arrow3dt->Scale(scalefac,scalefac,scalefac);
+      arrow2d->SetScale(scalefac);
       return 1;
     }
     return 0;
@@ -471,20 +469,22 @@ namespace vtkfig
     //contour_lut=BuildLookupTable(tab,tabsize);
   }
   
-  vtkSmartPointer<vtkTransform>  Figure::CalcTransform(vtkSmartPointer<vtkDataSet> data)
+  void Figure::CalcTransform()
   {
     data->GetBounds(data_bounds);
     data->GetCenter(data_center);
 
-    auto transform =  vtkSmartPointer<vtkTransform>::New();
-    auto glyphtransform =  vtkSmartPointer<vtkTransform>::New();
+    transform =  vtkSmartPointer<vtkTransform>::New();
     double xsize=data_bounds[1]-data_bounds[0];
     double ysize=data_bounds[3]-data_bounds[2];
     double zsize=data_bounds[5]-data_bounds[4];
     if (state.spacedim==2) zsize=0;
     double xysize=std::max(xsize,ysize);
     double xyzsize=std::max(xysize,zsize);
-    state.quiver_arrowscale_geometry=1.0/xyzsize;
+
+    // we don't need this if we prevent vectors from being
+    // transformed 
+    //state.quiver_arrowscale_geometry=1.0/xyzsize;
     
     // transform everything to [0,1]x[0,1]x[0,1]
     if (state.keep_aspect)
@@ -527,7 +527,6 @@ namespace vtkfig
 
     transform->TransformPoint(data_center,trans_center);
 
-    return transform;
   }
   
   void Figure::SetVMinMax()
@@ -556,9 +555,12 @@ namespace vtkfig
     // cout << state.real_vmin << " " << state.real_vmax << endl << endl;
 
     arrow3dt->Identity();
-    double scalefac=state.quiver_arrowscale_geometry*state.quiver_arrowscale_user/state.real_vmax;
+    double scalefac=state.quiver_arrowscale_geometry*state.quiver_arrowscale_user/(state.real_vmax);
     arrow3dt->Scale(scalefac,scalefac,scalefac);
     arrow3dt->Modified();
+    arrow2d->SetScale(scalefac);
+    arrow2d->Modified();
+
     double eps = this->state.eps_geom*(state.real_vmax-state.real_vmin);
     surface_lut->SetTableRange(state.real_vmin-eps,state.real_vmax+eps);
     surface_lut->Modified();
@@ -665,7 +667,8 @@ namespace vtkfig
   template <class DATA>
   void Figure::RTBuildDomainPipeline(vtkSmartPointer<vtkRenderer> renderer, vtkSmartPointer<DATA> gridfunc)
   {
-    auto transform=CalcTransform(gridfunc);
+    CalcTransform();
+
     auto geometry=vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
     geometry->SetInputDataObject(gridfunc);
     
@@ -758,6 +761,7 @@ namespace vtkfig
   /// Generic access to filter
   void  Figure::RTBuildDomainPipeline(vtkSmartPointer<vtkRenderer> renderer)
   {
+
     if (state.datatype==DataSet::DataType::UnstructuredGrid)
     {
       auto griddata=vtkUnstructuredGrid::SafeDownCast(data);

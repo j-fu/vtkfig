@@ -45,6 +45,8 @@ namespace vtkfig
   template <class DATA, class FILTER>
   void GridView::RTBuildVTKPipeline2D(vtkSmartPointer<DATA> gridfunc)
   {
+    CalcTransform();
+
     double range[2];
     auto cr=vtkFloatArray::SafeDownCast(gridfunc->GetCellData()->GetAbstractArray("cellregions"));
     auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
@@ -65,7 +67,7 @@ namespace vtkfig
       geometry->SetInputDataObject(gridfunc);
     
     
-    auto transform=CalcTransform(gridfunc);
+
     auto transgeometry=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
     transgeometry->SetInputConnection(geometry->GetOutputPort());
     transgeometry->SetTransform(transform);
@@ -118,6 +120,7 @@ namespace vtkfig
   template <class DATA,class FILTER>
   void GridView::RTBuildVTKPipeline3D(vtkSmartPointer<DATA> gridfunc)
   {
+    CalcTransform();
 
     cout << "3D Gridview not yet implemented" << endl;
     exit(1);
@@ -125,7 +128,7 @@ namespace vtkfig
     gridfunc->GetBounds(bounds);
     double center[3];
     gridfunc->GetCenter(center);
-    Figure::CalcTransform(gridfunc);
+
 
     auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
     scalar->Assign(dataname.c_str(),vtkDataSetAttributes::SCALARS,vtkAssignAttribute::POINT_DATA);
