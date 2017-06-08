@@ -6,7 +6,13 @@
 namespace vtkfig
 {
 
-
+  DataSet::DataSet()
+  { 
+    ranges=std::make_shared<std::map<std::string, Range>>();
+    Range rg;
+    (*ranges)["---"]=rg;
+  }
+    
   
   DataSet::DataType  DataSet::GetDataType()
   {

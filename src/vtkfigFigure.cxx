@@ -17,6 +17,8 @@ namespace vtkfig
   {
 
     ranges=std::make_shared<std::map<std::string, DataSet::Range>>();
+    DataSet::Range rg;
+    (*ranges)["---"]=rg;
 
     surface_lut=BuildLookupTable(surface_rgbtab,state.surface_rgbtab_size);
     //contour_lut=BuildLookupTable(contour_rgbtab,state.contour_rgbtab_size);
@@ -70,6 +72,9 @@ namespace vtkfig
     
     if (SubClassName()=="GridView") return;
     if (SubClassName()=="XYPlot") return;
+    if (SubClassName()=="ChartXY") return;
+    if (SubClassName()=="FigureBase") return;
+    if (SubClassName()=="Surf2D") return;
 
 
     auto  range=ranges->find(dataname);
@@ -91,11 +96,15 @@ namespace vtkfig
 
   void Figure::SetData(DataSet& vtkfig_data, const std::string name)
   {
+
     this->state.spacedim=vtkfig_data.GetSpaceDimension();
+
     this->data=vtkfig_data.GetVTKDataSet();
+
     this->ranges=vtkfig_data.ranges;
+
     state.datatype=vtkfig_data.GetDataType();
-    
+
     this->dataname=name;
     this->celllist=0;
     this->title=name;

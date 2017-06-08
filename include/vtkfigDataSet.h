@@ -33,8 +33,8 @@ namespace vtkfig
   public:    
 
     /// Constructor
-    DataSet() { ranges=std::make_shared<std::map<std::string, Range>>();}
-    
+    DataSet();
+
     /// Static constructor of an empty instance
     static std::shared_ptr<DataSet> New() { return std::make_shared<DataSet>(); }
 

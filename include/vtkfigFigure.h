@@ -309,7 +309,7 @@ namespace vtkfig
     bool IsEmpty();
     
     /// Get subclass name (for s-c communication, should be replaced by tag
-    virtual std::string SubClassName() {return std::string("unknown");}
+    virtual std::string SubClassName() {return std::string("FigureBase");}
     
     
     /// Update all actors belonging to figure
