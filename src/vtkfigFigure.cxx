@@ -197,7 +197,7 @@ namespace vtkfig
   {
     if (this->SubClassName()!="Quiver") return;
 
-    RTMessage("arrow_scale="+std::to_string(state.quiver_arrow_scale));
+    RTMessage("arrow_scale="+std::to_string(state.quiver_arrowscale_user));
   }
 
   
@@ -425,15 +425,16 @@ namespace vtkfig
   {
     if (edit)
     {
-      double ascale=state.quiver_arrow_scale;
+      double ascale=state.quiver_arrowscale_user;
       ascale*=pow(10.0,((double)dy)/100.0);
       ascale=std::min(ascale,1.0e20);
       ascale=std::max(ascale,1.0e-20);
-      state.quiver_arrow_scale=ascale;
+      state.quiver_arrowscale_user=ascale;
       RTShowArrowScale();
-      arrow2d->SetScale(state.quiver_arrow_scale);
+      arrow2d->SetScale(state.quiver_arrowscale_user);
       arrow3dt->Identity();
-      arrow3dt->Scale(state.quiver_arrow_scale/state.real_vmax,state.quiver_arrow_scale/state.real_vmax,state.quiver_arrow_scale/state.real_vmax);
+      double scalefac=state.quiver_arrowscale_geometry*state.quiver_arrowscale_user/state.real_vmax;
+      arrow3dt->Scale(scalefac,scalefac,scalefac);
       return 1;
     }
     return 0;
@@ -483,6 +484,7 @@ namespace vtkfig
     if (state.spacedim==2) zsize=0;
     double xysize=std::max(xsize,ysize);
     double xyzsize=std::max(xysize,zsize);
+    state.quiver_arrowscale_geometry=1.0/xyzsize;
     
     // transform everything to [0,1]x[0,1]x[0,1]
     if (state.keep_aspect)
@@ -554,7 +556,8 @@ namespace vtkfig
     // cout << state.real_vmin << " " << state.real_vmax << endl << endl;
 
     arrow3dt->Identity();
-    arrow3dt->Scale(state.quiver_arrow_scale/state.real_vmax,state.quiver_arrow_scale/state.real_vmax,state.quiver_arrow_scale/state.real_vmax);
+    double scalefac=state.quiver_arrowscale_geometry*state.quiver_arrowscale_user/state.real_vmax;
+    arrow3dt->Scale(scalefac,scalefac,scalefac);
     arrow3dt->Modified();
     double eps = this->state.eps_geom*(state.real_vmax-state.real_vmin);
     surface_lut->SetTableRange(state.real_vmin-eps,state.real_vmax+eps);

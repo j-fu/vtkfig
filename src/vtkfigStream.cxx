@@ -110,16 +110,6 @@ namespace vtkfig
 
 
 
-    // create outline
-    // vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
-    // outlinefilter->SetInputConnection(geometry->GetOutputPort());
-    // vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-    // outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
-    // vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
-    // outline->SetMapper(outlineMapper);
-    // outline->GetProperty()->SetColor(0, 0, 0);
-    // Figure::AddActor(outline);
-
     // add actors to renderer
     Figure::RTAddActor(stream_actor);
   }

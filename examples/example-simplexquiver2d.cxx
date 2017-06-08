@@ -12,7 +12,6 @@
 
 double xscale=1;
 double yscale=1;
-double ascale=0.3;
 
 inline double G(double x,double y, double t) 
 {
@@ -102,7 +101,7 @@ int main(void)
   contour->ShowIsolines(false);
   
   auto quiver=vtkfig::Quiver::New();
-  quiver->SetQuiverArrowScale(ascale);
+  quiver->SetQuiverArrowScale(1.0);
   quiver->SetData(griddata,"grad");
   quiver->SetQuiverGrid(15,15);
 

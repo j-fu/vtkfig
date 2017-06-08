@@ -392,7 +392,9 @@ namespace vtkfig
       
       double isoline_width=2;
       
-      double quiver_arrow_scale=0.333;
+      double quiver_arrowscale_user=1.0;
+
+      double quiver_arrowscale_geometry=1.0;
 
       double quiver_surface_distance=1.0e-10;
 

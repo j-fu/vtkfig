@@ -23,7 +23,7 @@ namespace vtkfig
     
 
       /// Set scaling of arrows
-      void SetQuiverArrowScale(double scale) { state.quiver_arrow_scale=scale;}
+      void SetQuiverArrowScale(double scale) { state.quiver_arrowscale_user=scale;}
 
       /// Set 
       void SetQuiverSurfaceDistance(double dist) { state.quiver_surface_distance=dist;}
