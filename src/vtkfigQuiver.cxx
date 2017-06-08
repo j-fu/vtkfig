@@ -76,7 +76,7 @@ namespace vtkfig
         for ( int iz=0;iz<nz;iz++,z+=dz )
         {
           probePoints->InsertNextPoint ( x, y, z);
-          cout <<  x << " " << y << " " << z << endl;
+          // cout <<  x << " " << y << " " << z << endl;
         }
       }
     }
