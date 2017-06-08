@@ -6,23 +6,6 @@
 namespace vtkfig
 {
 
-  void DataSet::GetRange(const std::string name, double &min, double & max)
-  {
-    auto  range=ranges.find(name);
-    if (range==ranges.end())
-      throw std::runtime_error("vtkfig::DataSet::GetRange: key "+name+" not found");
-    min=range->second.min;
-    max=range->second.max;
-  }
-
-  bool DataSet::DataAvailable(const std::string name)
-  {
-    auto  range=ranges.find(name);
-    if (range==ranges.end())
-      return false;
-    else 
-      return true;
-  }
 
   
   DataSet::DataType  DataSet::GetDataType()

@@ -887,7 +887,8 @@ namespace vtkfig
           for (auto framepair: mainthread->framemap)
             for (auto & figure: framepair.second->figures)
             {
-              figure->ServerRTSend(mainthread->communicator);
+              figure->SetRange();
+              figure->ServerRTSendData(mainthread->communicator);
             }
         }
         break;

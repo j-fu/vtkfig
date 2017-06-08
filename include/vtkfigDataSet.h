@@ -31,9 +31,14 @@ namespace vtkfig
   {
 
   public:    
+
+    /// Constructor
+    DataSet() { ranges=std::make_shared<std::map<std::string, Range>>();}
     
     /// Static constructor of an empty instance
     static std::shared_ptr<DataSet> New() { return std::make_shared<DataSet>(); }
+
+
 
     ///
     /// Enter data of a simplex grid.  
@@ -234,24 +239,6 @@ namespace vtkfig
     vtkSmartPointer<vtkIdList> GetCellList(std::string name) {return masks[name];}
     
 
-    /// 
-    /// Request range
-    /// 
-    void GetRange(const std::string name, double &min, double & max);
-
-    bool DataAvailable(const std::string name);
-
-
-  protected:
-    int spacedim=0;
-
-  private:
-    
-    vtkSmartPointer<vtkDataSet> data=NULL;
-    
-    template<class DATA, class WRITER>
-      void WriteVTK(vtkSmartPointer<DATA> data, std::string fname);
-
     struct Range {
       double min=1.0e100;
       double max=-1.0e100;
@@ -263,7 +250,20 @@ namespace vtkfig
       };
     };
     
-    std::map<std::string, Range> ranges;
+
+
+  protected:
+    int spacedim=0;
+
+
+  private:
+    friend class Figure;
+    vtkSmartPointer<vtkDataSet> data=NULL;
+    
+    template<class DATA, class WRITER>
+      void WriteVTK(vtkSmartPointer<DATA> data, std::string fname);
+
+    std::shared_ptr<std::map<std::string, Range>> ranges;
 
     std::map<std::string,vtkSmartPointer<vtkIdList>> masks;
 
@@ -457,7 +457,7 @@ namespace vtkfig
     for (int i=0;i<ncells; i++)
       gridvalues->InsertComponent(i,0,range.update(values[i]));
     
-    ranges[name]=range;
+    (*ranges)[name]=range;
     gridvalues->Modified();
   }    
   
@@ -540,7 +540,7 @@ namespace vtkfig
     DataSet::Range range;
     for (int i=0;i<npoints; i++)
       gridvalues->InsertComponent(i,0,range.update(values[i]));
-    ranges[name]=range;
+    (*ranges)[name]=range;
     gridvalues->Modified();
   }
   
@@ -572,7 +572,7 @@ namespace vtkfig
       range.update(sqrt(u[i]*u[i]+v[i]*v[i]));
       gridvalues->InsertTuple3(i,u[i],v[i],0);
     }
-    ranges[name]=range;
+    (*ranges)[name]=range;
     gridvalues->Modified();
   }    
   
@@ -608,7 +608,7 @@ namespace vtkfig
       range.update(sqrt(u[i]*u[i]+v[i]*v[i]+w[i]*w[i]));
       gridvalues->InsertTuple3(i,u[i],v[i],w[i]);
     }
-    ranges[name]=range;
+    (*ranges)[name]=range;
     gridvalues->Modified();
   }    
   

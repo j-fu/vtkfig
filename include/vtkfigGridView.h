@@ -41,10 +41,6 @@ namespace vtkfig
       {1.00,0,0,1}};
     int grid_rgbtab_size=65;
 
-    void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator);
-    
-    void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator);
-    
     
     template <class GRIDFUNC, class FILTER>
       void RTBuildVTKPipeline2D( vtkSmartPointer<GRIDFUNC> gridfunc);

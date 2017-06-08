@@ -16,7 +16,7 @@ namespace vtkfig
   Figure::Figure() 
   {
 
-
+    ranges=std::make_shared<std::map<std::string, DataSet::Range>>();
 
     surface_lut=BuildLookupTable(surface_rgbtab,state.surface_rgbtab_size);
     //contour_lut=BuildLookupTable(contour_rgbtab,state.contour_rgbtab_size);
@@ -65,37 +65,62 @@ namespace vtkfig
   };
 
 
-  void Figure::SetData(DataSet* vtkfig_data, const std::string name)
+  void Figure::SetRange()
   {
-    this->vtkfig_dataset=vtkfig_data;
-    this->state.spacedim=vtkfig_data->GetSpaceDimension();
-    this->data=vtkfig_data->GetVTKDataSet();
-    state.datatype=vtkfig_data->GetDataType();
+    
+    if (SubClassName()=="GridView") return;
+    if (SubClassName()=="XYPlot") return;
+
+
+    auto  range=ranges->find(dataname);
+    if (range==ranges->end())
+      throw std::runtime_error("vtkfig::Figure::SetRange: key "+dataname+" not found");
+    state.data_vmin=range->second.min;
+    state.data_vmax=range->second.max;
+  }
+
+  bool Figure::DataAvailable()
+  {
+    auto  range=ranges->find(dataname);
+    if (range==ranges->end())
+      return false;
+    else 
+      return true;
+  }
+
+
+  void Figure::SetData(DataSet& vtkfig_data, const std::string name)
+  {
+    this->state.spacedim=vtkfig_data.GetSpaceDimension();
+    this->data=vtkfig_data.GetVTKDataSet();
+    this->ranges=vtkfig_data.ranges;
+    state.datatype=vtkfig_data.GetDataType();
+    
     this->dataname=name;
     this->celllist=0;
     this->title=name;
-    if (vtkfig_data->DataAvailable(name))
+    if (this->DataAvailable())
       SetVMinMax();
   }
   
   
 
-  void Figure::SetMaskedData(DataSet*vtkfig_data, const std::string name,const std::string maskname)
+  void Figure::SetMaskedData(DataSet& vtkfig_data, const std::string name,const std::string maskname)
   {
     SetData(vtkfig_data,name);
-    celllist=vtkfig_data->GetCellList(maskname);
+    celllist=vtkfig_data.GetCellList(maskname);
   }
 
   void Figure::SetData(std::shared_ptr<DataSet> vtkfig_data, const std::string name)
   {
-    SetData(vtkfig_data.get(),name);
+    SetData(*vtkfig_data,name);
   }
   
   
 
   void Figure::SetMaskedData(std::shared_ptr<DataSet> vtkfig_data, const std::string name,const std::string maskname)
   {
-    SetMaskedData(vtkfig_data.get(),name,maskname);
+    SetMaskedData(*vtkfig_data,name,maskname);
   }
 
 
@@ -496,10 +521,7 @@ namespace vtkfig
   
   void Figure::SetVMinMax()
   {
-    if (SubClassName()=="GridView") return;
-    if (SubClassName()=="XYPlot") return;
-
-    vtkfig_dataset->GetRange(dataname,state.data_vmin, state.data_vmax);
+    this->SetRange();
       
     if (state.vmin_set<state.vmax_set)
     {
@@ -583,6 +605,46 @@ namespace vtkfig
     for (auto actor: ctxactors) {auto m=actor->GetScene(); if (m) m->SetDirty(true);}
     for (auto actor: actors2d){auto m=actor->GetMapper(); if (m) m->Update();}
   }
+
+
+  void Figure::ServerRTSendData(vtkSmartPointer<internals::Communicator> communicator) 
+  {
+    
+    if (SubClassName()!="XYPlot")
+    {
+      communicator->SendCharBuffer((char*)&state,sizeof(state));
+      communicator->SendString(dataname);
+      communicator->Send(data,1,1);
+    }
+    ServerRTSend(communicator);
+  };
+
+  void Figure::ClientMTReceiveData(vtkSmartPointer<internals::Communicator> communicator)
+  {
+    if (SubClassName()!="XYPlot")
+    {
+
+      communicator->ReceiveCharBuffer((char*)&state,sizeof(state));
+      communicator->ReceiveString(dataname);
+      
+      DataSet::Range range;
+      range.min=state.data_vmin;
+      range.max=state.data_vmax;
+      (*ranges)[dataname]=range;
+      // cout << "rec: " << state.data_vmin << " " << state.data_vmax << endl;
+      if (data==NULL)
+      {
+        if (state.datatype==DataSet::DataType::RectilinearGrid)
+          data=vtkSmartPointer<vtkRectilinearGrid>::New();
+        else if (state.datatype==DataSet::DataType::UnstructuredGrid)
+          data=vtkSmartPointer<vtkUnstructuredGrid>::New();
+      }
+      communicator->Receive(data,1,1);
+    }
+    ClientMTReceive(communicator);
+  }
+  
+
 
 
   /// \todo add filter to extract boundary edges

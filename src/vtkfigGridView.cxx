@@ -219,31 +219,5 @@ namespace vtkfig
   
 
 
-  /////////////////////////////////////////////////////////////////////
-  /// Client-Server communication
-
-  void GridView::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator)
-  {
-    communicator->SendCharBuffer((char*)&state,sizeof(state));
-    communicator->SendString(dataname);
-    communicator->Send(data,1,1);
-  }
-
-  void GridView::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator)
-  {
-
-    communicator->ReceiveCharBuffer((char*)&state,sizeof(state));
-    communicator->ReceiveString(dataname);
-
-    if (data==NULL)
-    {
-      if (state.datatype==DataSet::DataType::RectilinearGrid)
-        data=vtkSmartPointer<vtkRectilinearGrid>::New();
-      else if (state.datatype==DataSet::DataType::UnstructuredGrid)
-        data=vtkSmartPointer<vtkUnstructuredGrid>::New();
-    }
-    communicator->Receive(data,1,1);
-
-  }
   
 }

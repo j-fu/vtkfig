@@ -82,13 +82,13 @@ namespace vtkfig
     /// Add Dataset to figure
     ///
     /// \param name Name of scalar or vector to be shown
-    void SetData(DataSet *data, const std::string name="");    
+    void SetData(DataSet &data, const std::string name="");    
 
   
     /// Add Dataset with mask to figure
     ///
     /// \param name Name of scalar or vector to be shown
-    void SetMaskedData(DataSet *data, const std::string name, const std::string maskname);
+    void SetMaskedData(DataSet &data, const std::string name, const std::string maskname);
 
 
     ///
@@ -224,8 +224,6 @@ namespace vtkfig
     /// Data set visualized
     vtkSmartPointer<vtkDataSet> data=NULL;
 
-    vtkfig::DataSet* vtkfig_dataset=NULL;
-
     /// Name of data item in data set 
     std::string dataname;
 
@@ -278,8 +276,12 @@ namespace vtkfig
 
     /// These two need to re-implemented in subclasses 
     /// in order to get server-client communication
-    virtual void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator) {};
+    virtual void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator){} 
     virtual void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator) {};
+    
+    void ServerRTSendData(vtkSmartPointer<internals::Communicator> communicator);
+    void ClientMTReceiveData(vtkSmartPointer<internals::Communicator> communicator);
+
 
 
     /// Process keyboard and mouse move events
@@ -314,6 +316,10 @@ namespace vtkfig
     void RTUpdateActors();
            
     
+    std::shared_ptr<std::map<std::string, DataSet::Range>> ranges;
+    void SetRange();
+    bool DataAvailable();
+
     
     /// figure state
     struct

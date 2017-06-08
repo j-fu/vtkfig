@@ -367,7 +367,7 @@ namespace vtkfig
             {
               for (auto figure: framepair.second->figures)
               {
-                figure->ClientMTReceive(communicator);
+                figure->ClientMTReceiveData(communicator);
               }
             }
             MainThread::mainthread->Show();

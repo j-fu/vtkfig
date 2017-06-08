@@ -372,29 +372,16 @@ namespace vtkfig
 
   void SurfaceContour::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator)
   {
-    communicator->SendCharBuffer((char*)&state,sizeof(state));
-    communicator->SendString(dataname);
-
     if (state.surface_rgbtab_modified)
     {
       SendRGBTable(communicator, surface_rgbtab);
       state.surface_rgbtab_modified=false;
     }
-
-    // if (state.contour_rgbtab_modified)
-    // {
-    //   SendRGBTable(communicator, contour_rgbtab);
-    //   state.contour_rgbtab_modified=false;
-    // }
-    communicator->Send(data,1,1);
   }
 
   void SurfaceContour::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator)
   {
-
-    communicator->ReceiveCharBuffer((char*)&state,sizeof(state));
-    communicator->ReceiveString(dataname);
-
+    
     if (state.surface_rgbtab_modified)
     {
       RGBTable new_rgbtab;
@@ -402,21 +389,7 @@ namespace vtkfig
       SetSurfaceRGBTable(new_rgbtab,state.surface_rgbtab_size);
     }
 
-    // if (state.contour_rgbtab_modified)
-    // {
-    //   RGBTable new_rgbtab;
-    //   ReceiveRGBTable(communicator, new_rgbtab);
-    //   SetContourRGBTable(new_rgbtab,state.contour_rgbtab_size);
-    // }
 
-    if (data==NULL)
-    {
-      if (state.datatype==DataSet::DataType::RectilinearGrid)
-        data=vtkSmartPointer<vtkRectilinearGrid>::New();
-      else if (state.datatype==DataSet::DataType::UnstructuredGrid)
-        data=vtkSmartPointer<vtkUnstructuredGrid>::New();
-    }
-    communicator->Receive(data,1,1);
   }
   
 }
