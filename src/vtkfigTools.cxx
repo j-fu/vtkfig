@@ -49,14 +49,26 @@ namespace vtkfig
   vtkSmartPointer<vtkLookupTable>  BuildLookupTable(std::vector<RGBPoint> & xrgb, size_t size)
   {
     vtkSmartPointer<vtkColorTransferFunction> ctf = vtkSmartPointer<vtkColorTransferFunction>::New();
-    for (size_t i=0;i<xrgb.size(); i++)
-      ctf->AddRGBPoint(xrgb[i].x,xrgb[i].r,xrgb[i].g, xrgb[i].b);
-    
     vtkSmartPointer<vtkLookupTable> lut = vtkSmartPointer<vtkLookupTable>::New();
+
+    for (size_t i=0;i<xrgb.size(); i++)
+    {
+      if (xrgb[i].x<-1.0e-10)
+      {
+        lut->SetBelowRangeColor(xrgb[i].r,xrgb[i].g, xrgb[i].b,1);
+        lut->UseBelowRangeColorOn();
+      }
+      else if (xrgb[i].x>1.0+1.0e-10)
+      {
+        lut->SetAboveRangeColor(xrgb[i].r,xrgb[i].g, xrgb[i].b,1);
+        lut->UseAboveRangeColorOn();
+      }
+      else
+        ctf->AddRGBPoint(xrgb[i].x,xrgb[i].r,xrgb[i].g, xrgb[i].b);
+    }
     
     lut->SetNumberOfTableValues(size);
     lut->Build();
-    
     for(size_t i = 0; i < size; ++i)
      {
        double rgb[3];

@@ -254,6 +254,11 @@ namespace vtkfig
         subframe.viewport[1]=0;
         subframe.viewport[2]=1;
         subframe.viewport[3]=0.925;
+        if (ipos==this->visible_subframe)
+          subframe.hidden=false;
+        else
+          subframe.hidden=true;
+
       }
 
   }
@@ -266,7 +271,8 @@ namespace vtkfig
     subframe.renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
     subframe.renderer->GetActiveCamera()->OrthogonalizeViewUp();
     subframe.renderer->GetActiveCamera()->SetRoll(0);
-    subframe.renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
+//    subframe.renderer->GetActiveCamera()->SetObliqueAngles(45,90);
+//    subframe.renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
     subframe.renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
   }
 
@@ -321,6 +327,7 @@ namespace vtkfig
         this->RTUnHideSubframe(this->subframes[i]);
     }
     this->RTResetRenderers(false);
+    RTAddFigures();
   }
   
   void Frame::RTAddFigures()

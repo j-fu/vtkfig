@@ -71,7 +71,7 @@ int main(void)
   auto contour=vtkfig::SurfaceContour::New();
   contour->SetData(griddata,"v");
   contour->SetSurfaceRGBTable(colors,255);
-  contour->SetValueRange(-1,1);
+  contour->SetValueRange(-0.5,0.5);
   frame->AddFigure(contour);
 
 

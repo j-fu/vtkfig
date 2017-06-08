@@ -62,12 +62,6 @@ namespace vtkfig
 
     auto values=vtkFloatArray::SafeDownCast(gridfunc->GetPointData()->GetAbstractArray(dataname.c_str()));
 
-    double range[2];
-    values->GetRange(range);
-    SetVMinMax(range[0],range[1]);
-    GenIsolevels();
-
-
     vtkSmartPointer<vtkExtractCells> subgrid;
     if (celllist)
     {
@@ -157,10 +151,12 @@ namespace vtkfig
       
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       mapper->SetInputConnection(isoline_filter->GetOutputPort());
-      mapper->UseLookupTableScalarRangeOn();
-      mapper->SetLookupTable(contour_lut);
+      //mapper->UseLookupTableScalarRangeOn();
+      //mapper->SetLookupTable(contour_lut);
+      mapper->ScalarVisibilityOff();
       
       isoline_plot->SetMapper(mapper);
+      isoline_plot->GetProperty()->SetColor(0,0,0);
       isoline_plot->GetProperty()->SetLineWidth(state.isoline_width);
       isoline_plot->SetVisibility(state.show_isolines);
       Figure::RTAddActor(isoline_plot);
@@ -186,13 +182,6 @@ namespace vtkfig
 
     auto transform=CalcTransform(gridfunc);
 
-    auto values=vtkFloatArray::SafeDownCast(gridfunc->GetPointData()->GetAbstractArray(dataname.c_str()));
-    double range[2];
-    values->GetRange(range);
-    SetVMinMax(range[0],range[1]);
-    GenIsolevels();
-
-        
     vtkSmartPointer<vtkExtractCells> subgrid;
     if (celllist)
     {
@@ -313,10 +302,12 @@ namespace vtkfig
         
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       mapper->SetInputConnection(isoline_filter->GetOutputPort());
-      mapper->UseLookupTableScalarRangeOn();
-      mapper->SetLookupTable(contour_lut);
+      // mapper->UseLookupTableScalarRangeOn();
+      // mapper->SetLookupTable(contour_lut);
+      mapper->ScalarVisibilityOff();
       
       isoline_plot->GetProperty()->SetOpacity(1.0);
+      isoline_plot->GetProperty()->SetColor(0,0,0);
       isoline_plot->GetProperty()->SetLineWidth(state.isoline_width);
       isoline_plot->SetMapper(mapper);
       isoline_plot->SetVisibility(state.show_isolines);
@@ -390,11 +381,11 @@ namespace vtkfig
       state.surface_rgbtab_modified=false;
     }
 
-    if (state.contour_rgbtab_modified)
-    {
-      SendRGBTable(communicator, contour_rgbtab);
-      state.contour_rgbtab_modified=false;
-    }
+    // if (state.contour_rgbtab_modified)
+    // {
+    //   SendRGBTable(communicator, contour_rgbtab);
+    //   state.contour_rgbtab_modified=false;
+    // }
     communicator->Send(data,1,1);
   }
 
@@ -411,12 +402,12 @@ namespace vtkfig
       SetSurfaceRGBTable(new_rgbtab,state.surface_rgbtab_size);
     }
 
-    if (state.contour_rgbtab_modified)
-    {
-      RGBTable new_rgbtab;
-      ReceiveRGBTable(communicator, new_rgbtab);
-      SetContourRGBTable(new_rgbtab,state.contour_rgbtab_size);
-    }
+    // if (state.contour_rgbtab_modified)
+    // {
+    //   RGBTable new_rgbtab;
+    //   ReceiveRGBTable(communicator, new_rgbtab);
+    //   SetContourRGBTable(new_rgbtab,state.contour_rgbtab_size);
+    // }
 
     if (data==NULL)
     {

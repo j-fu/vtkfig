@@ -19,7 +19,7 @@ namespace vtkfig
 
 
     surface_lut=BuildLookupTable(surface_rgbtab,state.surface_rgbtab_size);
-    contour_lut=BuildLookupTable(contour_rgbtab,state.contour_rgbtab_size);
+    //contour_lut=BuildLookupTable(contour_rgbtab,state.contour_rgbtab_size);
     elevation_lut=BuildLookupTable(elevation_rgbtab,state.elevation_rgbtab_size);
     isoline_filter = vtkSmartPointer<vtkContourFilter>::New();
     isosurface_filter = vtkSmartPointer<vtkContourFilter>::New();
@@ -36,7 +36,7 @@ namespace vtkfig
     planecutZ= vtkSmartPointer<vtkCutter>::New();
 
 
-    // make a vector glyph
+
     arrow2d = vtkSmartPointer<vtkGlyphSource2D>::New();
     arrow2d->SetGlyphTypeToArrow();
 
@@ -44,6 +44,7 @@ namespace vtkfig
     arrow3ds->SetTipResolution(16);
     arrow3ds->SetTipLength(0.3);
     arrow3ds->SetTipRadius(0.1);
+    arrow3ds->SetShaftRadius(0.025);
 
     arrow3dt=vtkSmartPointer<vtkTransform>::New();
     arrow3d=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
@@ -63,32 +64,38 @@ namespace vtkfig
 
   };
 
-  void Figure::SetData(DataSet& xgriddata, const std::string xdataname)
+
+  void Figure::SetData(DataSet* vtkfig_data, const std::string name)
   {
-    state.spacedim=xgriddata.GetSpaceDimension();
-    data=xgriddata.GetVTKDataSet();
-    state.datatype=xgriddata.GetDataType();
-    dataname=xdataname;
-    celllist=0;
-    title=xdataname;
+    this->vtkfig_dataset=vtkfig_data;
+    this->state.spacedim=vtkfig_data->GetSpaceDimension();
+    this->data=vtkfig_data->GetVTKDataSet();
+    state.datatype=vtkfig_data->GetDataType();
+    this->dataname=name;
+    this->celllist=0;
+    this->title=name;
+    if (vtkfig_data->DataAvailable(name))
+      SetVMinMax();
   }
+  
   
 
-  void Figure::SetData(std::shared_ptr<DataSet> xgriddata, const std::string xdataname)
+  void Figure::SetMaskedData(DataSet*vtkfig_data, const std::string name,const std::string maskname)
   {
-    SetData(*xgriddata,xdataname);
+    SetData(vtkfig_data,name);
+    celllist=vtkfig_data->GetCellList(maskname);
+  }
+
+  void Figure::SetData(std::shared_ptr<DataSet> vtkfig_data, const std::string name)
+  {
+    SetData(vtkfig_data.get(),name);
   }
   
-  void Figure::SetMaskedData(DataSet& dataset, const std::string name, const std::string maskname)
-  {
-    SetData(dataset,name);
-    celllist=dataset.GetCellList(maskname);
-  }
   
 
-  void Figure::SetMaskedData(std::shared_ptr<DataSet> xgriddata, const std::string xdataname,const std::string maskname)
+  void Figure::SetMaskedData(std::shared_ptr<DataSet> vtkfig_data, const std::string name,const std::string maskname)
   {
-    SetMaskedData(*xgriddata,xdataname,maskname);
+    SetMaskedData(vtkfig_data.get(),name,maskname);
   }
 
 
@@ -121,6 +128,7 @@ namespace vtkfig
 
   void Figure::RTShowPlanePos(vtkSmartPointer<vtkCutter> planecut, const std::string plane, int idim)
   {
+    if (this->SubClassName()!="SurfaceContour") return;
     int i=planecut->GetNumberOfContours();
     if (i>0)
     {
@@ -137,6 +145,8 @@ namespace vtkfig
 
   void Figure::RTShowIsolevel()
   {
+    if (this->SubClassName()!="SurfaceContour") return;
+
     int i=isoline_filter->GetNumberOfContours();
     if (i>0)
     {
@@ -151,6 +161,8 @@ namespace vtkfig
 
   void Figure::RTShowArrowScale()
   {
+    if (this->SubClassName()!="Quiver") return;
+
     RTMessage("arrow_scale="+std::to_string(state.quiver_arrow_scale));
   }
 
@@ -207,6 +219,7 @@ namespace vtkfig
     if (!edit && key=="l")
     {
       edit=true;        
+      state.isolevels_locked=true;
       RTShowIsolevel();
       return 1;
     }
@@ -302,9 +315,13 @@ namespace vtkfig
     if (key=="L")
     {
       state.num_contours=11;
+      state.isolevels_locked=false;
       GenIsolevels();
       if (edit.l_iso)
+      {
+        state.isolevels_locked=true;
         RTShowIsolevel();
+      }
       return;
     }
 
@@ -382,7 +399,7 @@ namespace vtkfig
       RTShowArrowScale();
       arrow2d->SetScale(state.quiver_arrow_scale);
       arrow3dt->Identity();
-      arrow3dt->Scale(state.quiver_arrow_scale,state.quiver_arrow_scale,state.quiver_arrow_scale);
+      arrow3dt->Scale(state.quiver_arrow_scale/state.real_vmax,state.quiver_arrow_scale/state.real_vmax,state.quiver_arrow_scale/state.real_vmax);
       return 1;
     }
     return 0;
@@ -415,8 +432,8 @@ namespace vtkfig
   {
     state.contour_rgbtab_size=tabsize;
     state.contour_rgbtab_modified=true;
-    contour_rgbtab=tab;
-    contour_lut=BuildLookupTable(tab,tabsize);
+    //contour_rgbtab=tab;
+    //contour_lut=BuildLookupTable(tab,tabsize);
   }
   
   vtkSmartPointer<vtkTransform>  Figure::CalcTransform(vtkSmartPointer<vtkDataSet> data)
@@ -477,29 +494,49 @@ namespace vtkfig
     return transform;
   }
   
-  void Figure::SetVMinMax(double vmin, double vmax)
+  void Figure::SetVMinMax()
   {
+    if (SubClassName()=="GridView") return;
+    if (SubClassName()=="XYPlot") return;
+
+    vtkfig_dataset->GetRange(dataname,state.data_vmin, state.data_vmax);
+      
     if (state.vmin_set<state.vmax_set)
     {
       state.real_vmin=state.vmin_set;
       state.real_vmax=state.vmax_set;
     }
+    else if (state.accumulate_range)
+    {
+      state.real_vmin=std::min(state.real_vmin,state.data_vmin);
+      state.real_vmax=std::max(state.real_vmax,state.data_vmax);
+    }
     else
     {
-      state.real_vmin=vmin;
-      state.real_vmax=vmax;
+      state.real_vmin=state.data_vmin;
+      state.real_vmax=state.data_vmax;
     }
-    
-    surface_lut->SetTableRange(state.real_vmin,state.real_vmax);
+    // cout << SubClassName() << endl;
+    // cout << state.data_vmin << " " << state.data_vmax << endl;
+    // cout << state.real_vmin << " " << state.real_vmax << endl << endl;
+
+    arrow3dt->Identity();
+    arrow3dt->Scale(state.quiver_arrow_scale/state.real_vmax,state.quiver_arrow_scale/state.real_vmax,state.quiver_arrow_scale/state.real_vmax);
+    arrow3dt->Modified();
+    double eps = this->state.eps_geom*(state.real_vmax-state.real_vmin);
+    surface_lut->SetTableRange(state.real_vmin-eps,state.real_vmax+eps);
     surface_lut->Modified();
-    contour_lut->SetTableRange(state.real_vmin,state.real_vmax);
-    contour_lut->Modified();
+    GenIsolevels();
+
+    // contour_lut->SetTableRange(state.real_vmin,state.real_vmax);
+    // contour_lut->Modified();
   }
 
   void Figure::GenIsolevels()
   {
-    double tempdiff = (state.real_vmax-state.real_vmin)/(1.0e8*state.num_contours);
-    isoline_filter->GenerateValues(state.num_contours, state.real_vmin+tempdiff, state.real_vmax-tempdiff);
+    if (state.isolevels_locked) return;
+    double eps = this->state.eps_geom*(state.real_vmax-state.real_vmin)/(state.num_contours);
+    isoline_filter->GenerateValues(state.num_contours, state.real_vmin+eps, state.real_vmax-eps);
     isoline_filter->Modified();
     RTUpdateIsoSurfaceFilter();
   }
@@ -540,6 +577,8 @@ namespace vtkfig
   
   void Figure::RTUpdateActors()
   {
+    SetVMinMax();
+    
     for (auto actor: actors) {auto m=actor->GetMapper(); if (m) m->Update();}
     for (auto actor: ctxactors) {auto m=actor->GetScene(); if (m) m->SetDirty(true);}
     for (auto actor: actors2d){auto m=actor->GetMapper(); if (m) m->Update();}

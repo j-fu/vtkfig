@@ -56,7 +56,9 @@ namespace vtkfig
       scalar->Assign("cellregions",vtkDataSetAttributes::SCALARS,vtkAssignAttribute::CELL_DATA);
       scalar->SetInputDataObject(gridfunc);
       cr->GetRange(range);
-      SetVMinMax(range[0],range[1]);
+
+      surface_lut->SetTableRange(range[0],range[1]);
+      surface_lut->Modified();
     }
     
     auto geometry=vtkSmartPointer<FILTER>::New();

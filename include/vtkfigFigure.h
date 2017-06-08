@@ -66,10 +66,6 @@ namespace vtkfig
     void SetBackground(double r, double g, double b) { bgcolor[0]=r; bgcolor[1]=g; bgcolor[2]=b;}
 
 
-    /// Add Dataset to figure
-    ///
-    /// \param name Name of scalar or vector to be shown
-    void SetData(DataSet& ddata, const std::string name="");
 
   
     /// Add Dataset to figure
@@ -77,17 +73,23 @@ namespace vtkfig
     /// \param name Name of scalar or vector to be shown
     void SetData(std::shared_ptr<DataSet> data, const std::string name="");    
 
-
-    /// Add Dataset with mask to figure
-    ///
-    /// \param name Name of scalar or vector to be shown
-    void SetMaskedData(DataSet& ddata, const std::string name, const std::string maskname);
-
   
     /// Add Dataset with mask to figure
     ///
     /// \param name Name of scalar or vector to be shown
     void SetMaskedData(std::shared_ptr<DataSet> data, const std::string name, const std::string maskname);
+
+    /// Add Dataset to figure
+    ///
+    /// \param name Name of scalar or vector to be shown
+    void SetData(DataSet *data, const std::string name="");    
+
+  
+    /// Add Dataset with mask to figure
+    ///
+    /// \param name Name of scalar or vector to be shown
+    void SetMaskedData(DataSet *data, const std::string name, const std::string maskname);
+
 
     ///
     /// Set contour RGB table from RGBtable
@@ -98,7 +100,13 @@ namespace vtkfig
 
     /// Set figure title
     void SetTitle(std::string xtitle) { title=xtitle;}
+
+
+    /// Set Range of values
+    void SetValueRange(double vmin, double vmax){state.vmin_set=vmin; state.vmax_set=vmax;}
     
+    /// Accumulate value ranges during run
+    void SetAccumulateRange(bool b){ state.accumulate_range=b;}
 
     ///  Set fixed  xy aspect ratio
     void SetXYAspect(double a) {state.aspect=a;}
@@ -216,6 +224,8 @@ namespace vtkfig
     /// Data set visualized
     vtkSmartPointer<vtkDataSet> data=NULL;
 
+    vtkfig::DataSet* vtkfig_dataset=NULL;
+
     /// Name of data item in data set 
     std::string dataname;
 
@@ -230,15 +240,15 @@ namespace vtkfig
     RGBTable surface_rgbtab{{0,0,0,1},{1,1,0,0}};
     
     /// Color lookup table for contour plots
-    vtkSmartPointer<vtkLookupTable> contour_lut;
-    RGBTable contour_rgbtab{{0,0,0,0},{1,0,0,0}};
+    /// vtkSmartPointer<vtkLookupTable> contour_lut;
+    /// RGBTable contour_rgbtab{{0,0,0,0},{1,0,0,0}};
     
     /// Color lookup table for elevation plots
     vtkSmartPointer<vtkLookupTable> elevation_lut;
     RGBTable elevation_rgbtab{{0.0,0.9,0.9,0.9},{1.0,0.9,0.9,0.9}};
     
     /// Set minmax values from data
-    void SetVMinMax(double vmin, double vmax);
+    void SetVMinMax();
 
     /// Generate isolevels after minmax data known
     void GenIsolevels();
@@ -273,8 +283,8 @@ namespace vtkfig
 
 
     /// Process keyboard and mouse move events
-    virtual void RTProcessKey(const std::string key);
-    virtual void RTProcessMove(int dx, int dy);
+    void RTProcessKey(const std::string key);
+    void RTProcessMove(int dx, int dy);
     
     /// Process keyboard and mouse move events for plane section editing
     int RTProcessPlaneKey(const std::string plane,int idim, const std::string key, bool & edit, vtkSmartPointer<vtkCutter> planecut);
@@ -317,9 +327,19 @@ namespace vtkfig
       double real_vmin=0;
       double real_vmax=1;
       
+      /// min/max calculated from data
+      double data_vmin=0;
+      double data_vmax=1;
+      
+      bool accumulate_range=false;
+
+      bool isolevels_locked=false;
+
       /// number of isocontours
       int num_contours=11;
       int max_num_contours=11;
+
+      double eps_geom=1.0e-8;
       
       bool keep_aspect=true;
       

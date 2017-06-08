@@ -14,7 +14,10 @@
 #include "vtkProbeFilter.h"
 #include "vtkTransformPolyDataFilter.h"
 #include "vtkTransformFilter.h"
+
+
 #include "vtkfigQuiver.h"
+
 
 namespace vtkfig
 {
@@ -39,10 +42,10 @@ namespace vtkfig
     double dx=(bounds[1]-bounds[0])/((double)nx);
     double dy=(bounds[3]-bounds[2])/((double)ny);
     
-    double x=bounds[0];
+    double x=bounds[0]+0.5*dx;
     for (int ix=0; ix<nx;ix++,x+=dx )
     {
-      double  y=bounds[2];
+      double  y=bounds[2]+0.5*dy;
       for ( int iy=0;iy<ny;iy++,y+=dy )
         probePoints->InsertNextPoint ( x, y, state.quiver_surface_distance);
     }
@@ -63,16 +66,17 @@ namespace vtkfig
     double dy=(bounds[3]-bounds[2])/((double)ny);
     double dz=(bounds[5]-bounds[4])/((double)nz);
     
-    double x=bounds[0];
+    double x=bounds[0]+0.5*dx;
     for (int ix=0; ix<nx;ix++,x+=dx )
     {
-      double  y=bounds[2];
+      double  y=bounds[2]+0.5*dy;
       for ( int iy=0;iy<ny;iy++,y+=dy )
       {
-        double  z=bounds[4];
+        double  z=bounds[4]+0.5*dz;
         for ( int iz=0;iz<nz;iz++,z+=dz )
         {
           probePoints->InsertNextPoint ( x, y, z);
+          cout <<  x << " " << y << " " << z << endl;
         }
       }
     }
@@ -109,6 +113,8 @@ namespace vtkfig
     probeFilter->SetInputConnection(transprobe->GetOutputPort());
     probeFilter->PassPointArraysOn();
 
+    
+
     auto glyph = vtkSmartPointer<vtkGlyph3D>::New();
     glyph->SetInputConnection(probeFilter->GetOutputPort());
 //    glyph->SetColorModeToColorByVector();
@@ -116,16 +122,17 @@ namespace vtkfig
    
 
     
-    if (state.spacedim==2)
-    {    
-      glyph->SetSourceConnection(arrow2d->GetOutputPort());
-      arrow2d->SetScale(state.quiver_arrow_scale);
-    }
-    else
-    {    
-      glyph->SetSourceConnection(arrow3d->GetOutputPort());
-      arrow3dt->Scale(state.quiver_arrow_scale,state.quiver_arrow_scale,state.quiver_arrow_scale);
-    }
+    // if (state.spacedim==2)
+    // {    
+    //   glyph->SetSourceConnection(arrow3d->GetOutputPort());
+    //   arrow2d->SetScale(state.quiver_arrow_scale);
+    // }
+    // else
+    
+    glyph->SetSourceConnection(arrow3d->GetOutputPort());
+    // arrow3dt->Identity();
+    // arrow3dt->Scale(state.quiver_arrow_scale/state.real_vmax,state.quiver_arrow_scale/state.real_vmax,state.quiver_arrow_scale/state.real_vmax);
+
 
     // map gridfunction
     auto  mapper = vtkSmartPointer<vtkPolyDataMapper>::New();

@@ -98,7 +98,7 @@ int main(void)
 
   
   auto quiver=vtkfig::Quiver::New();
-  quiver->SetQuiverArrowScale(0.1);
+  quiver->SetQuiverArrowScale(0.3);
   quiver->SetData(griddata,"flow");
   quiver->SetQuiverGrid(5,5,15);
 
@@ -117,13 +117,13 @@ int main(void)
 
     for (int i=0; i<Nx; i++)
       for (int j=0; j<Ny; j++)
-      for (int k=0; k<Nz; k++)
-      {
-        u[k*Nx*Ny+j*Nx+i] = UX(x[i],y[j],z[k],t);
-        v[k*Nx*Ny+j*Nx+i] = UY(x[i],y[j],z[k],t);
-        w[k*Nx*Ny+j*Nx+i] = UZ(x[i],y[j],z[k],t);
-      }
-
+        for (int k=0; k<Nz; k++)
+        {
+          u[k*Nx*Ny+j*Nx+i] = UX(x[i],y[j],z[k],t);
+          v[k*Nx*Ny+j*Nx+i] = UY(x[i],y[j],z[k],t);
+          w[k*Nx*Ny+j*Nx+i] = UZ(x[i],y[j],z[k],t);
+        }
+    
     griddata->SetPointVector(u,v,w,"flow");
 
     frame->Show();

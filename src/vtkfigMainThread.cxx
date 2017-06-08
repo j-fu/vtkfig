@@ -428,17 +428,18 @@ namespace vtkfig
 
               if (
                 frame->subframes[figure->framepos].renderer==this->CurrentRenderer
-                &&(
-                  (key=="a" && figure->SubClassName()=="Quiver")
-                  ||
-                  (key=="x" && figure->SubClassName()=="SurfaceContour")
-                  ||
-                  (key=="y" && figure->SubClassName()=="SurfaceContour")
-                  ||
-                  (key=="z" && figure->SubClassName()=="SurfaceContour")
-                  ||
-                  (key=="l" && figure->SubClassName()=="SurfaceContour")
-                  ))
+                // &&(
+                //   (key=="a" && figure->SubClassName()=="Quiver")
+                //   ||
+                //   (key=="x" && figure->SubClassName()=="SurfaceContour")
+                //   ||
+                //   (key=="y" && figure->SubClassName()=="SurfaceContour")
+                //   ||
+                //   (key=="z" && figure->SubClassName()=="SurfaceContour")
+                //   ||
+                //   (key=="l" && figure->SubClassName()=="SurfaceContour")
+                //  )
+                )
                 this->edited_figures.push_back(figure);
             }
           } 
@@ -456,7 +457,7 @@ namespace vtkfig
           if (this->edit_mode)
           {
             for (auto figure : this->edited_figures)
-              figure->RTProcessMove(-1,0);
+              figure->RTProcessMove(-1,-1);
             this->Interactor->Render();
           }
         }
@@ -467,7 +468,7 @@ namespace vtkfig
           if (this->edit_mode)
           {
             for (auto figure : this->edited_figures)
-              figure->RTProcessMove(1,0);
+              figure->RTProcessMove(1,1);
             this->Interactor->Render();
           }
         }
@@ -516,12 +517,12 @@ namespace vtkfig
         else if (key=="asterisk")
         {
           if (!frame->single_subframe_view)
-          for(int i=0;i<this->frame->subframes.size();i++)
-          {
-            if (this->frame->subframes[i].renderer==this->CurrentRenderer)
-              this->frame->visible_subframe=i;
-          }
-
+            for(int i=0;i<this->frame->subframes.size();i++)
+            {
+              if (this->frame->subframes[i].renderer==this->CurrentRenderer)
+                this->frame->visible_subframe=i;
+            }
+          
           frame->single_subframe_view=!frame->single_subframe_view;
           frame->RTSetSingleView(frame->single_subframe_view);
           this->Interactor->Render();

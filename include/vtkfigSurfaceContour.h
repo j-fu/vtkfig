@@ -28,9 +28,6 @@ namespace vtkfig
     static std::shared_ptr<SurfaceContour> New() { return std::make_shared<SurfaceContour>();}
     virtual std::string SubClassName() {return std::string("SurfaceContour");}
     
-    /// Set Range of values
-    void SetValueRange(double vmin, double vmax){state.vmin_set=vmin; state.vmax_set=vmax;}
-    
     /// Toggle surface plot on plane
     void ShowSurface(bool b) {state.show_surface=b;}
     
