@@ -4,6 +4,11 @@ Changes
 
 ## Changes 
 
+- v0.13
+  - overhauled range scaling for contour+quiver, should be ok now
+  - asterisk key switches between single/multi view
+  - leafing through figures by Prior/Next in single view 
+
 - v0.12
   - region masking and  2D elevation  plot for vtkfig::SurfaceContour
   - vtkfig::Quiver does 3D
