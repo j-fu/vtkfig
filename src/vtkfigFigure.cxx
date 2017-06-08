@@ -530,6 +530,8 @@ namespace vtkfig
   
   void Figure::SetVMinMax()
   {
+    if (SubClassName()=="GridView") return;
+
     this->SetRange();
       
     if (state.vmin_set<state.vmax_set)

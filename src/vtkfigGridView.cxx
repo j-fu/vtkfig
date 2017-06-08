@@ -45,9 +45,6 @@ namespace vtkfig
   template <class DATA, class FILTER>
   void GridView::RTBuildVTKPipeline2D(vtkSmartPointer<DATA> gridfunc)
   {
-    double bounds[6];
-    gridfunc->GetBounds(bounds);
-    //renderer->GetActiveCamera()->SetParallelProjection(1);
     double range[2];
     auto cr=vtkFloatArray::SafeDownCast(gridfunc->GetCellData()->GetAbstractArray("cellregions"));
     auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
