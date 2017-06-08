@@ -69,7 +69,7 @@ if (DOXYGEN_FOUND)
   # than their directory
   add_custom_target( doc_doxygen ALL
     COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc/
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     COMMENT "Generating API documentation with Doxygen"
     VERBATIM )
 endif()

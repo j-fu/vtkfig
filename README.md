@@ -25,10 +25,10 @@ API that is as easy to use as that of python/matplotlib and which uses
 - 3-Clause BSD License ([same as vtk](http://www.vtk.org/licensing/))
 
 ## Further information
-- [Changes](changes.md)
-- [Installation](installation.md) 
-- [Usage](usage.md)  notes
-- Some notes on [performance](performance.md) 
+- [Changes](doc/changes.md)
+- [Installation](doc/installation.md) 
+- [Usage](doc/usage.md)  notes
+- Some notes on [performance](doc/performance.md) 
 
 
 ## Contributors
