@@ -60,7 +60,7 @@ namespace vtkfig
         debug_level=atoi(debug_string);
 
     
-#if CONFIG_APPLE
+#if XXXCONFIG_APPLE
       try_running_multithreaded=false;
       if (multi_string!=0 && atoi(multi_string))
       {
@@ -68,16 +68,15 @@ namespace vtkfig
           cout << "overriding multithreading default (off) on APPLE" << endl;
         try_running_multithreaded=true;
       }
-#else
+#endif
       try_running_multithreaded=true;
       if (multi_string!=0 && !atoi(multi_string))
       {
         if (debug_level>0)
-          cout << "overriding multithreading default (on) on NON-APPLE" << endl;
+          cout << "overriding multithreading default (on) on" << endl;
         try_running_multithreaded=false;
       }
-#endif
-
+      
       if (dbuff_string!=0)
         this->double_buffering=atoi(dbuff_string);
       

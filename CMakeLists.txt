@@ -2,7 +2,7 @@
 # see also https://github.com/forexample/package-example
 # https://cmake.org/Wiki/CMake/Tutorials/Exporting_and_Importing_Targets
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 2.8.12)
 
 PROJECT(VTKFIG C CXX)
 
