@@ -20,6 +20,11 @@ namespace vtkfig
     surface_lut=BuildLookupTable(surface_rgbtab,state.surface_rgbtab_size);
     //contour_lut=BuildLookupTable(contour_rgbtab,state.contour_rgbtab_size);
     elevation_lut=BuildLookupTable(elevation_rgbtab,state.elevation_rgbtab_size);
+    quiver_lut=BuildLookupTable(quiver_rgbtab,state.quiver_rgbtab_size);
+    stream_lut=BuildLookupTable(stream_rgbtab,state.stream_rgbtab_size);
+
+
+
     isoline_filter = vtkSmartPointer<vtkContourFilter>::New();
     isosurface_filter = vtkSmartPointer<vtkContourFilter>::New();
 
@@ -555,10 +560,27 @@ namespace vtkfig
     arrow2d->SetScale(scalefac);
     arrow2d->Modified();
 
-    double eps = this->state.eps_geom*(state.real_vmax-state.real_vmin);
-    surface_lut->SetTableRange(state.real_vmin-eps,state.real_vmax+eps);
-    surface_lut->Modified();
-    GenIsolevels();
+    double lut_min=state.real_vmin;
+    double lut_max=state.real_vmax;
+
+    
+    if (true ||SubClassName()=="ScalarView")
+    {
+      surface_lut->SetTableRange(lut_min,lut_max);
+      surface_lut->Modified();
+      GenIsolevels();
+    }
+
+    if (true ||SubClassName()=="VectorView")
+    {
+      quiver_lut->SetTableRange(lut_min,lut_max);
+      quiver_lut->Modified();
+
+      stream_lut->SetTableRange(lut_min,lut_max);
+      stream_lut->Modified();
+    }
+
+
 
     // contour_lut->SetTableRange(state.real_vmin,state.real_vmax);
     // contour_lut->Modified();

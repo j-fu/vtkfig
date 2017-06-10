@@ -6,7 +6,6 @@
 
 #include "vtkfigFrame.h"
 #include "vtkfigVectorView.h"
-#include "vtkfigStream.h"
 #include "vtkfigTools.h"
 
 
@@ -97,19 +96,16 @@ int main(void)
 
 
   
-  auto quiver=vtkfig::VectorView::New();
-  quiver->SetData(griddata,"flow");
-  quiver->SetQuiverGrid(5,5,15);
-
-  auto stream=vtkfig::Stream::New();
-  stream->SetData(griddata,"flow");
-
-  stream->SetSeedPoints(seeds);
+  auto vview=vtkfig::VectorView::New();
+  vview->SetData(griddata,"flow");
+  vview->SetQuiverGrid(5,5,15);
+  vview->SetStreamLineSeedPoints(seeds);
+  vview->ShowStreamLines(true);
+  vview->SetValueRange(0,3);
 
 
+  frame->AddFigure(vview);
 
-  frame->AddFigure(quiver);
-  frame->AddFigure(stream);
 
   while (ii<nspin)
   {

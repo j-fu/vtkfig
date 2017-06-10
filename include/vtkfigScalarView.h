@@ -93,6 +93,7 @@ namespace vtkfig
   
 
 ////////////////////////////////////////////////////////////////
+
   template <class V> 
     inline
     void  ScalarView::SetSurfaceRGBTable(const V & tab, int lutsize)

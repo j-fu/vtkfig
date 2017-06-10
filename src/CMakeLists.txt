@@ -8,7 +8,6 @@ add_library(vtkfig
   vtkfigScalarView.cxx  
   vtkfigGridView.cxx  
   vtkfigVectorView.cxx  
-  vtkfigStream.cxx  
   vtkfigXYPlot.cxx
 
   

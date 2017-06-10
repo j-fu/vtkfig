@@ -13,7 +13,6 @@
 #include "vtkfigSurf2D.h"
 #include "vtkfigScalarView.h"
 #include "vtkfigVectorView.h"
-#include "vtkfigStream.h"
 #include "vtkfigGridView.h"
 #include "vtkfigXYPlot.h"
 #include "vtkfigMainThread.h"
@@ -331,13 +330,6 @@ namespace vtkfig
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
                 cout << "Add VectorView" << endl;
-            }
-            else if (figtype=="Stream")
-            {
-              figure=new vtkfig::Stream();
-              frame->AddFigure(figure,ipos);
-              if (debug_level>0)
-                cout << "Add Stream" << endl;
             }
             else if (figtype=="GridView")
             {

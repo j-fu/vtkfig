@@ -239,6 +239,14 @@ namespace vtkfig
     vtkSmartPointer<vtkLookupTable> surface_lut;
     RGBTable surface_rgbtab{{0,0,0,1},{1,1,0,0}};
     
+    vtkSmartPointer<vtkLookupTable> quiver_lut;
+    RGBTable quiver_rgbtab{{0,0,0,0},{1,0,0,0}};
+
+    vtkSmartPointer<vtkLookupTable> stream_lut;
+    RGBTable stream_rgbtab{{0,0,0,1},{1,1,0,0}};
+
+
+
     /// Color lookup table for contour plots
     /// vtkSmartPointer<vtkLookupTable> contour_lut;
     /// RGBTable contour_rgbtab{{0,0,0,0},{1,0,0,0}};
@@ -354,13 +362,21 @@ namespace vtkfig
       
       bool show_surface=true;
       
-      bool show_isolines=true;
+      bool show_quiver=true;
+      
+      bool show_stream=false;
+      
+      bool show_isolines=false;
 
       bool show_isosurfaces=false;
       
       bool show_slider=false;
       
       bool show_surface_colorbar=true;
+
+      bool show_quiver_colorbar=false;
+
+      bool show_stream_colorbar=false;
       
       bool show_contour_colorbar=false;
       
@@ -370,7 +386,7 @@ namespace vtkfig
       
       bool contour_rgbtab_modified=false;
 
-      int surface_rgbtab_size=255;
+      int surface_rgbtab_size=63;
       
       bool surface_rgbtab_modified=true;
 
@@ -378,9 +394,11 @@ namespace vtkfig
       
       bool quiver_rgbtab_modified=true;
 
+      int stream_rgbtab_size=63;
+      
+      bool stream_rgbtab_modified=true;
 
       int elevation_rgbtab_size=2;
-
       
       bool wireframe=false;
 
@@ -403,8 +421,6 @@ namespace vtkfig
       double quiver_arrowscale_geometry=0.1;
 
       double quiver_surface_distance=1.0e-10;
-
-      double streamcolor[3]={0.8,0.8,0.8};
 
       double streamlength=1;
 
