@@ -374,6 +374,11 @@ namespace vtkfig
       
       bool surface_rgbtab_modified=true;
 
+      int quiver_rgbtab_size=2;
+      
+      bool quiver_rgbtab_modified=true;
+
+
       int elevation_rgbtab_size=2;
 
       

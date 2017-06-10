@@ -25,10 +25,19 @@ namespace vtkfig
 
   VectorView::VectorView(): Figure()  
   {  
-    RGBTable quiver_rgb={{0,0,0,0},{1,0,0,0}};
-    lut=BuildLookupTable(quiver_rgb,2);
+    quiver_rgbtab={{0,0,0,0},{1,0,0,0}};
+    quiver_lut=BuildLookupTable(quiver_rgbtab,2);
   }
   
+
+  void VectorView::SetQuiverRGBTable(RGBTable & tab, int tabsize)
+  {
+    state.quiver_rgbtab_size=tabsize;
+    state.quiver_rgbtab_modified=true;
+    quiver_rgbtab=tab;
+    quiver_lut=BuildLookupTable(tab,tabsize);
+  }
+
 
 
   void VectorView::SetQuiverGrid(int nx, int ny)
@@ -74,10 +83,7 @@ namespace vtkfig
       {
         double  z=bounds[4]+0.5*dz;
         for ( int iz=0;iz<nz;iz++,z+=dz )
-        {
           probePoints->InsertNextPoint ( x, y, z);
-          // cout <<  x << " " << y << " " << z << endl;
-        }
       }
     }
     
@@ -122,7 +128,7 @@ namespace vtkfig
 
     auto glyph = vtkSmartPointer<vtkGlyph3D>::New();
     glyph->SetInputConnection(probeFilter->GetOutputPort());
-//    glyph->SetColorModeToColorByVector();
+    glyph->SetColorModeToColorByVector();
     glyph->SetScaleModeToScaleByVector();
 
     
@@ -146,16 +152,12 @@ namespace vtkfig
     // map gridfunction
     auto  mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(glyph->GetOutputPort());
-    // mapper->SetLookupTable(lut);
-    // mapper->UseLookupTableScalarRangeOn();
+    mapper->SetLookupTable(quiver_lut);
+    mapper->UseLookupTableScalarRangeOn();
 
 
     // create plot quiver actor
     vtkSmartPointer<vtkActor> quiver_actor = vtkSmartPointer<vtkActor>::New();
-    if (state.spacedim==3)
-      quiver_actor->GetProperty()->SetColor(0.5,0.5,0.5);
-    else
-      quiver_actor->GetProperty()->SetColor(0,0,0);
     quiver_actor->SetMapper(mapper);
 
 
