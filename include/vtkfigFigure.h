@@ -318,9 +318,8 @@ namespace vtkfig
     void RTUpdateActors();
            
     
-    std::shared_ptr<std::map<std::string, DataSet::Range>> ranges;
     void SetRange();
-    bool DataAvailable();
+
 
     
     /// figure state
@@ -402,7 +401,7 @@ namespace vtkfig
 
       double streamcolor[3]={0.8,0.8,0.8};
 
-      double streamlength=1.0;
+      double streamlength=1;
 
       double streamribbonwidth=0.01;
 

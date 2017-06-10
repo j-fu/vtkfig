@@ -237,20 +237,7 @@ namespace vtkfig
     /// 
     /// \return Cell List
     vtkSmartPointer<vtkIdList> GetCellList(std::string name) {return masks[name];}
-    
-
-    struct Range {
-      double min=1.0e100;
-      double max=-1.0e100;
-      double update(double x)
-      {
-        this->min=std::min(this->min,x);
-        this->max=std::max(this->max,x);
-        return x;
-      };
-    };
-    
-
+  
 
   protected:
     int spacedim=0;
@@ -262,8 +249,6 @@ namespace vtkfig
     
     template<class DATA, class WRITER>
       void WriteVTK(vtkSmartPointer<DATA> data, std::string fname);
-
-    std::shared_ptr<std::map<std::string, Range>> ranges;
 
     std::map<std::string,vtkSmartPointer<vtkIdList>> masks;
 
@@ -453,11 +438,10 @@ namespace vtkfig
       this->data->GetCellData()->AddArray(gridvalues);
     }
 
-    DataSet::Range range;
+
     for (int i=0;i<ncells; i++)
-      gridvalues->InsertComponent(i,0,range.update(values[i]));
+      gridvalues->InsertComponent(i,0,values[i]);
     
-    (*ranges)[name]=range;
     gridvalues->Modified();
   }    
   
@@ -537,10 +521,8 @@ namespace vtkfig
       this->data->GetPointData()->AddArray(gridvalues);
     }
 
-    DataSet::Range range;
     for (int i=0;i<npoints; i++)
-      gridvalues->InsertComponent(i,0,range.update(values[i]));
-    (*ranges)[name]=range;
+      gridvalues->InsertComponent(i,0,values[i]);
     gridvalues->Modified();
   }
   
@@ -566,13 +548,10 @@ namespace vtkfig
       this->data->GetPointData()->AddArray(gridvalues);
     }
     
-    DataSet::Range range;
     for (int i=0;i<npoints; i++)
-    {
-      range.update(sqrt(u[i]*u[i]+v[i]*v[i]));
       gridvalues->InsertTuple3(i,u[i],v[i],0);
-    }
-    (*ranges)[name]=range;
+    
+
     gridvalues->Modified();
   }    
   
@@ -602,13 +581,8 @@ namespace vtkfig
     }
     
 
-    DataSet::Range range;
     for (int i=0;i<npoints; i++)
-    {
-      range.update(sqrt(u[i]*u[i]+v[i]*v[i]+w[i]*w[i]));
       gridvalues->InsertTuple3(i,u[i],v[i],w[i]);
-    }
-    (*ranges)[name]=range;
     gridvalues->Modified();
   }    
   

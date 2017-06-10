@@ -16,9 +16,6 @@ namespace vtkfig
   Figure::Figure() 
   {
 
-    ranges=std::make_shared<std::map<std::string, DataSet::Range>>();
-    DataSet::Range rg;
-    (*ranges)["---"]=rg;
 
     surface_lut=BuildLookupTable(surface_rgbtab,state.surface_rgbtab_size);
     //contour_lut=BuildLookupTable(contour_rgbtab,state.contour_rgbtab_size);
@@ -75,20 +72,19 @@ namespace vtkfig
     if (SubClassName()=="Surf2D") return;
 
 
-    auto  range=ranges->find(dataname);
-    if (range==ranges->end())
-      throw std::runtime_error("vtkfig::Figure::SetRange: key "+dataname+" not found");
-    state.data_vmin=range->second.min;
-    state.data_vmax=range->second.max;
-  }
+    auto values=vtkFloatArray::SafeDownCast(data->GetPointData()->GetAbstractArray(dataname.c_str()));
 
-  bool Figure::DataAvailable()
-  {
-    auto  range=ranges->find(dataname);
-    if (range==ranges->end())
-      return false;
-    else 
-      return true;
+    if (!values) return;
+
+    double vrange[2];
+    // If  comp is  -1, the  range of  the magnitude  (L2 norm)  over all
+    // components  will  be provided.  The  range  is computed  and  then
+    // cached,  and  will  not  be re-computed  on  subsequent  calls  to
+    // GetRange() unless the array is modified or the requested component
+    // changes. THIS METHOD IS NOT THREAD SAFE.
+    values->GetRange(vrange,-1);
+    state.data_vmin=vrange[0];
+    state.data_vmax=vrange[1];
   }
 
 
@@ -99,15 +95,13 @@ namespace vtkfig
 
     this->data=vtkfig_data.GetVTKDataSet();
 
-    this->ranges=vtkfig_data.ranges;
 
     state.datatype=vtkfig_data.GetDataType();
 
     this->dataname=name;
     this->celllist=0;
     this->title=name;
-    if (this->DataAvailable())
-      SetVMinMax();
+    SetVMinMax();
   }
   
   
@@ -642,12 +636,7 @@ namespace vtkfig
 
       communicator->ReceiveCharBuffer((char*)&state,sizeof(state));
       communicator->ReceiveString(dataname);
-      
-      DataSet::Range range;
-      range.min=state.data_vmin;
-      range.max=state.data_vmax;
-      (*ranges)[dataname]=range;
-      // cout << "rec: " << state.data_vmin << " " << state.data_vmax << endl;
+
       if (data==NULL)
       {
         if (state.datatype==DataSet::DataType::RectilinearGrid)
