@@ -5,24 +5,29 @@ vtkfig
 ## Aim
 
 The intention of  vtkfig is to provide a C++  graphics library with an
-API that is as easy to use as that of python/matplotlib and which uses
-[vtk](http://vtk.org) for rendering.
+API     that    is     as     easy    to     use     as    that     of
+[python/matplotlib](https://matplotlib.org/)     and    which     uses
+[vtk](http://vtk.org) for fast rendering.
 
 ## Features
 
-- Duck typing based interface for data allows flexible use
+- Standard views for scalars, vectors and grids in 2D, 3D:
+    - isolines, filled contours
+    - plane cuts, isosurfaces
+    - quiver plots, stream ribbons
+
+- Duck typing based interface for data input
 
 - Separate  rendering thread  allowing for  handling of  changing data
   managed by the vtkfig::Frame class
 
-- Standard views for 2D, 3D, grid
-
-- Extensible by implementing derived classes from vtkfig::Figure using
-  vtk rendering pipelines
+- Extensible by implementing derived classes  containing
+  vtk rendering pipelines from vtkfig::Figure
 
 - Experimental client-server communication for remote execution
 
 - 3-Clause BSD License ([same as vtk](http://www.vtk.org/licensing/))
+
 
 ## Further information
 - [Changes](doc/changes.md)

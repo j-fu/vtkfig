@@ -18,7 +18,7 @@ data->SetPointScalar(v ,"v");
 A particular visualization of a data set is done
 via a subclass of vtkfig::Figure.
 ~~~
-auto contour=vtkfig::SurfaceContour::New();
+auto contour=vtkfig::ScalarView::New();
 contour->SetData(data,"v");
 ~~~
 
@@ -40,7 +40,7 @@ A vtkfig::Frame can have subframes (similar to
 [subplots in matplotlib](https://matplotlib.org/examples/pylab_examples/subplot_demo.html)).
 
 
-If instaead of blocking interaction you want to render
+If instead of blocking interaction you want to render
 data evolving during time, you can do in a loop
 ~~~
 while(...)
@@ -67,13 +67,14 @@ vtkfig::Frame::KeyboardHelp.
 
 ## Environment variables
 
-| Variable             |        Default | Semantics                                         |
-|----------------------+----------------+---------------------------------------------------|
-| VTKFIG_PORT_NUMBER   |          35000 | Port number passed from vtkfig-exec to client     |
-| VTKFIG_WAIT_SECONDS  |             10 | Waiting time before abandoning connection attempt |
-| VTKFIG_DEBUG         |              0 | Toggle debug output                               |
-| VTKFIG_MULTITHREADED | Mac:0, Linux:1 | Render from extra thread                          |
-| VTKFIG_DOUBLEBUFFER  |              1 | Use double buffering.                             |
+
+| Variable             | Default | Semantics                                         |
+|----------------------|---------|---------------------------------------------------|
+| VTKFIG_PORT_NUMBER   |   35000 | Port number passed from vtkfig-exec to client     |
+| VTKFIG_WAIT_SECONDS  |      10 | Waiting time before abandoning connection attempt |
+| VTKFIG_DEBUG         |       0 | Toggle debug output                               |
+| VTKFIG_MULTITHREADED |       1 | Render from extra thread                          |
+| VTKFIG_DOUBLEBUFFER  |       1 | Use double buffering.                             |
 
 
 

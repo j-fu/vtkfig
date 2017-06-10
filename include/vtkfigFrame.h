@@ -27,7 +27,7 @@ namespace vtkfig
   }
 
   ///
-  /// Provide a framwork wrapping window+interactor+renderers  from vtk
+  /// Provide a framework wrapping window+interactor+renderers  from vtk
   /// 
   /// A frame contains a grid of subframes. Each subframe can contain
   /// several overlapping figures.

@@ -4,7 +4,7 @@ Installation
 ## Installation
 
 Prerequisite is a C++11 compiler and  an installed version of VTK.  So
-far, the codee been  tested with VTK 6.3 and VTK  7.0.  Build uses the
+far, the code been  tested with VTK 6.3, VTK  7.0 and VTK 7.1  Build uses the
 standard CMake way. E.g. to configure with clang, use
 
 ```` 

@@ -11,7 +11,7 @@ namespace vtkfig
 
 
   ///
-  /// Experimental quiver view of vector fields
+  /// Quiver plots + streamlines for vector fields
   ///
   class VectorView: public Figure
     {

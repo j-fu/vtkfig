@@ -4,6 +4,15 @@ Changes
 
 ## Changes 
 
+- v0.15
+  - Cleaned API: renamed vtkfig::SurfaceContour to vtkfig::ScalarView
+  - Cleaned API: joined vtkfig::Quiver and  vtkfig::Stream to vtkfig::VectorView
+  - Coloring of quiver arrows and streamlines by velocity
+
+- v0.14
+  - checked on mac
+  - fixed scaling issues
+
 - v0.13
   - overhauled range scaling for contour+quiver, should be ok now
   - asterisk key switches between single/multi view
