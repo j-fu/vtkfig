@@ -7,7 +7,7 @@
 #include "vtkMath.h"
 #include "vtkfigFrame.h"
 #include "vtkfigScalarView.h"
-#include "vtkfigQuiver.h"
+#include "vtkfigVectorView.h"
 #include "vtkfigTools.h"
 
 double xscale=1;
@@ -100,7 +100,7 @@ int main(void)
   contour->SetSurfaceRGBTable(colors,255);
   contour->ShowIsolines(false);
   
-  auto quiver=vtkfig::Quiver::New();
+  auto quiver=vtkfig::VectorView::New();
   quiver->SetData(griddata,"grad");
   quiver->SetQuiverGrid(15,15);
 

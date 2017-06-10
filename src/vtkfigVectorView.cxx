@@ -16,14 +16,14 @@
 #include "vtkTransformFilter.h"
 
 
-#include "vtkfigQuiver.h"
+#include "vtkfigVectorView.h"
 
 
 namespace vtkfig
 {
 
 
-  Quiver::Quiver(): Figure()  
+  VectorView::VectorView(): Figure()  
   {  
     RGBTable quiver_rgb={{0,0,0,0},{1,0,0,0}};
     lut=BuildLookupTable(quiver_rgb,2);
@@ -31,7 +31,7 @@ namespace vtkfig
   
 
 
-  void Quiver::SetQuiverGrid(int nx, int ny)
+  void VectorView::SetQuiverGrid(int nx, int ny)
   {
     assert(data);
     assert(state.spacedim==2);
@@ -54,7 +54,7 @@ namespace vtkfig
     probePolyData->SetPoints(probePoints);
   }
   
-  void Quiver::SetQuiverGrid(int nx, int ny, int nz)
+  void VectorView::SetQuiverGrid(int nx, int ny, int nz)
   {
     assert(data);
     assert(state.spacedim==3);
@@ -87,7 +87,7 @@ namespace vtkfig
 
 
   template <class DATA>
-  void  Quiver::RTBuildVTKPipeline(vtkSmartPointer<DATA> gridfunc)
+  void  VectorView::RTBuildVTKPipeline(vtkSmartPointer<DATA> gridfunc)
   {
     CalcTransform();
 
@@ -167,7 +167,7 @@ namespace vtkfig
 
   /////////////////////////////////////////////////////////////////////
   /// Generic access to filter
-  void  Quiver::RTBuildVTKPipeline()
+  void  VectorView::RTBuildVTKPipeline()
   {
 
     if (state.datatype==DataSet::DataType::UnstructuredGrid)
@@ -185,12 +185,12 @@ namespace vtkfig
   /////////////////////////////////////////////////////////////////////
   /// Client-Server communication
 
-  void Quiver::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator)
+  void VectorView::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator)
   {
     communicator->Send(probePolyData,1,1);
   }
 
-  void Quiver::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator)
+  void VectorView::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator)
   {
 
     if (probePolyData==NULL)

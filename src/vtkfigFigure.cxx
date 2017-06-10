@@ -154,7 +154,7 @@ namespace vtkfig
 
   void Figure::RTShowPlanePos(vtkSmartPointer<vtkCutter> planecut, const std::string plane, int idim)
   {
-    if (this->SubClassName()!="SurfaceContour") return;
+    if (this->SubClassName()!="ScalarView") return;
     int i=planecut->GetNumberOfContours();
     if (i>0)
     {
@@ -171,7 +171,7 @@ namespace vtkfig
 
   void Figure::RTShowIsolevel()
   {
-    if (this->SubClassName()!="SurfaceContour") return;
+    if (this->SubClassName()!="ScalarView") return;
 
     int i=isoline_filter->GetNumberOfContours();
     if (i>0)
@@ -187,7 +187,7 @@ namespace vtkfig
 
   void Figure::RTShowArrowScale()
   {
-    if (this->SubClassName()!="Quiver") return;
+    if (this->SubClassName()!="VectorView") return;
 
     RTMessage("arrow_scale="+std::to_string(state.quiver_arrowscale_user));
   }

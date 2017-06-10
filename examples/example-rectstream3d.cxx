@@ -5,7 +5,7 @@
 ///
 
 #include "vtkfigFrame.h"
-#include "vtkfigQuiver.h"
+#include "vtkfigVectorView.h"
 #include "vtkfigStream.h"
 #include "vtkfigTools.h"
 
@@ -97,7 +97,7 @@ int main(void)
 
 
   
-  auto quiver=vtkfig::Quiver::New();
+  auto quiver=vtkfig::VectorView::New();
   quiver->SetData(griddata,"flow");
   quiver->SetQuiverGrid(5,5,15);
 

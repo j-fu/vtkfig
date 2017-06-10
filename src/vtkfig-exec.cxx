@@ -12,7 +12,7 @@
 #include "vtkfigCommunicator.h"
 #include "vtkfigSurf2D.h"
 #include "vtkfigScalarView.h"
-#include "vtkfigQuiver.h"
+#include "vtkfigVectorView.h"
 #include "vtkfigStream.h"
 #include "vtkfigGridView.h"
 #include "vtkfigXYPlot.h"
@@ -325,12 +325,12 @@ namespace vtkfig
               if (debug_level>0)
                 cout << "Add ScalarView" << endl;
             }
-            else if (figtype=="Quiver")
+            else if (figtype=="VectorView")
             {
-              figure=new vtkfig::Quiver();
+              figure=new vtkfig::VectorView();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
-                cout << "Add Quiver" << endl;
+                cout << "Add VectorView" << endl;
             }
             else if (figtype=="Stream")
             {

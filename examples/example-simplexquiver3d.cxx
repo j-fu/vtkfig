@@ -7,7 +7,7 @@
 #include "vtkMath.h"
 #include "vtkfigFrame.h"
 #include "vtkfigScalarView.h"
-#include "vtkfigQuiver.h"
+#include "vtkfigVectorView.h"
 #include "vtkfigTools.h"
 
 inline double G(double x,double y, double z, double t) 
@@ -90,7 +90,7 @@ int main(void)
   contour->ShowIsolines(false);
   contour->SetValueRange(-1,1);
   
-  auto quiver=vtkfig::Quiver::New();
+  auto quiver=vtkfig::VectorView::New();
   quiver->SetData(griddata,"grad");
   quiver->SetQuiverGrid(10,10,10);
 

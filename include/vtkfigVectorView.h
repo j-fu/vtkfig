@@ -13,13 +13,13 @@ namespace vtkfig
   ///
   /// Experimental quiver view of vector fields
   ///
-  class Quiver: public Figure
+  class VectorView: public Figure
     {
     public:
       
-      Quiver();
-      static std::shared_ptr<Quiver> New() { return std::make_shared<Quiver>(); }
-      virtual std::string SubClassName() {return std::string("Quiver");}
+      VectorView();
+      static std::shared_ptr<VectorView> New() { return std::make_shared<VectorView>(); }
+      virtual std::string SubClassName() {return std::string("VectorView");}
     
 
       /// Set scaling of arrows
@@ -56,7 +56,7 @@ namespace vtkfig
 
   template <class V>
     inline
-    void Quiver::SetQuiverPoints( const V&p)
+    void VectorView::SetQuiverPoints( const V&p)
   {
     assert(data);
     auto probePoints =  vtkSmartPointer<vtkPoints>::New();
