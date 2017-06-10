@@ -8,7 +8,7 @@
 #include <chrono>
 #include "vtkfigFrame.h"
 #include "vtkfigDataSet.h"
-#include "vtkfigSurfaceContour.h"
+#include "vtkfigScalarView.h"
 #include "vtkfigXYPlot.h"
 #include "vtkfigTools.h"
 
@@ -85,12 +85,12 @@ int main(void)
   griddata->SetPointScalar(v ,"v");
 
 
-  auto contour_u=vtkfig::SurfaceContour::New();
+  auto contour_u=vtkfig::ScalarView::New();
   contour_u->SetData(griddata,"u");
   contour_u->SetSurfaceRGBTable(colors,255);
   frame1->AddFigure(contour_u);
 
-  auto contour_v=vtkfig::SurfaceContour::New();
+  auto contour_v=vtkfig::ScalarView::New();
   contour_v->SetData(griddata,"v");
   contour_v->SetSurfaceRGBTable(colors,255);
   frame2->AddFigure(contour_v);

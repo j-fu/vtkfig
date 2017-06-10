@@ -9,7 +9,7 @@
 #include "vtkfigFrame.h"
 #include "vtkfigTools.h"
 #include "vtkfigDataSet.h"
-#include "vtkfigSurfaceContour.h"
+#include "vtkfigScalarView.h"
 #include "vtkfigTools.h"
 
 #include <vtkMath.h>
@@ -63,7 +63,7 @@ int main(void)
   griddata->SetSimplexGrid(3,points,cells);
   griddata->SetPointScalar(values,"V");
 
-  auto contour=vtkfig::SurfaceContour::New();
+  auto contour=vtkfig::ScalarView::New();
   contour->SetData(griddata,"V");
   contour->SetSurfaceRGBTable(colors,255);
   contour->SetValueRange(-1,1);

@@ -6,7 +6,7 @@
 
 #include "vtkMath.h"
 #include "vtkfigFrame.h"
-#include "vtkfigSurfaceContour.h"
+#include "vtkfigScalarView.h"
 #include "vtkfigQuiver.h"
 #include "vtkfigTools.h"
 
@@ -95,7 +95,7 @@ int main(void)
   griddata->SetPointScalar(z ,"v");
   griddata->SetPointVector(u,v ,"grad");
   
-  auto contour=vtkfig::SurfaceContour::New();
+  auto contour=vtkfig::ScalarView::New();
   contour->SetData(griddata,"v");
   contour->SetSurfaceRGBTable(colors,255);
   contour->ShowIsolines(false);

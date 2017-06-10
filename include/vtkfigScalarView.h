@@ -1,5 +1,5 @@
-#ifndef VTKFIG_SURFACE_CONTOUR_H
-#define VTKFIG_SURFACE_CONTOUR_H
+#ifndef VTKFIG_SCALARVIEW_H
+#define VTKFIG_SCALARVIEW_H
 
 #include "vtkRenderer.h"
 #include "vtkCommand.h"
@@ -20,13 +20,13 @@ namespace vtkfig
   /// 
   /// Surface and contour plot of 2/3D scalar data
   ///
-  class SurfaceContour: public Figure
+  class ScalarView: public Figure
   {
     
   public:
-    SurfaceContour();
-    static std::shared_ptr<SurfaceContour> New() { return std::make_shared<SurfaceContour>();}
-    virtual std::string SubClassName() {return std::string("SurfaceContour");}
+    ScalarView();
+    static std::shared_ptr<ScalarView> New() { return std::make_shared<ScalarView>();}
+    virtual std::string SubClassName() {return std::string("ScalarView");}
     
     /// Toggle surface plot on plane
     void ShowSurface(bool b) {state.show_surface=b;}
@@ -95,7 +95,7 @@ namespace vtkfig
 ////////////////////////////////////////////////////////////////
   template <class V> 
     inline
-    void  SurfaceContour::SetSurfaceRGBTable(const V & tab, int lutsize)
+    void  ScalarView::SetSurfaceRGBTable(const V & tab, int lutsize)
   {
     RGBTable rgbtab;
     rgbtab.resize(tab.size()/4);

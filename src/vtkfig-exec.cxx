@@ -11,7 +11,7 @@
 #include "vtkfigFrame.h"
 #include "vtkfigCommunicator.h"
 #include "vtkfigSurf2D.h"
-#include "vtkfigSurfaceContour.h"
+#include "vtkfigScalarView.h"
 #include "vtkfigQuiver.h"
 #include "vtkfigStream.h"
 #include "vtkfigGridView.h"
@@ -318,12 +318,12 @@ namespace vtkfig
               if (debug_level>0)
                 cout << "Add Surf2d" << endl;
             }
-            else if (figtype=="SurfaceContour")
+            else if (figtype=="ScalarView")
             {
-              figure=new vtkfig::SurfaceContour();
+              figure=new vtkfig::ScalarView();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
-                cout << "Add SurfaceContour" << endl;
+                cout << "Add ScalarView" << endl;
             }
             else if (figtype=="Quiver")
             {

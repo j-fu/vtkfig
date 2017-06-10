@@ -7,7 +7,7 @@
 #include <chrono>
 #include "vtkfigFrame.h"
 #include "vtkfigDataSet.h"
-#include "vtkfigSurfaceContour.h"
+#include "vtkfigScalarView.h"
 #include "vtkfigTools.h"
 
 
@@ -60,7 +60,7 @@ int main(void)
   auto griddata=vtkfig::DataSet::New();
   griddata->SetRectilinearGrid(x,y);
   griddata->SetPointScalar(z ,"V");
-  auto contour=vtkfig::SurfaceContour::New();
+  auto contour=vtkfig::ScalarView::New();
   contour->SetData(griddata,"V");
   contour->SetSurfaceRGBTable(colors,255);
 

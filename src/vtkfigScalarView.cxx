@@ -26,7 +26,7 @@
 #include "vtkIdList.h"
 
 
-#include "vtkfigSurfaceContour.h"
+#include "vtkfigScalarView.h"
 
 
 namespace vtkfig
@@ -36,12 +36,12 @@ namespace vtkfig
 
   /////////////////////////////////////////////////////////////////////
   /// Constructor
-  SurfaceContour::SurfaceContour(): Figure()
+  ScalarView::ScalarView(): Figure()
   {
   }
   
 
-  void SurfaceContour::SetSurfaceRGBTable(RGBTable & tab, int tabsize)
+  void ScalarView::SetSurfaceRGBTable(RGBTable & tab, int tabsize)
   {
     state.surface_rgbtab_size=tabsize;
     state.surface_rgbtab_modified=true;
@@ -53,7 +53,7 @@ namespace vtkfig
   /// 2D Filter
 
   template <class DATA, class FILTER>
-  void SurfaceContour::RTBuildVTKPipeline2D(vtkSmartPointer<DATA> gridfunc)
+  void ScalarView::RTBuildVTKPipeline2D(vtkSmartPointer<DATA> gridfunc)
   {
 
     CalcTransform();
@@ -178,7 +178,7 @@ namespace vtkfig
   /// 3D Filter
 
   template <class DATA,class FILTER>
-  void SurfaceContour::RTBuildVTKPipeline3D(vtkSmartPointer<DATA> gridfunc)
+  void ScalarView::RTBuildVTKPipeline3D(vtkSmartPointer<DATA> gridfunc)
   {
     CalcTransform();
 
@@ -341,7 +341,7 @@ namespace vtkfig
   
   /////////////////////////////////////////////////////////////////////
   /// Generic access to filter
-  void  SurfaceContour::RTBuildVTKPipeline()
+  void  ScalarView::RTBuildVTKPipeline()
   {
     SetNumberOfIsocontours(state.num_contours);
 
@@ -372,7 +372,7 @@ namespace vtkfig
   /////////////////////////////////////////////////////////////////////
   /// Client-Server communication
 
-  void SurfaceContour::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator)
+  void ScalarView::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator)
   {
     if (state.surface_rgbtab_modified)
     {
@@ -381,7 +381,7 @@ namespace vtkfig
     }
   }
 
-  void SurfaceContour::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator)
+  void ScalarView::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator)
   {
     
     if (state.surface_rgbtab_modified)

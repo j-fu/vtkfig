@@ -5,7 +5,7 @@ add_library(vtkfig
   vtkfigMainThread.cxx
   vtkfigCommunicator.cxx
   vtkfigTools.cxx
-  vtkfigSurfaceContour.cxx  
+  vtkfigScalarView.cxx  
   vtkfigGridView.cxx  
   vtkfigQuiver.cxx  
   vtkfigStream.cxx  
