@@ -33,7 +33,7 @@ namespace vtkfig
       void SetStreamLineLength(double l){ state.streamlength=l;}
       
       /// Set width of stream ribbons
-      void SetStreamLineWidth(double w){state.streamribbonwidth=0.01;}
+      void SetStreamLineWidth(double w){state.streamribbonwidth=w;}
 
       
       /// Set seed points

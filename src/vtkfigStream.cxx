@@ -13,6 +13,7 @@
 #include "vtkTransformFilter.h"
 #include "vtkStreamTracer.h"
 #include "vtkRibbonFilter.h"
+#include "vtkArrayCalculator.h"
 
 
 #include "vtkfigStream.h"
@@ -23,8 +24,8 @@ namespace vtkfig
 
   Stream::Stream(): Figure()  
   {  
-    RGBTable quiver_rgb={{0,0,0,0},{1,0,0,0}};
-    lut=BuildLookupTable(quiver_rgb,2);
+    RGBTable quiver_rgb={{0,0,0,1},{1,1,0,0}};
+    lut=BuildLookupTable(quiver_rgb,100);
   }
   
 
@@ -35,15 +36,39 @@ namespace vtkfig
   {
 
     CalcTransform();
-        
 
+   
+    /// be careful here: transform filter transforms vectors as well
+    /// so one has to transform first without assiging the vector atrribute
+    /// an assign after transform.
+    auto transgeometry=vtkSmartPointer<vtkTransformFilter>::New();
+    transgeometry->SetInputData(gridfunc);
+    transgeometry->SetTransform(transform);
+
+   
     auto vector = vtkSmartPointer<vtkAssignAttribute>::New();
     vector->Assign(dataname.c_str(),vtkDataSetAttributes::VECTORS,vtkAssignAttribute::POINT_DATA);
-    vector->SetInputDataObject(gridfunc);
-    
-    auto transgeometry=vtkSmartPointer<vtkTransformFilter>::New();
-    transgeometry->SetInputConnection(vector->GetOutputPort());
-    transgeometry->SetTransform(transform);
+    vector->SetInputConnection(transgeometry->GetOutputPort());
+
+    /// put this into dataset ? So we can immediately get magnitude?
+    /// CreateMagnitude, CreateComponent(i)
+    /// Also, we get color scaling by lut.
+    auto calc= vtkSmartPointer<vtkArrayCalculator>::New();
+    calc->SetInputConnection(vector->GetOutputPort());
+    calc->AddVectorArrayName(dataname.c_str());
+    std::string func="";
+    func+="mag(";
+    func+=dataname;
+    func+="/";
+    func+=std::to_string(state.data_vmax);
+    func+=")";
+    calc->SetFunction(func.c_str());
+    calc->SetResultArrayName((dataname+"magnitude").c_str());
+
+    auto vecmag = vtkSmartPointer<vtkAssignAttribute>::New();
+    vecmag->Assign((dataname+"magnitude").c_str(),vtkDataSetAttributes::SCALARS,vtkAssignAttribute::POINT_DATA);
+    vecmag->SetInputConnection(calc->GetOutputPort());
+
 
 
     auto transseed=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
@@ -53,15 +78,16 @@ namespace vtkfig
 
 
     auto stream=vtkSmartPointer<vtkStreamTracer>::New();
-    stream->SetInputConnection(transgeometry->GetOutputPort());
+    stream->SetInputConnection(vecmag->GetOutputPort());
     stream->SetSourceConnection(transseed->GetOutputPort());
     
     stream->SetMaximumPropagation(state.streamlength);
-    stream->SetInitialIntegrationStep(.2);
+    stream->SetInitialIntegrationStep(.01);
+    stream->SetMaximumIntegrationStep(.1);
     stream->SetIntegrationDirectionToForward();
     stream->SetIntegratorTypeToRungeKutta45();
-    //stream->VorticityOn();
-    
+
+
 // https://github.com/vejmarie/vtk-7/blob/master/Examples/GUI/Python/StreamlinesWithLineWidget.py
 // streamer = vtk.vtkStreamTracer()
 // streamer.SetInputData(pl3d_output)
@@ -93,6 +119,8 @@ namespace vtkfig
     }
 
 
+
+
     auto ribbon=vtkSmartPointer<vtkRibbonFilter>::New();
     ribbon->SetInputConnection(stream->GetOutputPort());
     ribbon->SetWidth(state.streamribbonwidth);
@@ -100,13 +128,13 @@ namespace vtkfig
     // map gridfunction
     auto  mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(ribbon->GetOutputPort());
-    // mapper->SetLookupTable(lut);
-    // mapper->UseLookupTableScalarRangeOn();
+    mapper->SetLookupTable(lut);
+    mapper->UseLookupTableScalarRangeOn();
 
 
     // create plot quiver actor
     vtkSmartPointer<vtkActor> stream_actor = vtkSmartPointer<vtkActor>::New();
-    stream_actor->GetProperty()->SetColor(state.streamcolor);
+//    stream_actor->GetProperty()->SetColor(state.streamcolor);
     stream_actor->SetMapper(mapper);
 
 
