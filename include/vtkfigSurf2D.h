@@ -22,7 +22,7 @@ namespace vtkfig
       
       Surf2D();
       static std::shared_ptr<Surf2D> New() { return std::make_shared<Surf2D>(); }
-      virtual std::string SubClassName() {return std::string("Surf2D");}
+      virtual std::string SubClassName() override final {return std::string("Surf2D");}
       
 
       template<typename V>
@@ -69,7 +69,7 @@ namespace vtkfig
 
     private:
       
-      virtual void RTBuildVTKPipeline();
+       void RTBuildVTKPipeline() override final;
 
 
       vtkSmartPointer<vtkStructuredGrid> 	    gridfunc;

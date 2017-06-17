@@ -25,13 +25,13 @@ namespace vtkfig
   public:
     GridView();
     static std::shared_ptr<GridView> New() { return std::make_shared<GridView>();}
-    std::string SubClassName() {return std::string("GridView");}
+    std::string SubClassName() override final {return std::string("GridView");}
 
     
   private:
     friend class Client;
     
-    virtual void RTBuildVTKPipeline();
+    void RTBuildVTKPipeline() override final;
     
     RGBTable grid_rgbtab{
       {0.00,1,0,0},

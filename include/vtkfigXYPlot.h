@@ -30,7 +30,7 @@ namespace vtkfig
     static std::shared_ptr<XYPlot> New();
 
     
-    virtual std::string SubClassName();
+    virtual std::string SubClassName() override final;
 
     /// Remove all data from plot
     void Clear();

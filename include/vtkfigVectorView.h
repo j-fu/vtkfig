@@ -19,7 +19,7 @@ namespace vtkfig
       
       VectorView();
       static std::shared_ptr<VectorView> New() { return std::make_shared<VectorView>(); }
-      virtual std::string SubClassName() {return std::string("VectorView");}
+      virtual std::string SubClassName() override final {return std::string("VectorView");}
     
 
       /// Show quiver plot (true by default)
@@ -110,9 +110,9 @@ namespace vtkfig
 
     private:
      
-      void RTBuildVTKPipeline();
-      void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator);
-      void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator);
+      void RTBuildVTKPipeline() override final;
+      void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator) override final;
+      void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator) override final;
       
 
       template <class DATA>

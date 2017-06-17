@@ -23,7 +23,7 @@ namespace vtkfig
     ChartXY();
     static std::shared_ptr<ChartXY> New() { return std::make_shared<ChartXY>(); }
 
-    virtual std::string SubClassName() {return std::string("ChartXY");}
+    std::string SubClassName() override final {return std::string("ChartXY");}
 
     void Title(const char *title);
 
@@ -49,14 +49,14 @@ namespace vtkfig
     
 
     int num_plot=0;
-    void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator);
+    void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator) override final;
 
-    void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator); 
+    void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator) override final; 
 
 
     void AddPlot();
 
-    virtual void RTBuildAllVTKPipelines(vtkSmartPointer<vtkRenderer> renderer); 
+    virtual void RTBuildAllVTKPipelines(vtkSmartPointer<vtkRenderer> renderer) override final; 
 
 
     

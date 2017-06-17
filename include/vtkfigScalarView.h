@@ -26,7 +26,7 @@ namespace vtkfig
   public:
     ScalarView();
     static std::shared_ptr<ScalarView> New() { return std::make_shared<ScalarView>();}
-    virtual std::string SubClassName() {return std::string("ScalarView");}
+    virtual std::string SubClassName()  override final {return std::string("ScalarView");}
     
     /// Toggle surface plot on plane
     void ShowSurface(bool b) {state.show_surface=b;}
@@ -76,11 +76,11 @@ namespace vtkfig
     
   private:
     
-    virtual void RTBuildVTKPipeline();
+    void RTBuildVTKPipeline() override final;
     
     
-    void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator);
-    void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator);
+    void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator) override final;
+    void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator) override final;
     
     
     template <class GRIDFUNC, class FILTER>
