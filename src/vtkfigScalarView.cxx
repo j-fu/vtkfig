@@ -343,7 +343,6 @@ namespace vtkfig
   /// Generic access to filter
   void  ScalarView::RTBuildVTKPipeline()
   {
-    SetNumberOfIsocontours(state.num_contours);
 
     if (state.datatype==DataSet::DataType::UnstructuredGrid)
     {

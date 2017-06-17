@@ -283,6 +283,16 @@ namespace vtkfig
       {
         this->frame=f;
       }
+
+      virtual void OnConfigure()
+      {
+        for (auto & figure: frame->figures)
+        {
+          for (auto & actor: figure->ctxactors) 
+            actor->GetScene()->SetDirty(true);
+        }
+        vtkInteractorStyleTrackballCamera::OnConfigure();        
+      }
       
       /// Overwrite left button down
       virtual void OnLeftButtonDown()

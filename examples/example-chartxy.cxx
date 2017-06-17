@@ -15,9 +15,10 @@ int main()
 {
   size_t nspin=vtkfig::NSpin();
   auto frame=vtkfig::Frame::New();
+  frame->SetLayout(0,0);
 
 
-  const int NN = 40;
+  const int NN = 100;
   const double t_low = 0;
   const double t_upp = 5;
   const double dt = (t_upp-t_low)/(NN-1);
@@ -45,7 +46,8 @@ int main()
   while (ii<nspin)
   {
     double t = tt;
-
+    
+    
     for (int i=0; i<NN; i++)
     {
       x1[i] = cos(t)*t;
@@ -68,6 +70,7 @@ int main()
     chartxy->AddPlot(x2, y2);
 
 
+//    frame->Interact();
     frame->Show();
     
     if (ii==3) 

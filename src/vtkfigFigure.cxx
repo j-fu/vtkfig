@@ -1,3 +1,4 @@
+
 #include "vtkTransform.h"
 #include "vtkCamera.h"
 #include "vtkProperty2D.h"
@@ -26,6 +27,7 @@ namespace vtkfig
 
 
     isoline_filter = vtkSmartPointer<vtkContourFilter>::New();
+    isoline_filter->SetNumberOfContours(11);
     isosurface_filter = vtkSmartPointer<vtkContourFilter>::New();
 
 
@@ -33,6 +35,7 @@ namespace vtkfig
     isoline_plot = vtkSmartPointer<vtkActor>::New();
     elevation_plot = vtkSmartPointer<vtkActor>::New();
     surface_plot = vtkSmartPointer<vtkActor>::New();
+
 
 
     planecutX= vtkSmartPointer<vtkCutter>::New();
@@ -345,7 +348,7 @@ namespace vtkfig
 
     if (key=="L")
     {
-      state.num_contours=11;
+      isoline_filter->SetNumberOfContours(11);
       state.isolevels_locked=false;
       GenIsolevels();
       if (edit.l_iso)
@@ -530,7 +533,11 @@ namespace vtkfig
   
   void Figure::SetVMinMax()
   {
-    if (SubClassName()=="GridView") return;
+    if (
+      SubClassName()!="ScalarView"
+      && 
+      SubClassName()!="VectorView"
+      ) return;
 
     this->SetRange();
       
@@ -564,14 +571,14 @@ namespace vtkfig
     double lut_max=state.real_vmax;
 
     
-    if (true ||SubClassName()=="ScalarView")
+    if (SubClassName()=="ScalarView")
     {
       surface_lut->SetTableRange(lut_min,lut_max);
       surface_lut->Modified();
       GenIsolevels();
     }
 
-    if (true ||SubClassName()=="VectorView")
+    if (SubClassName()=="VectorView")
     {
       quiver_lut->SetTableRange(lut_min,lut_max);
       quiver_lut->Modified();
@@ -588,10 +595,12 @@ namespace vtkfig
 
   void Figure::GenIsolevels()
   {
-    if (state.isolevels_locked) return;
-    double eps = this->state.eps_geom*(state.real_vmax-state.real_vmin)/(state.num_contours);
-    isoline_filter->GenerateValues(state.num_contours, state.real_vmin+eps, state.real_vmax-eps);
-    isoline_filter->Modified();
+    if (!state.isolevels_locked)
+    {
+      double eps = this->state.eps_geom*(state.real_vmax-state.real_vmin)/(isoline_filter->GetNumberOfContours());
+      isoline_filter->GenerateValues(isoline_filter->GetNumberOfContours(), state.real_vmin+eps, state.real_vmax-eps);
+      isoline_filter->Modified();
+    }
     RTUpdateIsoSurfaceFilter();
   }
 

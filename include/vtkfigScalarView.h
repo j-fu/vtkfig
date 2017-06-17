@@ -44,7 +44,7 @@ namespace vtkfig
     void ShowElevation(bool b) {state.show_elevation=b;}
     
     /// Set number of isocontours to show
-    void SetNumberOfIsocontours(int n) {state.num_contours=n; state.max_num_contours= std::max(n,state.max_num_contours);}
+    void SetNumberOfIsocontours(int n) {isoline_filter->SetNumberOfContours(n);}
     
     /// Set width of isolines
     void SetIsolineWidth(double w) {state.isoline_width=w;}

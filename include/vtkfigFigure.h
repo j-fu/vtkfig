@@ -67,6 +67,15 @@ namespace vtkfig
 
 
 
+    template <class V>
+      void SetIsoLevels(V&v)
+    {
+      isoline_filter->SetNumberOfContours(v.size());
+      for (int i=0;i<v.size(); i++)
+        isoline_filter->SetValue(i,v[i]);
+      isoline_filter->Modified();
+      state.isolevels_locked=true;
+    }
   
     /// Add Dataset to figure
     ///
@@ -217,7 +226,6 @@ namespace vtkfig
 
 
 
-
     /// Calculate transformation to unit cube
     /// This shall be applied to all data. Camera is fixed.
     void CalcTransform();
@@ -248,7 +256,7 @@ namespace vtkfig
 
 
     /// Color lookup table for contour plots
-    /// vtkSmartPointer<vtkLookupTable> contour_lut;
+    ///vtkSmartPointer<vtkLookupTable> contour_lut;
     /// RGBTable contour_rgbtab{{0,0,0,0},{1,0,0,0}};
     
     /// Color lookup table for elevation plots
@@ -275,13 +283,16 @@ namespace vtkfig
     template <class DATA>
       void RTBuildDomainPipeline(vtkSmartPointer<vtkRenderer> renderer,vtkSmartPointer<DATA> gridfunc);
 
-    void RTBuildAllVTKPipelines(vtkSmartPointer<vtkRenderer> renderer) 
+    virtual void RTBuildAllVTKPipelines(vtkSmartPointer<vtkRenderer> renderer) 
     {
       RTBuildVTKPipeline();
       RTBuildDomainPipeline(renderer);
       RTAddAnnotations();
     };
 
+    virtual void RTPreRender()
+    {
+    };
 
 
     /// These two need to re-implemented in subclasses 
@@ -350,10 +361,6 @@ namespace vtkfig
 
       bool isolevels_locked=false;
 
-      /// number of isocontours
-      int num_contours=11;
-      int max_num_contours=11;
-
       double eps_geom=1.0e-8;
       
       bool keep_aspect=true;
@@ -366,7 +373,7 @@ namespace vtkfig
       
       bool show_stream=false;
       
-      bool show_isolines=false;
+      bool show_isolines=true;
 
       bool show_isosurfaces=false;
       
@@ -427,7 +434,8 @@ namespace vtkfig
       double streamribbonwidth=0.01;
 
       DataSet::DataType datatype;
-
+      
+      
     } state;
 
 

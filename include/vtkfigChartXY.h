@@ -56,51 +56,15 @@ namespace vtkfig
 
     void AddPlot();
 
-    virtual void RTBuildVTKPipeline();
+    virtual void RTBuildAllVTKPipelines(vtkSmartPointer<vtkRenderer> renderer); 
 
 
     
     vtkSmartPointer<vtkChartXY> chartxy;
-    vtkSmartPointer<vtkContextActor> chartxyactor;
- 
+    vtkSmartPointer<vtkContextActor> ctxactor; 
     static const int desclen=4;
     std::string title="test";
-    // has to consist of doubles only because of endianness
-    struct plot_data
-    {
-      vtkSmartPointer<vtkDoubleArray> X;
-      vtkSmartPointer<vtkDoubleArray> Y;
-      vtkSmartPointer<vtkTable> table;
-      vtkSmartPointer<vtkPlot> line;
-      plot_data(vtkSmartPointer<vtkChartXY> chartxy)
-      {
-        X=vtkSmartPointer<vtkDoubleArray>::New();
-        Y=vtkSmartPointer<vtkDoubleArray>::New();
-        X->SetName("X");
-        Y->SetName("Y");
-        table=vtkSmartPointer<vtkTable>::New();
-        table->AddColumn(X);
-        table->AddColumn(Y);
-        line=chartxy->AddPlot(vtkChart::LINE);
-        line->SetInputData(table, 0, 1);
-      }
-    };
-
-/* line->SetColor(255, 0, 0, 255); */
-/*  104   line = chart->AddPlot(vtkChart::LINE); */
-/*  105   line->SetTable(table, 0, 2); */
-/*  106   line->SetColor(0, 255, 0, 255); */
-/*  107   line->SetWidth(2.0); */
     
-    plot_data& get_plot_data(size_t nplot)
-    {
-      if (nplot>=all_plot_data.size())
-      {
-        all_plot_data.emplace_back(chartxy);
-
-      }
-      return all_plot_data[nplot];
-    }
 
     struct plot_info
     {
@@ -111,7 +75,6 @@ namespace vtkfig
     };
     
     plot_info next_plot_info;
-    std::vector<plot_data> all_plot_data;
     std::vector<plot_info> all_plot_info;
 
     double all_plot_range[4]={1.0e100,-1.0e100,1.0e100,-1.0e100};
@@ -123,22 +86,40 @@ namespace vtkfig
     inline
     void ChartXY::AddPlot(const V &x, const V &y)
   {
-
-    auto plot=get_plot_data(num_plot);
-    plot.X->Initialize();
-    plot.Y->Initialize();
+    
     int N=x.size();
 
-    plot.table->SetNumberOfRows(N);
+    vtkSmartPointer<vtkDoubleArray> X;
+    vtkSmartPointer<vtkDoubleArray> Y;
+    vtkSmartPointer<vtkTable> table;
 
+    auto line=chartxy->GetPlot(num_plot);
+    if (!line)
+    {  
+      X=vtkSmartPointer<vtkDoubleArray>::New();
+      Y=vtkSmartPointer<vtkDoubleArray>::New();
+      X->SetName("X");
+      Y->SetName("Y");
+      table=vtkSmartPointer<vtkTable>::New();
+      table->AddColumn(X);
+      table->AddColumn(Y);
+      
+      line=chartxy->AddPlot(vtkChartXY::LINE);
+      line->SetInputData(table, 0, 1);
+    }
+    else
+      table=line->GetInput();
+
+    table->SetNumberOfRows(N);
+    
     assert(x.size()==y.size());
     double xmin=1.0e100,xmax=-1.0e100;
     double ymin=1.0e100,ymax=-1.0e100;
-
+    
     for (int i=0; i<N; i++)
     {
-      plot.table->SetValue(i,0,x[i]);
-      plot.table->SetValue(i,1,y[i]);
+      table->SetValue(i,0,x[i]);
+      table->SetValue(i,1,y[i]);
       xmin=std::min(xmin,x[i]);
       ymin=std::min(ymin,y[i]);
       xmax=std::max(xmax,x[i]);
@@ -150,7 +131,9 @@ namespace vtkfig
     all_plot_range[2]=std::min(ymin,all_plot_range[2]);
     all_plot_range[3]=std::max(ymax,all_plot_range[3]);
     
-    AddPlot();;
+    line->Modified();
+    table->Modified();
+    AddPlot();
   }
   
 

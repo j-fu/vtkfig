@@ -358,6 +358,7 @@ namespace vtkfig
           
         }
         
+        figure->RTPreRender();
         figure->RTUpdateActors();
       
         renderer->SetBackground(figure->bgcolor[0],

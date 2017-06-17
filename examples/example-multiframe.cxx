@@ -117,13 +117,13 @@ int main(void)
     griddata->SetPointScalar(v ,"v");
 
     xyplot->Clear();
-    xyplot->LineColorRGB(0,0,1);
-    xyplot->LineType("-");
-    xyplot->Legend("y=0.5");
+    xyplot->SetPlotColor(0,0,1);
+    xyplot->SetPlotLineType("-");
+    xyplot->SetPlotLegend("y=0.5");
     xyplot->AddPlot(x, fx);
-    xyplot->LineColorRGB(1,0,0);
-    xyplot->LineType("-");
-    xyplot->Legend("x=0.5");
+    xyplot->SetPlotColor(1,0,0);
+    xyplot->SetPlotLineType("-");
+    xyplot->SetPlotLegend("x=0.5");
     xyplot->AddPlot(y, fy);
     frame1->Show();
     frame2->Show();

@@ -20,6 +20,7 @@ int main()
   const int NN = 40;
   const double t_low = 0;
   const double t_upp = 5;
+
   const double dt = (t_upp-t_low)/(NN-1);
   
   
@@ -43,7 +44,6 @@ int main()
   auto xyplot=vtkfig::XYPlot::New();
 
   frame->AddFigure(xyplot);
-
   while (ii<nspin)
   {
     double t = tt;
@@ -62,13 +62,19 @@ int main()
     snprintf(titlebuf,20,"frame %lu",ii++);
     xyplot->Clear();
     xyplot->SetTitle(titlebuf);
-    xyplot->LineColorRGB(0,0,1);
-    xyplot->LineType("-");
-    xyplot->Legend("A");
+    xyplot->SetPlotColor(0,0,1);
+    xyplot->SetXAxisLabelFormat("%3.1f");
+    xyplot->SetYAxisLabelFormat("%3.1f");
+
+    xyplot->SetPlotLineType("-");
+    xyplot->SetPlotMarkerType("d");
+    xyplot->SetMarkerSize(1);
+    xyplot->SetPlotLegend("A");
+
     xyplot->AddPlot(x1, y1);
-    xyplot->LineColorRGB(1,0,0);
-    xyplot->LineType(".-");
-    xyplot->Legend("B");
+    xyplot->SetPlotColor(1,0,0);
+    xyplot->SetPlotMarkerType("o");
+    xyplot->SetPlotLegend("B");
     xyplot->AddPlot(x2, y2);
 
 
