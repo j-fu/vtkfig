@@ -78,7 +78,7 @@ namespace vtkfig
     return lut;
   }
 
-  vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper)
+  vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper, int irank)
   {
 
 // http://public.kitware.com/pipermail/vtkusers/2016-March/094540.html :
@@ -102,6 +102,9 @@ namespace vtkfig
     colorbar->SetVerticalTitleSeparation(0);
     colorbar->SetNumberOfLabels(11);
     colorbar->SetPosition(0.8, 0.1);
+    if (irank>0)
+      colorbar->SetPosition(0.9, 0.1);
+      
     colorbar->GetTitleTextProperty()->ItalicOff();
     colorbar->GetLabelTextProperty()->ItalicOff();
     colorbar->GetTitleTextProperty()->BoldOn();

@@ -1,5 +1,6 @@
 #include "vtkAxis.h"
 #include "vtkContextView.h"
+#include "vtkContextScene.h"
 
 #include "vtkfigChartXY.h"
 

@@ -19,7 +19,8 @@ add_vtkfig_example(example-rectstream2d)
 add_vtkfig_example(example-rectstream3d)
 
 add_vtkfig_example(example-multifig)
-add_vtkfig_example(example-gridview)
+add_vtkfig_example(example-gridview2d)
+add_vtkfig_example(example-gridview3d)
 
 add_vtkfig_example(example-custom)
 add_vtkfig_example(example-custom1)

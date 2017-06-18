@@ -2,20 +2,16 @@
 #include "vtkTextProperty.h"
 #include "vtkAxisActor2D.h"
 #include "vtkLegendBoxActor.h"
-#include "vtkGlyphSource2D.h"
 
 #include "vtkfigXYPlot.h"
+
 namespace vtkfig
 {
   XYPlot::XYPlot():Figure()
   {
-
-    this->XYPlotWidget = vtkXYPlotWidget::New();
-    this->XYPlotActor=this->XYPlotWidget->GetXYPlotActor();
-
+    this->XYPlotActor=vtkSmartPointer<vtkXYPlotActor>::New();
     this->LegendActor=vtkSmartPointer<vtkLegendBoxActor>::New();
     this->LegendActor->SetNumberOfEntries(0);
-    //    widget->SetEnabled(1); need interactor for this
   }
 
 

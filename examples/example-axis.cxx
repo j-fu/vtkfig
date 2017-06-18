@@ -16,7 +16,7 @@
 #include "vtkPolyLine.h"
 #include "vtkDataSetMapper.h"
 #include "vtkAxisActor.h"
-
+#include "vtkContextScene.h"
 
 #include "vtkAxis.h"
 #include "vtkPlotGrid.h"

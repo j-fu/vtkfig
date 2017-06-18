@@ -72,7 +72,6 @@ int main(void)
   contour->SetData(griddata,"v");
   contour->SetSurfaceRGBTable(colors,255);
   contour->SetValueRange(-1,1);
-  contour->ShowSurface(false);
   auto isolines=std::vector<double>{-0.5,0,0.5};
   contour->SetIsoLevels(isolines);
   frame->AddFigure(contour);

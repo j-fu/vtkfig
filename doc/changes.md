@@ -6,6 +6,8 @@ Changes
 
 - v0.16
   - reworked XYPlot: added grid lines + better symbol handling, cleaned API
+  - 3D Grid view
+  - Boundary grid handling
 
 - v0.15
   - Cleaned API: renamed vtkfig::SurfaceContour to vtkfig::ScalarView

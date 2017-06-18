@@ -12,6 +12,8 @@
 #include "vtkObjectBase.h"
 #include "vtkPropCollection.h"
 
+#include "vtkContextScene.h"
+
 
 
 
@@ -356,7 +358,7 @@ namespace vtkfig
         // Get the key pressed
         std::string key = this->Interactor->GetKeySym();
 
-        //        cout << key << endl;
+        //cout << key << endl;
 
         // disable some standard vtk keys
         if(key== "f")  {}
@@ -508,7 +510,7 @@ namespace vtkfig
         }
         
         // Toggle some states independent of edit mode
-        else if(key == "i" || key== "L" || key == "e" || key == "s")
+        else if(key == "I" || key== "L" || key == "E" || key == "S" || key == "slash" || key == "B" || key == "C" || key == "O"|| key == "A")
         {
           for (auto &figure: frame->figures)
             if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
@@ -772,6 +774,7 @@ namespace vtkfig
     {
       auto frame=mainthread->framemap[iframe];
       frame->window = vtkSmartPointer<vtkRenderWindow>::New();
+      frame->window->SetWindowName("vtkfig");
 
       if (mainthread->double_buffering)
         frame->window->DoubleBufferOn();

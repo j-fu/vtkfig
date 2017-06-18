@@ -15,12 +15,12 @@ namespace vtkfig
 {
   
   /// 
-  /// Function plot based  on vtkXYPlotActor
+  /// XY Function plot.
   ///
-  /// This class is bases on vtkXYPlotActor, which has its restrictions.
+  /// This class is based on vtkXYPlotActor, which has its restrictions.
   /// 
   /// Notably   missing  are:   logscales,  different   marker  sizes,
-  /// different line widths, more line types etc.
+  /// different line widths, more line types etc. 
   ///
   class XYPlot: public Figure
   {
@@ -170,9 +170,6 @@ namespace vtkfig
     
     /// Number of all curves including grid lines
     int num_curves=0;
-
-    /// XYplotWidget defining XYPLotActor
-    vtkSmartPointer<vtkXYPlotWidget> XYPlotWidget;
 
     /// The main graphics actor
     vtkSmartPointer<vtkXYPlotActor> XYPlotActor;

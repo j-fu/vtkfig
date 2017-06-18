@@ -204,30 +204,35 @@ R"(
    Key    Realm    Action
 
     Space Frame    Block/unblock calculation
-   Escape Figure   Finish editing
-   Return Figure   Store edited plane/level value
+   Escape Figure   Finish plane/level editing
+   Return Figure   Store edited plane/level value and create new one
 BackSpace Figure   Delete last plane/level value
-    Prior Frame    Show next figure in single figure mode
-    Bext  Frame    Show next figure in single figure mode
+    Prior Frame    Show previous figure in single figure mode
+    Next  Frame    Show next figure in single figure mode
         a Figure   Start arrow scale editing
-        e Figure   Toggle elevation view
         h Frame    Print this help to standard output
-        i Figure   Toggle isosurface view (3D only)
         l Figure   Start isolevel editing
-        L Figure   Generate 11 equally spaced isolevels.
         p Frame    Write frame to png
         q Frame    Abort
-        r Figure   Reset camera
-        s Figure   Toggle surface plot
-        w Figure   Toggle wireframe mode 
+        r Figure   Reset camera (must left click to see the result)
         x Figure   Start x plane editing (3D only)
         y Figure   Start y plane editing (3D only)
         z Figure   Start z plane editing (3D only)
+        A Figure   Toggle axis+box visibility
+        B Figure   Toggle boundary cell visibility in vtkfig::GridView
+        C Figure   Toggle interior cell visibility in vtkfig::GridView
+        E Figure   Toggle elevation view (2D only)
+        I Figure   Toggle isosurface view (3D only)
+        L Figure   Generate 11 equally spaced isolevels.
+        O Figure   Toggle outline visibility
+        S Figure   Toggle surface visibility
+        W Figure   Toggle wireframe mode 
         * Frame    Toggle single/multi figure view
         ? Frame    Print this help to standard output
+        / Figure   Switch signs of cut plane
 
 In  edit   mode,  left  mouse,   as  well  as  cursor   keys  increase
-resp. decrease the value of the plane/isolevel/arrowscale respectively
+resp. decrease the value of the plane/isolevel/arrowscale, respectively.
 
 Figures must be first clicked on before editing works.
 --------------------------------------

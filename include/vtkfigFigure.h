@@ -7,10 +7,7 @@
 #include "vtkSmartPointer.h"
 #include "vtkActor.h"
 #include "vtkContextActor.h"
-#include "vtkContextScene.h"
 #include "vtkActor2D.h"
-#include "vtkMapper.h"
-#include "vtkMapper2D.h"
 #include "vtkContourFilter.h"
 #include "vtkPolyDataAlgorithm.h"
 #include "vtkTransformPolyDataFilter.h"
@@ -22,6 +19,7 @@
 #include "vtkGlyphSource2D.h"
 #include "vtkArrowSource.h"
 #include "vtkIdList.h"
+#include "vtkCubeAxesActor2D.h"
 
 #include "vtkfigCommunicator.h"
 #include "vtkfigTools.h"
@@ -224,6 +222,9 @@ namespace vtkfig
     /// Items for surface plot
     vtkSmartPointer<vtkActor>     surface_plot;
 
+    vtkSmartPointer<vtkCubeAxesActor2D> axes;
+    vtkSmartPointer<vtkActor> outline;
+    vtkSmartPointer<vtkActor> splot;
 
 
     /// Calculate transformation to unit cube
@@ -233,6 +234,9 @@ namespace vtkfig
 
     /// Data set visualized
     vtkSmartPointer<vtkDataSet> data=NULL;
+
+    /// Boundary dataset
+    vtkSmartPointer<vtkDataSet> boundary_data=NULL;
 
     /// Name of data item in data set 
     std::string dataname;
@@ -276,13 +280,16 @@ namespace vtkfig
     /// the vtk rendering pipeline
     virtual void RTBuildVTKPipeline(){};
 
-
-
+    /// Build domain pipeline for 2D/3D figures
+    /// (outline, suface, axes)
     void RTBuildDomainPipeline(vtkSmartPointer<vtkRenderer> renderer);
 
+    /// Duck typing interface allowing to handle different VTK datatypes
+    /// with the same code
     template <class DATA>
       void RTBuildDomainPipeline(vtkSmartPointer<vtkRenderer> renderer,vtkSmartPointer<DATA> gridfunc);
 
+    /// Default implementation for 2D/3d datasets. 
     virtual void RTBuildAllVTKPipelines(vtkSmartPointer<vtkRenderer> renderer) 
     {
       RTBuildVTKPipeline();
@@ -290,14 +297,13 @@ namespace vtkfig
       RTAddAnnotations();
     };
 
-    virtual void RTPreRender()
-    {
-    };
+    /// Pre-Render actions
+    virtual void RTPreRender() {};
 
-
-    /// These two need to re-implemented in subclasses 
-    /// in order to get server-client communication
+    /// Send data to client
     virtual void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator){} 
+
+    /// Receive data from server
     virtual void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator) {};
     
     void ServerRTSendData(vtkSmartPointer<internals::Communicator> communicator);
@@ -306,8 +312,8 @@ namespace vtkfig
 
 
     /// Process keyboard and mouse move events
-    void RTProcessKey(const std::string key);
-    void RTProcessMove(int dx, int dy);
+    virtual void RTProcessKey(const std::string key);
+    virtual void RTProcessMove(int dx, int dy);
     
     /// Process keyboard and mouse move events for plane section editing
     int RTProcessPlaneKey(const std::string plane,int idim, const std::string key, bool & edit, vtkSmartPointer<vtkCutter> planecut);
@@ -336,7 +342,7 @@ namespace vtkfig
     /// Update all actors belonging to figure
     void RTUpdateActors();
            
-    
+    /// Obtain te data range from the relevant dataset.
     void SetRange();
 
 

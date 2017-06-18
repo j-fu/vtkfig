@@ -99,6 +99,32 @@ namespace vtkfig
     template <class V>
       void SetCellRegions(const V& cr);
     
+    ///
+    /// Set boundary cell region data (for multiregion grids)
+    ///
+    /// \tparam V Vector class counting from zero with member functions
+    ///  size() and operator[]. std::vector will work.
+    ///
+    /// \param cr Cell region numbers
+    ///
+    /// \param name Name of function
+    template <class V>
+      void SetBoundaryCellRegions(const V& cr);
+    
+
+    ///
+    /// Set boundary cells for simplex grids
+    ///
+    /// \tparam IV Vector class counting from zero with member functions
+    ///  size() and operator[]. std::vector will work.
+    ///
+    /// \param cr Cell region numbers
+    ///
+    /// \param name Name of function
+    template <class IV>
+      void SetSimplexGridBoundaryCells( const IV& cells);
+    
+
 
     /// 
     /// Mask cells which shall be shown
@@ -195,7 +221,20 @@ namespace vtkfig
 
 
     ///
-    /// Write dataset to disk in VTK format
+    /// Set data of a scalar function defined on the cells of the grid
+    ///
+    /// \tparam V Vector class counting from zero with member functions
+    ///  size() and operator[]. std::vector will work.
+    ///
+    /// \param f  Vector of function values
+    ///
+    /// \param name Name of function
+    template <class V>
+      void SetBoundaryCellScalar(const V&f, const std::string name);
+
+
+    ///
+   /// Write dataset to disk in VTK format
     ///
     /// \param fname File name
     void WriteVTK(std::string fname);
@@ -231,6 +270,12 @@ namespace vtkfig
     /// \return vtkDataset
     vtkSmartPointer<vtkDataSet> GetVTKDataSet() { return data;}
     
+    /// 
+    /// Request boundary dataset.
+    /// 
+    /// \return vtkDataset
+    vtkSmartPointer<vtkDataSet> GetVTKBoundaryDataSet() { return boundary_data;}
+    
 
     /// 
     /// Request celllist
@@ -246,6 +291,7 @@ namespace vtkfig
   private:
     friend class Figure;
     vtkSmartPointer<vtkDataSet> data=NULL;
+    vtkSmartPointer<vtkDataSet> boundary_data=NULL;
     
     template<class DATA, class WRITER>
       void WriteVTK(vtkSmartPointer<DATA> data, std::string fname);
@@ -300,7 +346,76 @@ namespace vtkfig
     }    
   }
   
+  template <class IV>
+    inline
+    void DataSet::SetSimplexGridBoundaryCells(const IV& cells)
+  {
+    if (this->boundary_data==NULL)
+      this->boundary_data=vtkSmartPointer<vtkUnstructuredGrid>::New();
+
+    auto budata=vtkUnstructuredGrid::SafeDownCast(this->boundary_data);
+    budata->Reset();
+
+    auto bgridpoints = vtkSmartPointer<vtkPoints>::New();
+    budata->SetPoints(bgridpoints);
+    
+    auto udata=vtkUnstructuredGrid::SafeDownCast(this->data);
+    auto pdata=udata->GetPoints();
+    
+    int np=pdata->GetNumberOfPoints();
+    std::vector<int>pmask(np);
+    for (int i=0;i<pmask.size(); i++) 
+    {
+      pmask[i]=-1;
+    }
+
+
+
+    int ip=0;
+    for (int icell=0;icell<cells.size();icell+=this->spacedim)
+    {
+      for (int id=0;id<this->spacedim;id++)
+      {
+        if (pmask[cells[icell+id]]==-1)
+        {
+          pmask[cells[icell+id]]=ip++;
+          double point[3];
+          pdata->GetPoint(cells[icell+id],point);
+          bgridpoints->InsertNextPoint(point[0],point[1],point[2]);
+        }
+
+      }
+      if (this->spacedim==2)
+      {
+        vtkIdType 	 c[2]={pmask[cells[icell+0]],pmask[cells[icell+1]]};
+        budata->InsertNextCell(VTK_LINE,2,c);
+      }
+      else
+      {
+        vtkIdType 	 c[3]={pmask[cells[icell+0]],pmask[cells[icell+1]],pmask[cells[icell+2]]};
+        budata->InsertNextCell(VTK_TRIANGLE,3,c);
+      }
+
+    }
+    if (this->spacedim==2)
+    {
+      double bounds[6];
+      int nbp=bgridpoints->GetNumberOfPoints();
+      bgridpoints->GetBounds(bounds);
+      double dxy=1.0e-2*std::min(bounds[1]-bounds[0],bounds[3]-bounds[2]);
+      for (int i=0;i<nbp;i++)
+      {
+        double point[3];
+        pdata->GetPoint(i,point);
+        point[2]=dxy;
+        pdata->SetPoint(i,point);
+      }
+    }
+
+  }
   
+
+
     
   template<typename V>
     inline
@@ -416,6 +531,13 @@ namespace vtkfig
   {
     SetCellScalar(values, "cellregions");
   }
+
+  template <class V>
+    inline 
+    void DataSet::SetBoundaryCellRegions(const V&values)
+  {
+    SetBoundaryCellScalar(values, "boundarycellregions");
+  }
   
   
   template <class V>
@@ -436,6 +558,34 @@ namespace vtkfig
       gridvalues->SetNumberOfTuples(ncells);
       gridvalues->SetName(name.c_str());
       this->data->GetCellData()->AddArray(gridvalues);
+    }
+
+
+    for (int i=0;i<ncells; i++)
+      gridvalues->InsertComponent(i,0,values[i]);
+    
+    gridvalues->Modified();
+  }    
+  
+
+  template <class V>
+    inline 
+    void DataSet::SetBoundaryCellScalar(const V&values, const std::string name)
+  {
+    assert(this->boundary_data!=NULL);
+    auto ncells=this->boundary_data->GetNumberOfCells();
+    assert(ncells==values.size());
+    vtkSmartPointer<vtkFloatArray>gridvalues;
+    
+    if  (this->boundary_data->GetPointData()->HasArray(name.c_str()))
+      gridvalues=vtkFloatArray::SafeDownCast(this->boundary_data->GetPointData()->GetAbstractArray(name.c_str()));
+    else
+    {
+      gridvalues=vtkSmartPointer<vtkFloatArray>::New();
+      gridvalues->SetNumberOfComponents(1);
+      gridvalues->SetNumberOfTuples(ncells);
+      gridvalues->SetName(name.c_str());
+      this->boundary_data->GetCellData()->AddArray(gridvalues);
     }
 
 

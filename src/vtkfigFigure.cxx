@@ -8,6 +8,13 @@
 #include "vtkTransformFilter.h"
 #include "vtkOutlineFilter.h"
 #include "vtkCubeAxesActor2D.h"
+#include "vtkMapper.h"
+#include "vtkMapper2D.h"
+
+
+
+
+#include "vtkContextScene.h"
 
 #include "vtkfigFigure.h"
 
@@ -102,6 +109,7 @@ namespace vtkfig
     this->state.spacedim=vtkfig_data.GetSpaceDimension();
 
     this->data=vtkfig_data.GetVTKDataSet();
+    this->boundary_data=vtkfig_data.GetVTKBoundaryDataSet();
 
 
     state.datatype=vtkfig_data.GetDataType();
@@ -315,7 +323,7 @@ namespace vtkfig
   void Figure::RTProcessKey(const std::string key)
   {
 
-    if (key=="i" && state.spacedim==3)
+    if (key=="I" && state.spacedim==3)
     {
 //      state.show_isolines=!state.show_isolines;
       state.show_isosurfaces=!state.show_isosurfaces;
@@ -326,7 +334,7 @@ namespace vtkfig
       return;
     }
 
-    if (key=="s" && state.spacedim==2)
+    if (key=="S" && state.spacedim==2)
     {
       state.show_surface=!state.show_surface;
       state.show_isolines=!state.show_isolines;
@@ -337,13 +345,39 @@ namespace vtkfig
       return;
     }
 
-    if (key=="e" && state.spacedim==2)
+    if (key=="E" && state.spacedim==2)
     {
       state.show_elevation=!state.show_elevation;
       elevation_plot->SetVisibility(state.show_elevation);
       elevation_plot->Modified();
       return;
     }
+    
+    if (key=="A")
+    {
+      if (axes) 
+      {
+        int vis=axes->GetVisibility();
+        vis=!vis;
+        axes->SetVisibility(vis);
+        if (outline)
+          outline->SetVisibility(vis);
+      }
+      return;
+    }
+    
+    if (key=="O")
+    {
+      if (splot)
+      {
+        int vis=splot->GetVisibility();
+        vis=!vis;
+        splot->SetVisibility(vis);
+      }
+      return;
+    }
+    
+
 
 
     if (key=="L")
@@ -696,12 +730,13 @@ namespace vtkfig
     transgeometry->SetInputConnection(geometry->GetOutputPort());
     transgeometry->SetTransform(transform);
 
+
     /// if boundary cell color set, use this one!
     if (state.show_domain_boundary && state.spacedim==3)
     {
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       mapper->SetInputConnection(transgeometry->GetOutputPort());
-      auto splot=vtkSmartPointer<vtkActor>::New();
+      splot=vtkSmartPointer<vtkActor>::New();
       if (state.spacedim==3)
       {
         splot->GetProperty()->SetOpacity(state.domain_opacity);
@@ -717,7 +752,6 @@ namespace vtkfig
       Figure::RTAddActor(splot);
     }
 
-
     
     if (state.show_domain_box&& state.spacedim==3)
     {
@@ -726,15 +760,16 @@ namespace vtkfig
       outlinefilter->SetInputConnection(transgeometry->GetOutputPort());
       vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
-      vtkSmartPointer<vtkActor> outline = vtkSmartPointer<vtkActor>::New();
+      outline = vtkSmartPointer<vtkActor>::New();
       outline->SetMapper(outlineMapper);
       outline->GetProperty()->SetColor(0, 0, 0);
       Figure::RTAddActor(outline);
     }
 
+
     if (state.show_domain_axes)
     {
-      auto axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
+      axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
       axes->SetRanges(data_bounds);
       axes->SetUseRanges(1);
       axes->SetInputConnection(transgeometry->GetOutputPort());
@@ -776,7 +811,7 @@ namespace vtkfig
     }
   } 
   
-  
+
   /////////////////////////////////////////////////////////////////////
   /// Generic access to filter
   void  Figure::RTBuildDomainPipeline(vtkSmartPointer<vtkRenderer> renderer)
