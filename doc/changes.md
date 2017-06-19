@@ -6,7 +6,7 @@ Changes
 
 - v0.16
   - reworked XYPlot: added grid lines + better symbol handling, cleaned API
-  - 3D Grid view
+  - 3D grid view
   - Boundary grid handling
 
 - v0.15
