@@ -31,8 +31,8 @@ add_vtkfig_example(example-comm-client-server-vtkfig)
 
 
 
-add_vtkfig_example(example-chartxy)
-add_vtkfig_example(example-surf2d)
-add_vtkfig_example(example-axis)
+#add_vtkfig_example(devel/example-chartxy)
+#add_vtkfig_example(devel/example-surf2d)
+#add_vtkfig_example(devel/example-axis)
 
 
