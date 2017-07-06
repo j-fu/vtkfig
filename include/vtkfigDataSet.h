@@ -397,20 +397,6 @@ namespace vtkfig
       }
 
     }
-    if (this->spacedim==2)
-    {
-      double bounds[6];
-      int nbp=bgridpoints->GetNumberOfPoints();
-      bgridpoints->GetBounds(bounds);
-      double dxy=1.0e-2*std::min(bounds[1]-bounds[0],bounds[3]-bounds[2]);
-      for (int i=0;i<nbp;i++)
-      {
-        double point[3];
-        pdata->GetPoint(i,point);
-        point[2]=dxy;
-        pdata->SetPoint(i,point);
-      }
-    }
 
   }
   
