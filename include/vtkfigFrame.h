@@ -311,8 +311,8 @@ Figures must be first clicked on before editing works.
     struct
     {
       std::string filename; 
-      std::string wintitle;
-      std::string frametitle;
+      std::string wintitle="vtkfig";
+      std::string frametitle="";
       
       /// window sizes
       int winsize_x=400;
