@@ -220,9 +220,9 @@ namespace vtkfig
       stream->SetInputConnection(vecmag->GetOutputPort());
       stream->SetSourceConnection(transseed->GetOutputPort());
       
-      stream->SetMaximumPropagation(state.streamlength);
-      stream->SetInitialIntegrationStep(.01);
-      stream->SetMaximumIntegrationStep(.1);
+      stream->SetMaximumPropagation(state.stream_maximum_propagation);
+      stream->SetInitialIntegrationStep(state.stream_initial_integration_step);
+      stream->SetMaximumIntegrationStep(state.stream_maximum_integration_step);
       stream->SetIntegrationDirectionToForward();
       stream->SetIntegratorTypeToRungeKutta45();
       
@@ -262,7 +262,7 @@ namespace vtkfig
       
       auto ribbon=vtkSmartPointer<vtkRibbonFilter>::New();
       ribbon->SetInputConnection(stream->GetOutputPort());
-      ribbon->SetWidth(state.streamribbonwidth);
+      ribbon->SetWidth(state.stream_ribbonwidth);
       
       // map gridfunction
       auto  mapper = vtkSmartPointer<vtkPolyDataMapper>::New();

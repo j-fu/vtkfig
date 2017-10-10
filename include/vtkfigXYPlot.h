@@ -163,7 +163,7 @@ namespace vtkfig
     static std::map<std::string,int> marker_types;
     
     /// Number of "real" plots
-    int num_plots=0;
+    size_t num_plots=0;
     
     /// Number of grid lines
     int num_gridlines=0;

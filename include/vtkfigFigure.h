@@ -435,9 +435,13 @@ namespace vtkfig
 
       double quiver_surface_distance=1.0e-10;
 
-      double streamlength=1;
+      double stream_maximum_propagation=1;
 
-      double streamribbonwidth=0.01;
+      double stream_ribbonwidth=0.01;
+
+      double stream_initial_integration_step=0.001;
+
+      double stream_maximum_integration_step=0.1;
 
       DataSet::DataType datatype;
       

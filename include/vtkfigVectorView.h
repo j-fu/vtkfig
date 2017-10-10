@@ -64,20 +64,23 @@ namespace vtkfig
       void SetQuiverRGBTable(RGBTable & tab, int lutsize);
       
 
-
       /// Show stream lines (false by default)
       void ShowStreamLines(bool b) { state.show_stream=b;}
 
       /// Show color bar for stream lines
       void ShowStreamLineColorbar(bool b) { state.show_stream_colorbar=b;}
 
-
-
       /// Set length of stream lines
-      void SetStreamLineLength(double l){ state.streamlength=l;}
+      void SetStreamLineMaximumPropagation(double l){ state.stream_maximum_propagation=l;}
+
+      /// Set initial integration step for streamlines
+      void SetStreamLineInitialIntegrationStep(double l){ state.stream_initial_integration_step=l;}
+      
+      /// Set  maximum integration step for streamlines
+      void SetStreamLineMaximumIntegrationStep(double l){ state.stream_maximum_integration_step=l;}
       
       /// Set width of stream ribbons
-      void SetStreamLineWidth(double w){state.streamribbonwidth=w;}
+      void SetStreamLineWidth(double w){state.stream_ribbonwidth=w;}
 
       
       /// Set seed points for streamlines
