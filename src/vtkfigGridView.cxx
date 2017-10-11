@@ -260,7 +260,7 @@ namespace vtkfig
       
       
       
-      if (cr)
+      if (cr && state.show_grid_colorbar)
       {
         cbar=BuildColorBar(cells);
         cbar->SetTitle("C    ");
@@ -270,7 +270,7 @@ namespace vtkfig
       }
     }
     
-    if (boundary_data)
+    if (boundary_data&& state.show_grid_colorbar)
     {
       double brange[2];
       auto bcr=vtkFloatArray::SafeDownCast(boundary_data->GetCellData()->GetAbstractArray("boundarycellregions"));

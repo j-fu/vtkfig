@@ -370,6 +370,10 @@ namespace vtkfig
       double eps_geom=1.0e-8;
       
       bool keep_aspect=true;
+
+      int surface_colorbar_num_labels=11;
+      
+      char surface_colorbar_label_format[32]=" %+9.2e";
       
       double aspect=1.0;
       
@@ -386,6 +390,8 @@ namespace vtkfig
       bool show_slider=false;
       
       bool show_surface_colorbar=true;
+
+      bool show_grid_colorbar=true;
 
       bool show_quiver_colorbar=false;
 

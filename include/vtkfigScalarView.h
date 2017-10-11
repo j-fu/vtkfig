@@ -39,6 +39,13 @@ namespace vtkfig
     
     /// Toggle colorbar visualization
     void ShowSurfaceColorbar(bool b) {state.show_surface_colorbar=b;}
+
+    /// Set label format for colorbar
+    void SetSurfaceColorbarLabelFormat(std::string fmt) {strncpy(state.surface_colorbar_label_format,fmt.c_str(),20);}
+
+    /// Set number of labels in colorbar
+    void SetSurfaceColorbarNumberOfLabels(int n) {state.surface_colorbar_num_labels=n;}
+
     
     /// Toggle elevation view  (yet to be implemented)
     void ShowElevation(bool b) {state.show_elevation=b;}

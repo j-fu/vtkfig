@@ -173,9 +173,14 @@ namespace vtkfig
     void SetSingleSubFrameView(bool b);
 
     ///
-    /// Toggle single/multi view for frame with mutiple figures
+    /// Set active subframe  number for editing, single/multiview etc.
     ///
-    void SetVisibleSubFrame(int iframe);
+    void SetActiveSubFrame(int iframe);
+
+    ///
+    ///  Set view angle for camera in active frame
+    ///
+    void SetActiveSubFrameViewAngle(double angle);
 
     
     ///
@@ -265,11 +270,15 @@ Figures must be first clicked on before editing works.
     void RTSetSingleViewport(int nx, int ny);
     void RTResetRenderers(bool from_scratch);
     void RTResetCamera(SubFrame& sf);
+
+    void RTSetViewAngle(SubFrame& sf, double a);
+
     void RTAddFigures();
     void RTHideSubframe(SubFrame &subframe);
     void RTUnHideSubframe(SubFrame &subframe);
     void RTSetSingleView(bool single_viewport);
-    void RTSetVisibleSubFrame(int isub, bool hide_old);
+    void RTSetActiveSubFrame(int isub, bool hide_old);
+    void RTSetActiveSubFrameViewAngle(SubFrame & subframe, double a);
     void SetAutoLayout(int nfig);
 
 
@@ -284,7 +293,7 @@ Figures must be first clicked on before editing works.
       /// Default camera data
       double default_camera_focal_point[3]={0.65,0.5,0};
       double default_camera_position[3]={0.65,0.5,10};
-      double default_camera_zoom={1};
+      // double default_camera_zoom={1};
       double default_camera_view_angle={15};
 
       /// vtkRenderer
@@ -296,7 +305,7 @@ Figures must be first clicked on before editing works.
       bool hidden=false;
     };
     bool single_subframe_view=false;
-    int visible_subframe=0;
+    int active_subframe=0;
     
     /// List of subframes
     std::vector<SubFrame> subframes;
@@ -320,7 +329,8 @@ Figures must be first clicked on before editing works.
       
       int winposition_x=0;
       int winposition_y=0;
-
+      
+      double view_angle=0;
 
       int camlinkthisframepos;
       int camlinkframepos;
@@ -330,7 +340,7 @@ Figures must be first clicked on before editing works.
       int nvpy;
       
       int single_subframe_view;
-      int visible_subframe;
+      int active_subframe;
 
     } parameter;
     /// The spinning main thread

@@ -77,13 +77,19 @@ namespace vtkfig
     SendCommand("AddFigure", internals::Communicator::Command::FrameAddFigure);
   }
 
-  void Frame::SetVisibleSubFrame(int ipos)
+  void Frame::SetActiveSubFrame(int ipos)
   {
     if (ipos>=nvpx*nvpy)
       SetAutoLayout(ipos+1);
     
-    parameter.visible_subframe=ipos;
-    SendCommand("VisibleSubframe", internals::Communicator::Command::FrameVisibleSubFrame);
+    parameter.active_subframe=ipos;
+    SendCommand("ActiveSubframe", internals::Communicator::Command::FrameActiveSubFrame);
+  }
+
+  void Frame::SetActiveSubFrameViewAngle(double a)
+  {
+    parameter.view_angle=a;
+    SendCommand("ViewAngle", internals::Communicator::Command::FrameActiveSubFrameViewAngle);
   }
 
 
@@ -108,6 +114,7 @@ namespace vtkfig
     parameter.winsize_y=y;
     SendCommand("Size", internals::Communicator::Command::FrameSize);
   }
+
 
   void Frame::SetPosition(int x, int y)
   {
@@ -136,10 +143,11 @@ namespace vtkfig
     SendCommand("Layout", internals::Communicator::Command::FrameLayout);
   }
 
+
   void Frame::SetSingleSubFrameView(bool view)
   {
     parameter.single_subframe_view=view;
-    SendCommand("Layout", internals::Communicator::Command::FrameSingleView);
+    SendCommand("SingleView", internals::Communicator::Command::FrameSingleView);
   }
 
 
@@ -208,12 +216,12 @@ namespace vtkfig
   }
   
   /// Set visible subframe
-  void Frame::RTSetVisibleSubFrame(int isub, bool hide_old)
+  void Frame::RTSetActiveSubFrame(int isub, bool hide_old)
   {
     if (!single_subframe_view) return;
-    if (hide_old)  this->RTHideSubframe(this->subframes[this->visible_subframe]);
-    this->visible_subframe=(isub+this->subframes.size())%(this->subframes.size());
-    this->RTUnHideSubframe(this->subframes[this->visible_subframe]);
+    if (hide_old)  this->RTHideSubframe(this->subframes[this->active_subframe]);
+    this->active_subframe=(isub+this->subframes.size())%(this->subframes.size());
+    this->RTUnHideSubframe(this->subframes[this->active_subframe]);
     this->RTResetRenderers(false);
   }
 
@@ -254,7 +262,7 @@ namespace vtkfig
         subframe.viewport[1]=0;
         subframe.viewport[2]=1;
         subframe.viewport[3]=0.925;
-        if (ipos==this->visible_subframe)
+        if (ipos==this->active_subframe)
           subframe.hidden=false;
         else
           subframe.hidden=true;
@@ -274,6 +282,12 @@ namespace vtkfig
 //    subframe.renderer->GetActiveCamera()->SetObliqueAngles(45,90);
 //    subframe.renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
     subframe.renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
+  }
+
+
+  void Frame::RTSetActiveSubFrameViewAngle(SubFrame & subframe, double a)
+  {
+    subframe.renderer->GetActiveCamera()->SetViewAngle(a);
   }
 
   /// reset all renderers
@@ -317,7 +331,7 @@ namespace vtkfig
     {
      this->RTSetSingleViewport(this->nvpx, this->nvpy);
       for (int i=0;i<this->subframes.size();i++)
-        if (i!=this->visible_subframe)
+        if (i!=this->active_subframe)
           this->RTHideSubframe(this->subframes[i]);
     }
     else

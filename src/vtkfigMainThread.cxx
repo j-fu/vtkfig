@@ -531,7 +531,7 @@ namespace vtkfig
             for(int i=0;i<this->frame->subframes.size();i++)
             {
               if (this->frame->subframes[i].renderer==this->CurrentRenderer)
-                this->frame->visible_subframe=i;
+                this->frame->active_subframe=i;
             }
           
           frame->single_subframe_view=!frame->single_subframe_view;
@@ -542,13 +542,13 @@ namespace vtkfig
 
         else if (frame->single_subframe_view && key=="Next")
         {
-          frame->RTSetVisibleSubFrame(frame->visible_subframe-1,true);
+          frame->RTSetActiveSubFrame(frame->active_subframe-1,true);
           this->Interactor->Render();
         }
 
         else if (frame->single_subframe_view && key=="Prior")
         {
-          frame->RTSetVisibleSubFrame(frame->visible_subframe+1,true);
+          frame->RTSetActiveSubFrame(frame->active_subframe+1,true);
           this->Interactor->Render();
         }
 
@@ -677,11 +677,20 @@ namespace vtkfig
           }
           break;
         
-          // Set frame size
-          case Communicator::Command::FrameVisibleSubFrame:
+          // Set active subframe
+          case Communicator::Command::FrameActiveSubFrame:
           {
             auto frame=mainthread->framemap[mainthread->iframe];
-            frame->RTSetVisibleSubFrame(frame->parameter.visible_subframe,false);
+            frame->RTSetActiveSubFrame(frame->parameter.active_subframe,false);
+          }
+          break;
+
+          // Set active subframe
+          case Communicator::Command::FrameActiveSubFrameViewAngle:
+          {
+            auto frame=mainthread->framemap[mainthread->iframe];
+            auto& subframe=frame->subframes[frame->parameter.active_subframe];
+            frame->RTSetActiveSubFrameViewAngle(subframe,frame->parameter.view_angle);
           }
           break;
         

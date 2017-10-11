@@ -28,6 +28,9 @@ namespace vtkfig
     static std::shared_ptr<GridView> New() { return std::make_shared<GridView>();}
     std::string SubClassName() override final {return std::string("GridView");}
 
+
+    void ShowGridColorbar(bool b) { state.show_grid_colorbar=b;}
+
     /// Process keyboard and mouse move events
     void RTProcessKey(const std::string key) override final;
     void RTProcessMove(int dx, int dy) override final;

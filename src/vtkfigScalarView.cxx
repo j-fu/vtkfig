@@ -141,7 +141,12 @@ namespace vtkfig
       Figure::RTAddActor(surface_plot);
       
       if (state.show_surface_colorbar)
-        Figure::RTAddActor2D(BuildColorBar(mapper));
+        {
+          auto cbar=BuildColorBar(mapper);
+          cbar->SetLabelFormat(state.surface_colorbar_label_format);
+          cbar->SetNumberOfLabels(state.surface_colorbar_num_labels);
+          Figure::RTAddActor2D(cbar);
+        }
     }
     
     
