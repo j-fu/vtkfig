@@ -270,7 +270,7 @@ namespace vtkfig
       }
     }
     
-    if (boundary_data&& state.show_grid_colorbar)
+    if (boundary_data)
     {
       double brange[2];
       auto bcr=vtkFloatArray::SafeDownCast(boundary_data->GetCellData()->GetAbstractArray("boundarycellregions"));
@@ -302,12 +302,14 @@ namespace vtkfig
         bcellplot->GetProperty()->SetLineWidth(5);
         Figure::RTAddActor(bcellplot);
         
-        
-        bcbar=BuildColorBar(bcells,1);
-        bcbar->SetTitle("B    ");
-        bcbar->SetLabelFormat(" %-2.0f     ");
-        bcbar->SetNumberOfLabels((int)(brange[1]-brange[0]+1));
-        Figure::RTAddActor2D(bcbar);
+        if( state.show_grid_colorbar)
+        {
+          bcbar=BuildColorBar(bcells,1);
+          bcbar->SetTitle("B    ");
+          bcbar->SetLabelFormat(" %-2.0f     ");
+          bcbar->SetNumberOfLabels((int)(brange[1]-brange[0]+1));
+          Figure::RTAddActor2D(bcbar);
+        }
       }
     }
   }
