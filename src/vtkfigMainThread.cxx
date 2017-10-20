@@ -686,11 +686,29 @@ namespace vtkfig
           break;
 
           // Set active subframe
-          case Communicator::Command::FrameActiveSubFrameViewAngle:
+          case Communicator::Command::FrameActiveSubFrameCameraViewAngle:
           {
             auto frame=mainthread->framemap[mainthread->iframe];
             auto& subframe=frame->subframes[frame->parameter.active_subframe];
-            frame->RTSetActiveSubFrameViewAngle(subframe,frame->parameter.view_angle);
+            frame->RTSetActiveSubFrameCameraViewAngle(subframe,frame->parameter.camera_view_angle);
+          }
+          break;
+        
+          // Set active subframe
+          case Communicator::Command::FrameActiveSubFrameCameraPosition:
+          {
+            auto frame=mainthread->framemap[mainthread->iframe];
+            auto& subframe=frame->subframes[frame->parameter.active_subframe];
+            frame->RTSetActiveSubFrameCameraPosition(subframe,frame->parameter.camera_position);
+          }
+          break;
+        
+          // Set active subframe
+          case Communicator::Command::FrameActiveSubFrameCameraFocalPoint:
+          {
+            auto frame=mainthread->framemap[mainthread->iframe];
+            auto& subframe=frame->subframes[frame->parameter.active_subframe];
+            frame->RTSetActiveSubFrameCameraFocalPoint(subframe,frame->parameter.camera_focal_point);
           }
           break;
         

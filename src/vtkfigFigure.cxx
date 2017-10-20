@@ -1,4 +1,3 @@
-
 #include "vtkTransform.h"
 #include "vtkCamera.h"
 #include "vtkProperty2D.h"

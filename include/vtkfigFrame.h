@@ -178,9 +178,19 @@ namespace vtkfig
     void SetActiveSubFrame(int iframe);
 
     ///
-    ///  Set view angle for camera in active frame
+    ///  Set view angle for camera in active frame relative to default
     ///
-    void SetActiveSubFrameViewAngle(double angle);
+    void SetActiveSubFrameCameraViewAngle(double angle);
+
+    ///
+    ///  Set focal point for camera in active frame relative to default
+    ///
+    void SetActiveSubFrameCameraFocalPoint(double x, double y, double z);
+
+    ///
+    ///  Set view position for camera in active frame relative to default
+    ///
+    void SetActiveSubFrameCameraPosition(double x, double y, double z);
 
     
     ///
@@ -271,14 +281,15 @@ Figures must be first clicked on before editing works.
     void RTResetRenderers(bool from_scratch);
     void RTResetCamera(SubFrame& sf);
 
-    void RTSetViewAngle(SubFrame& sf, double a);
+    void RTSetActiveSubFrameCameraViewAngle(SubFrame& sf, double a);
+    void RTSetActiveSubFrameCameraFocalPoint(SubFrame& sf, double a[3]);
+    void RTSetActiveSubFrameCameraPosition(SubFrame& sf, double a[3]);
 
     void RTAddFigures();
     void RTHideSubframe(SubFrame &subframe);
     void RTUnHideSubframe(SubFrame &subframe);
     void RTSetSingleView(bool single_viewport);
     void RTSetActiveSubFrame(int isub, bool hide_old);
-    void RTSetActiveSubFrameViewAngle(SubFrame & subframe, double a);
     void SetAutoLayout(int nfig);
 
 
@@ -290,11 +301,6 @@ Figures must be first clicked on before editing works.
 
       SubFrame(const double vp[4]):viewport{vp[0],vp[1],vp[2],vp[3]}{};
       
-      /// Default camera data
-      double default_camera_focal_point[3]={0.65,0.5,0};
-      double default_camera_position[3]={0.65,0.5,10};
-      // double default_camera_zoom={1};
-      double default_camera_view_angle={15};
 
       /// vtkRenderer
       vtkSmartPointer<vtkRenderer>    renderer;
@@ -316,6 +322,14 @@ Figures must be first clicked on before editing works.
     int ivpx(const int pos) { return pos%nvpx;}
     int ivpy(const int pos) { return nvpy-pos/nvpx-1;}
 
+
+    /// Default camera data
+    const double default_camera_focal_point[3]={0.65,0.5,0};
+    const double default_camera_position[3]={0.65,0.5,10};
+    const double default_camera_view_angle={15};
+    // double default_camera_zoom={1};
+
+
     /// Parameters to be passed between threads
     struct
     {
@@ -330,7 +344,9 @@ Figures must be first clicked on before editing works.
       int winposition_x=0;
       int winposition_y=0;
       
-      double view_angle=0;
+      double camera_view_angle=15;
+      double camera_focal_point[3]={0.65,0.5,0};
+      double camera_position[3]={0.65,0.5,10};
 
       int camlinkthisframepos;
       int camlinkframepos;

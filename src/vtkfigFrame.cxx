@@ -29,6 +29,7 @@ namespace vtkfig
     title_subframe.viewport[2]=1.0;
     title_subframe.viewport[3]=1.0;
     mainthread->AddFrame(this);
+    SetActiveSubFrame(0);
   }
 
   
@@ -86,11 +87,34 @@ namespace vtkfig
     SendCommand("ActiveSubframe", internals::Communicator::Command::FrameActiveSubFrame);
   }
 
-  void Frame::SetActiveSubFrameViewAngle(double a)
+  void Frame::SetActiveSubFrameCameraViewAngle(double a)
   {
-    parameter.view_angle=a;
-    SendCommand("ViewAngle", internals::Communicator::Command::FrameActiveSubFrameViewAngle);
+    parameter.camera_view_angle=a+this->default_camera_view_angle;
+    SendCommand("ViewAngle", internals::Communicator::Command::FrameActiveSubFrameCameraViewAngle);
   }
+
+  ///
+  ///  Set view angle for camera in active frame
+  ///
+  void Frame::SetActiveSubFrameCameraFocalPoint(double x, double y, double z)
+  {
+    parameter.camera_focal_point[0]=x+this->default_camera_focal_point[0];
+    parameter.camera_focal_point[1]=y+this->default_camera_focal_point[1];
+    parameter.camera_focal_point[2]=z+this->default_camera_focal_point[2];
+    SendCommand("CameraFocalPoint", internals::Communicator::Command::FrameActiveSubFrameCameraFocalPoint);
+  }
+
+  ///
+  ///  Set view angle for camera in active frame
+  ///
+  void Frame::SetActiveSubFrameCameraPosition(double x, double y, double z)
+  {
+    parameter.camera_position[0]=x+this->default_camera_position[0];
+    parameter.camera_position[1]=y+this->default_camera_position[1];
+    parameter.camera_position[2]=z+this->default_camera_position[2];
+    SendCommand("CameraPosition", internals::Communicator::Command::FrameActiveSubFrameCameraPosition);
+  }
+
 
 
   void Frame::LinkCamera(int ivp, Frame& frame, int livp)
@@ -275,19 +299,28 @@ namespace vtkfig
   /// reset camera to default position
   void Frame::RTResetCamera(SubFrame& subframe)
   {
-    subframe.renderer->GetActiveCamera()->SetPosition(subframe.default_camera_position);
-    subframe.renderer->GetActiveCamera()->SetFocalPoint(subframe.default_camera_focal_point);
+    subframe.renderer->GetActiveCamera()->SetPosition(this->default_camera_position);
+    subframe.renderer->GetActiveCamera()->SetFocalPoint(this->default_camera_focal_point);
     subframe.renderer->GetActiveCamera()->OrthogonalizeViewUp();
     subframe.renderer->GetActiveCamera()->SetRoll(0);
 //    subframe.renderer->GetActiveCamera()->SetObliqueAngles(45,90);
 //    subframe.renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
-    subframe.renderer->GetActiveCamera()->SetViewAngle(subframe.default_camera_view_angle);
+    subframe.renderer->GetActiveCamera()->SetViewAngle(this->default_camera_view_angle);
   }
 
-
-  void Frame::RTSetActiveSubFrameViewAngle(SubFrame & subframe, double a)
+  void Frame::RTSetActiveSubFrameCameraViewAngle(SubFrame & subframe, double a)
   {
     subframe.renderer->GetActiveCamera()->SetViewAngle(a);
+  }
+
+  void Frame::RTSetActiveSubFrameCameraFocalPoint(SubFrame & subframe, double a[3])
+  {
+    subframe.renderer->GetActiveCamera()->SetFocalPoint(a);
+  }
+
+  void Frame::RTSetActiveSubFrameCameraPosition(SubFrame & subframe, double a[3])
+  {
+    subframe.renderer->GetActiveCamera()->SetPosition(a);
   }
 
   /// reset all renderers
