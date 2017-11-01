@@ -2,7 +2,6 @@
 #include "vtkPointData.h"
 #include "vtkProperty.h"
 #include "vtkTextProperty.h"
-#include "vtkFloatArray.h"
 #include "vtkContourFilter.h"
 #include "vtkOutlineFilter.h"
 #include "vtkRectilinearGridGeometryFilter.h"
@@ -74,6 +73,7 @@ namespace vtkfig
   {
     assert(data);
     assert(state.spacedim==3);
+
     double bounds[6];
     data->GetBounds(bounds);
     
@@ -102,7 +102,7 @@ namespace vtkfig
   template <class DATA>
   void  VectorView::RTBuildVTKPipeline(vtkSmartPointer<DATA> gridfunc)
   {
-    CalcTransform();
+    RTCalcTransform();
 
    
     /// be careful here: transform filter transforms vectors as well
@@ -133,6 +133,7 @@ namespace vtkfig
       
       
       auto probeFilter = vtkSmartPointer<vtkProbeFilter>::New();
+      probeFilter->SetComputeTolerance(true);
       probeFilter->SetSourceConnection(vector->GetOutputPort());
       probeFilter->SetInputConnection(transprobe->GetOutputPort());
       probeFilter->PassPointArraysOn();
@@ -204,10 +205,10 @@ namespace vtkfig
       calc->SetFunction(func.c_str());
       calc->SetResultArrayName((dataname+"magnitude").c_str());
       
+      
       auto vecmag = vtkSmartPointer<vtkAssignAttribute>::New();
       vecmag->Assign((dataname+"magnitude").c_str(),vtkDataSetAttributes::SCALARS,vtkAssignAttribute::POINT_DATA);
       vecmag->SetInputConnection(calc->GetOutputPort());
-      
       
       
       auto transseed=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
@@ -219,14 +220,16 @@ namespace vtkfig
       auto stream=vtkSmartPointer<vtkStreamTracer>::New();
       stream->SetInputConnection(vecmag->GetOutputPort());
       stream->SetSourceConnection(transseed->GetOutputPort());
-      
+      stream->SetIntegrationStepUnit(vtkStreamTracer::LENGTH_UNIT);
+      stream->SetInterpolatorType(vtkStreamTracer::INTERPOLATOR_WITH_CELL_LOCATOR);
       stream->SetMaximumPropagation(state.stream_maximum_propagation);
       stream->SetInitialIntegrationStep(state.stream_initial_integration_step);
       stream->SetMaximumIntegrationStep(state.stream_maximum_integration_step);
       stream->SetIntegrationDirectionToForward();
-      stream->SetIntegratorTypeToRungeKutta45();
-      
-      
+      stream->SetIntegratorTypeToRungeKutta4();
+      stream->SetMaximumNumberOfSteps(state.stream_maximum_number_of_steps);
+
+
       // https://github.com/vejmarie/vtk-7/blob/master/Examples/GUI/Python/StreamlinesWithLineWidget.py
       // streamer = vtk.vtkStreamTracer()
       // streamer.SetInputData(pl3d_output)
@@ -249,7 +252,8 @@ namespace vtkfig
       
       if (state.spacedim==2)
       {    
-        stream->SetSurfaceStreamlines(1);
+        //stream->SetSurfaceStreamlines(1);
+        // works only with point locator
         stream->SetComputeVorticity(false);
       }
       else
@@ -263,14 +267,14 @@ namespace vtkfig
       auto ribbon=vtkSmartPointer<vtkRibbonFilter>::New();
       ribbon->SetInputConnection(stream->GetOutputPort());
       ribbon->SetWidth(state.stream_ribbonwidth);
+      //ribbon->SetVaryWidth(1);
       
-      // map gridfunction
       auto  mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       mapper->SetInputConnection(ribbon->GetOutputPort());
+      mapper->ScalarVisibilityOn();
       mapper->SetLookupTable(stream_lut);
       mapper->UseLookupTableScalarRangeOn();
-      
-      
+              
       // create plot quiver actor
       vtkSmartPointer<vtkActor> stream_actor = vtkSmartPointer<vtkActor>::New();
       stream_actor->SetMapper(mapper);

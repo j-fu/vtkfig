@@ -86,7 +86,7 @@ namespace vtkfig
     if (SubClassName()=="Surf2D") return;
 
 
-    auto values=vtkFloatArray::SafeDownCast(data->GetPointData()->GetAbstractArray(dataname.c_str()));
+    auto values=vtkDoubleArray::SafeDownCast(data->GetPointData()->GetAbstractArray(dataname.c_str()));
 
     if (!values) return;
 
@@ -109,7 +109,7 @@ namespace vtkfig
 
     this->data=vtkfig_data.GetVTKDataSet();
     this->boundary_data=vtkfig_data.GetVTKBoundaryDataSet();
-
+    this->coordinate_scale_factor=vtkfig_data.coordinate_scale_factor;
 
     state.datatype=vtkfig_data.GetDataType();
 
@@ -143,7 +143,7 @@ namespace vtkfig
   void Figure::SendRGBTable(vtkSmartPointer<internals::Communicator> communicator, RGBTable & rgbtab)
   {
     communicator->SendInt(rgbtab.size());
-    communicator->SendFloatBuffer((float*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(float));
+    communicator->SendDoubleBuffer((double*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(double));
   }
   
   void Figure::ReceiveRGBTable(vtkSmartPointer<internals::Communicator> communicator, RGBTable & rgbtab)
@@ -151,7 +151,7 @@ namespace vtkfig
     int tabsize;
     communicator->ReceiveInt(tabsize);
     rgbtab.resize(tabsize);
-    communicator->ReceiveFloatBuffer((float*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(float));
+    communicator->ReceiveDoubleBuffer((double*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(double));
   }
 
 
@@ -169,7 +169,7 @@ namespace vtkfig
 
   void Figure::RTShowPlanePos(vtkSmartPointer<vtkCutter> planecut, const std::string plane, int idim)
   {
-    if (this->SubClassName()!="ScalarView") return;
+    //if (this->SubClassName()!="ScalarView") return;
     int i=planecut->GetNumberOfContours();
     if (i>0)
     {
@@ -186,7 +186,7 @@ namespace vtkfig
 
   void Figure::RTShowIsolevel()
   {
-    if (this->SubClassName()!="ScalarView") return;
+    //if (this->SubClassName()!="ScalarView") return;
 
     int i=isoline_filter->GetNumberOfContours();
     if (i>0)
@@ -202,7 +202,7 @@ namespace vtkfig
 
   void Figure::RTShowArrowScale()
   {
-    if (this->SubClassName()!="VectorView") return;
+  // if (this->SubClassName()!="VectorView") return;
 
     RTMessage("arrow_scale="+std::to_string(state.quiver_arrowscale_user));
   }
@@ -504,12 +504,32 @@ namespace vtkfig
     //contour_lut=BuildLookupTable(tab,tabsize);
   }
   
-  void Figure::CalcTransform()
+  void Figure::RTCalcTransform()
   {
-    data->GetBounds(data_bounds);
-    data->GetCenter(data_center);
+    if (!transform_dirty) return;
 
-    transform =  vtkSmartPointer<vtkTransform>::New();
+    if (  state.xmin<state.xmax 
+          &&state.ymin<state.ymax
+          &&(state.spacedim==2 || state.zmin<state.zmax))
+    {
+      data_bounds[0]=state.xmin;
+      data_bounds[1]=state.xmax;
+      data_bounds[2]=state.ymin;
+      data_bounds[3]=state.ymax;
+      data_bounds[4]=state.zmin;
+      data_bounds[5]=state.zmax;
+      data_center[0]=0.5*(data_bounds[0]+data_bounds[1]);
+      data_center[1]=0.5*(data_bounds[2]+data_bounds[3]);
+      data_center[2]=0.5*(data_bounds[4]+data_bounds[5]);
+    }
+    else
+    {
+      data->GetBounds(data_bounds);
+      data->GetCenter(data_center);
+    }
+    if (!transform)
+      transform =  vtkSmartPointer<vtkTransform>::New();
+    transform->Identity();
     double xsize=data_bounds[1]-data_bounds[0];
     double ysize=data_bounds[3]-data_bounds[2];
     double zsize=data_bounds[5]-data_bounds[4];
@@ -561,7 +581,8 @@ namespace vtkfig
     trans_bounds[5]=tp1[2];
 
     transform->TransformPoint(data_center,trans_center);
-
+    
+    transform_dirty=false;
   }
   
   void Figure::SetVMinMax()
@@ -660,7 +681,24 @@ namespace vtkfig
     RTInitAnnotations();
     annot->SetText(7,title.c_str());
     annot->SetText(4,"");
+    annot->SetText(3,"[ ]");
     Figure::RTAddActor2D(annot);
+  }
+
+
+  void Figure::RTShowActive()
+  {
+    RTInitAnnotations();
+    annot->SetText(3,"[X]");
+    annot->Modified();
+  }
+  
+  
+  void Figure::RTShowInActive()
+  {
+    RTInitAnnotations();
+    annot->SetText(3,"[ ]");
+    annot->Modified();
   }
 
   void Figure::RTMessage(std::string msg)
@@ -674,7 +712,8 @@ namespace vtkfig
   void Figure::RTUpdateActors()
   {
     SetVMinMax();
-    
+    RTCalcTransform();
+
     for (auto actor: actors) {auto m=actor->GetMapper(); if (m) m->Update();}
     for (auto actor: ctxactors) {auto m=actor->GetScene(); if (m) m->SetDirty(true);}
     for (auto actor: actors2d){auto m=actor->GetMapper(); if (m) m->Update();}
@@ -720,7 +759,7 @@ namespace vtkfig
   template <class DATA>
   void Figure::RTBuildDomainPipeline(vtkSmartPointer<vtkRenderer> renderer, vtkSmartPointer<DATA> gridfunc)
   {
-    CalcTransform();
+    RTCalcTransform();
 
     auto geometry=vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
     geometry->SetInputDataObject(gridfunc);

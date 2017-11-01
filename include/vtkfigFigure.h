@@ -108,6 +108,11 @@ namespace vtkfig
     /// Set figure title
     void SetTitle(std::string xtitle) { title=xtitle;}
 
+    /// Set view volume (e.g. to zoom in to a part)
+    void SetViewVolume(double xmin, double xmax, double ymin, double ymax, double zmin, double zmax)   { state.xmin=xmin; state.xmax=xmax; state.ymin=ymin; state.ymax=ymax; state.zmin=zmin; state.zmax=zmax; transform_dirty=true;}
+    
+    /// Set view volume to dataset bounds (to overview the full dataset)
+    void SetViewVolumeToDataSetBounds() { state.xmax=-1; state.xmin=1; transform_dirty=true;}
 
     /// Set Range of values
     void SetValueRange(double vmin, double vmax){state.vmin_set=vmin; state.vmax_set=vmax;}
@@ -190,7 +195,7 @@ namespace vtkfig
     
     /// Title+message text fields
     vtkSmartPointer<vtkCornerAnnotation> annot;
-    vtkSmartPointer<vtkTransform> transform;
+    vtkSmartPointer<vtkTransform> transform=0;
 
     /// Cutters for plane sections
     vtkSmartPointer<vtkCutter> planecutX;
@@ -229,14 +234,17 @@ namespace vtkfig
 
     /// Calculate transformation to unit cube
     /// This shall be applied to all data. Camera is fixed.
-    void CalcTransform();
+    void RTCalcTransform();
 
 
-    /// Data set visualized
+    /// Data set 
     vtkSmartPointer<vtkDataSet> data=NULL;
 
     /// Boundary dataset
     vtkSmartPointer<vtkDataSet> boundary_data=NULL;
+
+    /// coordinate scale
+    double coordinate_scale_factor;
 
     /// Name of data item in data set 
     std::string dataname;
@@ -326,11 +334,20 @@ namespace vtkfig
     void RTShowIsolevel();
     void RTUpdateIsoSurfaceFilter();
 
-    /// Process keyboard and mouse move events for quiver arrow editing
+    /// Process keyboard events for quiver arrow editing etc
     int RTProcessArrowKey(const std::string key, bool & edit);
+
+    /// Process mouse move events for quiver arrow editing etc
     int RTProcessArrowMove(int dx, int dy, bool & edit);
+
+    /// Show arrow scale informtion
     void RTShowArrowScale();
 
+    /// Show figure is active  [x] 
+    void RTShowActive();
+
+    /// Show figure is inactive  [ ] 
+    void RTShowInActive();
     
     /// Check if figure is empty (== no actors added)
     bool IsEmpty();
@@ -338,11 +355,10 @@ namespace vtkfig
     /// Get subclass name (for s-c communication, should be replaced by tag
     virtual std::string SubClassName() {return std::string("FigureBase");}
     
-    
     /// Update all actors belonging to figure
     void RTUpdateActors();
            
-    /// Obtain te data range from the relevant dataset.
+    /// Obtain the data range from the relevant dataset.
     void SetRange();
 
 
@@ -362,6 +378,17 @@ namespace vtkfig
       /// min/max calculated from data
       double data_vmin=0;
       double data_vmax=1;
+
+
+      /// View volume data 
+      double xmin=1.0;
+      double xmax=-1.0;
+      double ymin=1.0;
+      double ymax=-1.0;
+      double zmin=1.0;
+      double zmax=-1.0;
+
+      
       
       bool accumulate_range=false;
 
@@ -443,6 +470,8 @@ namespace vtkfig
 
       double stream_maximum_propagation=1;
 
+      int stream_maximum_number_of_steps=500;
+
       double stream_ribbonwidth=0.01;
 
       double stream_initial_integration_step=0.001;
@@ -477,6 +506,8 @@ namespace vtkfig
     std::vector<vtkSmartPointer<vtkContextActor>> ctxactors;
     std::vector<vtkSmartPointer<vtkActor>> actors;
     std::vector<vtkSmartPointer<vtkActor2D>> actors2d;
+
+    bool transform_dirty=true;
 
     /// default background color
     double bgcolor[3]={1,1,1};

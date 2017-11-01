@@ -2,7 +2,7 @@
 #define VTKFIG_QUIVER_H
 
 #include "vtkPolyData.h"
-#include "vtkFloatArray.h"
+#include "vtkDoubleArray.h"
 #include "vtkfigFigure.h"
 #include "vtkfigTools.h"
 
@@ -72,6 +72,9 @@ namespace vtkfig
 
       /// Set length of stream lines
       void SetStreamLineMaximumPropagation(double l){ state.stream_maximum_propagation=l;}
+
+      /// Set maximum number of steps
+      void SetStreamLineMaximumNumberOfSteps(int l){ state.stream_maximum_number_of_steps=l;}
 
       /// Set initial integration step for streamlines
       void SetStreamLineInitialIntegrationStep(double l){ state.stream_initial_integration_step=l;}
@@ -188,11 +191,13 @@ namespace vtkfig
     auto seedPoints =  vtkSmartPointer<vtkPoints>::New();
     if (state.spacedim==2)
       for (int i=0;i<p.size();i+=2)
-        seedPoints->InsertNextPoint (p[i+0],p[i+1],0);
+        seedPoints->InsertNextPoint (p[i+0]*coordinate_scale_factor,p[i+1]*coordinate_scale_factor,0);
     
     if (state.spacedim==3)
       for (int i=0;i<p.size();i+=3)
-        seedPoints->InsertNextPoint (p[i+0],p[i+1],p[i+2]);
+        seedPoints->InsertNextPoint (p[i+0]*coordinate_scale_factor,
+                                     p[i+1]*coordinate_scale_factor,
+                                     p[i+2]*coordinate_scale_factor);
     seedPolyData =vtkSmartPointer<vtkPolyData>::New();
     seedPolyData->SetPoints(seedPoints);
   };

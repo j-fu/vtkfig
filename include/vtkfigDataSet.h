@@ -8,7 +8,7 @@
 #include "vtkSmartPointer.h"
 #include "vtkUnstructuredGrid.h"
 #include "vtkRectilinearGrid.h"
-#include "vtkFloatArray.h"
+#include "vtkDoubleArray.h"
 #include "vtkPointData.h"
 #include "vtkCellData.h"
 #include "vtkCellType.h"
@@ -232,9 +232,17 @@ namespace vtkfig
     template <class V>
       void SetBoundaryCellScalar(const V&f, const std::string name);
 
+    ///
+    /// Set scale factor for coordinates. 
+    ///
+    /// This has to be set before the grid is added to the dataset.
+    /// Some vtk algorithms (notably vtkProbeFilter) struggle with small scale 
+    /// grids, and so one can try to increase the magnitude of coordinates.
+    ///
+    void SetCoordinateScaleFactor(double factor) { coordinate_scale_factor=factor;}
 
     ///
-   /// Write dataset to disk in VTK format
+    /// Write dataset to disk in VTK format
     ///
     /// \param fname File name
     void WriteVTK(std::string fname);
@@ -292,6 +300,7 @@ namespace vtkfig
     friend class Figure;
     vtkSmartPointer<vtkDataSet> data=NULL;
     vtkSmartPointer<vtkDataSet> boundary_data=NULL;
+    double coordinate_scale_factor=1.0;
     
     template<class DATA, class WRITER>
       void WriteVTK(vtkSmartPointer<DATA> data, std::string fname);
@@ -328,7 +337,7 @@ namespace vtkfig
       
       for (int ipoint=0;ipoint<points.size(); ipoint+=2)
       {
-        gridpoints->InsertNextPoint(points[ipoint+0],points[ipoint+1],0);
+        gridpoints->InsertNextPoint(points[ipoint+0]*coordinate_scale_factor,points[ipoint+1]*coordinate_scale_factor,0);
       }
     }
     else
@@ -341,7 +350,9 @@ namespace vtkfig
       
       for (int ipoint=0;ipoint<points.size(); ipoint+=3)
       {
-        gridpoints->InsertNextPoint(points[ipoint+0],points[ipoint+1],points[ipoint+2]);
+        gridpoints->InsertNextPoint(points[ipoint+0]*coordinate_scale_factor,
+                                    points[ipoint+1]*coordinate_scale_factor,
+                                    points[ipoint+2]*coordinate_scale_factor);
       }
     }    
   }
@@ -407,8 +418,8 @@ namespace vtkfig
     inline
     void DataSet::SetRectilinearGrid(const V &x, const V &y)
   {
-    vtkSmartPointer<vtkFloatArray> xcoord;
-    vtkSmartPointer<vtkFloatArray> ycoord;
+    vtkSmartPointer<vtkDoubleArray> xcoord;
+    vtkSmartPointer<vtkDoubleArray> ycoord;
     assert(spacedim!=3);
     spacedim=2;
     int Nx = x.size();
@@ -419,8 +430,8 @@ namespace vtkfig
       this->data=vtkSmartPointer<vtkRectilinearGrid>::New();
       auto rdata=vtkRectilinearGrid::SafeDownCast(this->data);
       assert(rdata);
-      xcoord = vtkSmartPointer<vtkFloatArray>::New();
-      ycoord = vtkSmartPointer<vtkFloatArray>::New();
+      xcoord = vtkSmartPointer<vtkDoubleArray>::New();
+      ycoord = vtkSmartPointer<vtkDoubleArray>::New();
       rdata->SetXCoordinates(xcoord);
       rdata->SetYCoordinates(ycoord);
       rdata->SetDimensions(Nx, Ny, 1);
@@ -429,8 +440,8 @@ namespace vtkfig
     {
       auto rdata=vtkRectilinearGrid::SafeDownCast(this->data);
       assert(rdata);
-      xcoord=vtkFloatArray::SafeDownCast(rdata->GetXCoordinates());
-      ycoord=vtkFloatArray::SafeDownCast(rdata->GetYCoordinates());
+      xcoord=vtkDoubleArray::SafeDownCast(rdata->GetXCoordinates());
+      ycoord=vtkDoubleArray::SafeDownCast(rdata->GetYCoordinates());
       xcoord->Initialize();
       ycoord->Initialize();
       rdata->SetDimensions(Nx, Ny, 1);
@@ -443,9 +454,9 @@ namespace vtkfig
     ycoord->SetNumberOfTuples(Ny);
     
     for (int i=0; i<Nx; i++)
-      xcoord->InsertComponent(i, 0, x[i]);
+      xcoord->InsertComponent(i, 0, x[i]*coordinate_scale_factor);
     for (int i=0; i<Ny; i++)
-      ycoord->InsertComponent(i, 0, y[i]);
+      ycoord->InsertComponent(i, 0, y[i]*coordinate_scale_factor);
     
     this->data->Modified();
   }
@@ -455,9 +466,9 @@ namespace vtkfig
     inline
     void DataSet::SetRectilinearGrid(const V &x, const V &y, const V &z)
   {
-    vtkSmartPointer<vtkFloatArray> xcoord;
-    vtkSmartPointer<vtkFloatArray> ycoord;
-    vtkSmartPointer<vtkFloatArray> zcoord;
+    vtkSmartPointer<vtkDoubleArray> xcoord;
+    vtkSmartPointer<vtkDoubleArray> ycoord;
+    vtkSmartPointer<vtkDoubleArray> zcoord;
     assert(spacedim!=2);
     spacedim=3;
     int Nx = x.size();
@@ -469,9 +480,9 @@ namespace vtkfig
       this->data=vtkSmartPointer<vtkRectilinearGrid>::New();
       auto rdata=vtkRectilinearGrid::SafeDownCast(this->data);
       assert(rdata);
-      xcoord = vtkSmartPointer<vtkFloatArray>::New();
-      ycoord = vtkSmartPointer<vtkFloatArray>::New();
-      zcoord = vtkSmartPointer<vtkFloatArray>::New();
+      xcoord = vtkSmartPointer<vtkDoubleArray>::New();
+      ycoord = vtkSmartPointer<vtkDoubleArray>::New();
+      zcoord = vtkSmartPointer<vtkDoubleArray>::New();
       rdata->SetXCoordinates(xcoord);
       rdata->SetYCoordinates(ycoord);
       rdata->SetZCoordinates(zcoord);
@@ -481,9 +492,9 @@ namespace vtkfig
     {
       auto rdata=vtkRectilinearGrid::SafeDownCast(this->data);
       assert(rdata);
-      xcoord=vtkFloatArray::SafeDownCast(rdata->GetXCoordinates());
-      ycoord=vtkFloatArray::SafeDownCast(rdata->GetYCoordinates());
-      zcoord=vtkFloatArray::SafeDownCast(rdata->GetZCoordinates());
+      xcoord=vtkDoubleArray::SafeDownCast(rdata->GetXCoordinates());
+      ycoord=vtkDoubleArray::SafeDownCast(rdata->GetYCoordinates());
+      zcoord=vtkDoubleArray::SafeDownCast(rdata->GetZCoordinates());
       xcoord->Initialize();
       ycoord->Initialize();
       zcoord->Initialize();
@@ -500,11 +511,11 @@ namespace vtkfig
     zcoord->SetNumberOfTuples(Nz);
     
     for (int i=0; i<Nx; i++)
-      xcoord->InsertComponent(i, 0, x[i]);
+      xcoord->InsertComponent(i, 0, x[i]*coordinate_scale_factor);
     for (int i=0; i<Ny; i++)
-      ycoord->InsertComponent(i, 0, y[i]);
+      ycoord->InsertComponent(i, 0, y[i]*coordinate_scale_factor);
     for (int i=0; i<Nz; i++)
-      zcoord->InsertComponent(i, 0, z[i]);
+      zcoord->InsertComponent(i, 0, z[i]*coordinate_scale_factor);
     
     this->data->Modified();
   }
@@ -533,13 +544,13 @@ namespace vtkfig
     assert(this->data!=NULL);
     auto ncells=this->data->GetNumberOfCells();
     assert(ncells==values.size());
-    vtkSmartPointer<vtkFloatArray>gridvalues;
+    vtkSmartPointer<vtkDoubleArray>gridvalues;
     
     if  (this->data->GetPointData()->HasArray(name.c_str()))
-      gridvalues=vtkFloatArray::SafeDownCast(this->data->GetPointData()->GetAbstractArray(name.c_str()));
+      gridvalues=vtkDoubleArray::SafeDownCast(this->data->GetPointData()->GetAbstractArray(name.c_str()));
     else
     {
-      gridvalues=vtkSmartPointer<vtkFloatArray>::New();
+      gridvalues=vtkSmartPointer<vtkDoubleArray>::New();
       gridvalues->SetNumberOfComponents(1);
       gridvalues->SetNumberOfTuples(ncells);
       gridvalues->SetName(name.c_str());
@@ -561,13 +572,13 @@ namespace vtkfig
     assert(this->boundary_data!=NULL);
     auto ncells=this->boundary_data->GetNumberOfCells();
     assert(ncells==values.size());
-    vtkSmartPointer<vtkFloatArray>gridvalues;
+    vtkSmartPointer<vtkDoubleArray>gridvalues;
     
     if  (this->boundary_data->GetPointData()->HasArray(name.c_str()))
-      gridvalues=vtkFloatArray::SafeDownCast(this->boundary_data->GetPointData()->GetAbstractArray(name.c_str()));
+      gridvalues=vtkDoubleArray::SafeDownCast(this->boundary_data->GetPointData()->GetAbstractArray(name.c_str()));
     else
     {
-      gridvalues=vtkSmartPointer<vtkFloatArray>::New();
+      gridvalues=vtkSmartPointer<vtkDoubleArray>::New();
       gridvalues->SetNumberOfComponents(1);
       gridvalues->SetNumberOfTuples(ncells);
       gridvalues->SetName(name.c_str());
@@ -588,7 +599,7 @@ namespace vtkfig
     void DataSet::SetCellMaskByRegionsOmitted(const  IV& regions_omitted, const std::string name)
   {
     auto celllist=vtkSmartPointer<vtkIdList>::New();
-    auto cellregions=vtkFloatArray::SafeDownCast(this->data->GetCellData()->GetAbstractArray("cellregions"));
+    auto cellregions=vtkDoubleArray::SafeDownCast(this->data->GetCellData()->GetAbstractArray("cellregions"));
     assert(cellregions);
     int ncells=this->data->GetNumberOfCells();
     int icelllist=0;
@@ -644,13 +655,13 @@ namespace vtkfig
     assert(this->data!=NULL);
     int npoints=this->data->GetNumberOfPoints();
     assert(npoints==values.size());
-    vtkSmartPointer<vtkFloatArray>gridvalues;
+    vtkSmartPointer<vtkDoubleArray>gridvalues;
     
     if  (this->data->GetPointData()->HasArray(name.c_str()))
-      gridvalues=vtkFloatArray::SafeDownCast(this->data->GetPointData()->GetAbstractArray(name.c_str()));
+      gridvalues=vtkDoubleArray::SafeDownCast(this->data->GetPointData()->GetAbstractArray(name.c_str()));
     else
     {
-      gridvalues=vtkSmartPointer<vtkFloatArray>::New();
+      gridvalues=vtkSmartPointer<vtkDoubleArray>::New();
       gridvalues->SetNumberOfComponents(1);
       gridvalues->SetNumberOfTuples(npoints);
       gridvalues->SetName(name.c_str());
@@ -671,13 +682,13 @@ namespace vtkfig
     int npoints=this->data->GetNumberOfPoints();
     assert(npoints==u.size());
     assert(npoints==v.size());
-    vtkSmartPointer<vtkFloatArray>gridvalues;
+    vtkSmartPointer<vtkDoubleArray>gridvalues;
     
     if  (this->data->GetPointData()->HasArray(name.c_str()))
-      gridvalues=vtkFloatArray::SafeDownCast(this->data->GetPointData()->GetAbstractArray(name.c_str()));
+      gridvalues=vtkDoubleArray::SafeDownCast(this->data->GetPointData()->GetAbstractArray(name.c_str()));
     else
     {
-      gridvalues=vtkSmartPointer<vtkFloatArray>::New();
+      gridvalues=vtkSmartPointer<vtkDoubleArray>::New();
       gridvalues->SetNumberOfComponents(3);
       gridvalues->SetNumberOfTuples(npoints);
       gridvalues->SetName(name.c_str());
@@ -703,13 +714,13 @@ namespace vtkfig
     assert(npoints==u.size());
     assert(npoints==v.size());
     assert(npoints==w.size());
-    vtkSmartPointer<vtkFloatArray>gridvalues;
+    vtkSmartPointer<vtkDoubleArray>gridvalues;
     
     if  (this->data->GetPointData()->HasArray(name.c_str()))
-      gridvalues=vtkFloatArray::SafeDownCast(this->data->GetPointData()->GetAbstractArray(name.c_str()));
+      gridvalues=vtkDoubleArray::SafeDownCast(this->data->GetPointData()->GetAbstractArray(name.c_str()));
     else
     {
-      gridvalues=vtkSmartPointer<vtkFloatArray>::New();
+      gridvalues=vtkSmartPointer<vtkDoubleArray>::New();
       gridvalues->SetNumberOfComponents(3);
       gridvalues->SetNumberOfTuples(npoints);
       gridvalues->SetName(name.c_str());

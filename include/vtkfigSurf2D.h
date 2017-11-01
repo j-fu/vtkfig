@@ -4,7 +4,7 @@
 #include "vtkRectilinearGrid.h"
 #include "vtkStructuredGrid.h"
 #include "vtkPointData.h"
-#include "vtkFloatArray.h"
+#include "vtkDoubleArray.h"
 #include "vtkWarpScalar.h"
 
 
@@ -74,7 +74,7 @@ namespace vtkfig
 
       vtkSmartPointer<vtkStructuredGrid> 	    gridfunc;
       vtkSmartPointer<vtkPoints> points;
-      vtkSmartPointer<vtkFloatArray> colors;
+      vtkSmartPointer<vtkDoubleArray> colors;
       vtkSmartPointer<vtkWarpScalar> warp;
       
 
@@ -138,7 +138,7 @@ namespace vtkfig
     }
     gridfunc->SetPoints(points);
     
-    colors = vtkSmartPointer<vtkFloatArray>::New();
+    colors = vtkSmartPointer<vtkDoubleArray>::New();
     colors->SetNumberOfComponents(1);
     colors->SetNumberOfTuples(Nx*Ny);
     k = 0;

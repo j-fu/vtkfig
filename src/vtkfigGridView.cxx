@@ -201,11 +201,11 @@ namespace vtkfig
   template <class DATA, class FILTER>
   void GridView::RTBuildVTKPipeline2D(vtkSmartPointer<DATA> gridfunc)
   {
-    CalcTransform();
+    RTCalcTransform();
 
     {
       double range[2];
-      auto cr=vtkFloatArray::SafeDownCast(gridfunc->GetCellData()->GetAbstractArray("cellregions"));
+      auto cr=vtkDoubleArray::SafeDownCast(gridfunc->GetCellData()->GetAbstractArray("cellregions"));
       
       auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
       if (cr)
@@ -273,7 +273,7 @@ namespace vtkfig
     if (boundary_data)
     {
       double brange[2];
-      auto bcr=vtkFloatArray::SafeDownCast(boundary_data->GetCellData()->GetAbstractArray("boundarycellregions"));
+      auto bcr=vtkDoubleArray::SafeDownCast(boundary_data->GetCellData()->GetAbstractArray("boundarycellregions"));
       if (bcr)
       {
         auto bscalar = vtkSmartPointer<vtkAssignAttribute>::New();
@@ -321,10 +321,10 @@ namespace vtkfig
   template <class DATA,class FILTER>
   void GridView::RTBuildVTKPipeline3D(vtkSmartPointer<DATA> gridfunc)
   {
-    CalcTransform();
+    RTCalcTransform();
     {
       double range[2];
-      auto cr=vtkFloatArray::SafeDownCast(gridfunc->GetCellData()->GetAbstractArray("cellregions"));
+      auto cr=vtkDoubleArray::SafeDownCast(gridfunc->GetCellData()->GetAbstractArray("cellregions"));
       auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
       if (cr)
       {
@@ -399,7 +399,7 @@ namespace vtkfig
     if (boundary_data)
     {
       double brange[2];
-      auto bcr=vtkFloatArray::SafeDownCast(boundary_data->GetCellData()->GetAbstractArray("boundarycellregions"));
+      auto bcr=vtkDoubleArray::SafeDownCast(boundary_data->GetCellData()->GetAbstractArray("boundarycellregions"));
       if (bcr)
       {
         auto bscalar = vtkSmartPointer<vtkAssignAttribute>::New();

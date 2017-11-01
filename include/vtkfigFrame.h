@@ -209,6 +209,9 @@ namespace vtkfig
     ///
     void Interact();
 
+    int GetStepNumber() { return step_number;}
+    void SetStepNumber(int n) { step_number=std::max(n,0);}
+
 
     ///
     ///  Help string printed when pressing "h"/"?"
@@ -218,10 +221,11 @@ R"(
 --------------------------------------
    Key    Realm    Action
 
-    Space Frame    Block/unblock calculation
+    Space Frame    Block/unblock calculation, increase step number
+BackSpace Frame    Block/unblock calculation, decrease step number
    Escape Figure   Finish plane/level editing
    Return Figure   Store edited plane/level value and create new one
-BackSpace Figure   Delete last plane/level value
+   Delete Figure   Delete last plane/level value
     Prior Frame    Show previous figure in single figure mode
     Next  Frame    Show next figure in single figure mode
         a Figure   Start arrow scale editing
@@ -260,6 +264,7 @@ Figures must be first clicked on before editing works.
     friend class internals::MyTimerCallback;
     friend class internals::Client;
 
+    int step_number=0;
 
     /// Number of this frame in global frame list
     int number_in_frame_list=-1;

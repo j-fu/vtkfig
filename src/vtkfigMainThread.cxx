@@ -209,6 +209,7 @@ namespace vtkfig
       SendCommand(-1, "Show", Communicator::Command::MainThreadShow);
 
       this->communication_blocked=true;
+
       do
       {
         std::this_thread::sleep_for (std::chrono::milliseconds(10));
@@ -300,6 +301,7 @@ namespace vtkfig
       virtual void OnLeftButtonDown()
       {
 
+
         /// If edit mode is active,
         /// catch mouse position, otherwisw pass to base class
         if (this->edit_mode)
@@ -315,6 +317,16 @@ namespace vtkfig
       /// Overwrite left button up
       virtual void OnLeftButtonUp()
       {
+        for (auto &figure: frame->figures)
+        {
+          
+          if (frame->subframes[figure->framepos].renderer==this->CurrentRenderer)
+            figure->RTShowActive();
+          else
+            figure->RTShowInActive();
+          frame->window->Render();
+        }
+
         /// If button was down, release, else pass to base class
         if (this->left_button_down)
           this->left_button_down=false;
@@ -485,7 +497,7 @@ namespace vtkfig
         }
 
         // These are interaction keys in edit mode
-        else if(key == "Return" || key=="BackSpace")
+        else if(key == "Return" || key=="Delete")
         {
           if (this->edit_mode)
           {
@@ -523,6 +535,21 @@ namespace vtkfig
         else if (key=="space")
         {
           frame->mainthread->communication_blocked=!frame->mainthread->communication_blocked;
+          if(frame->mainthread->communication_blocked)
+            frame->title_actor->SetText(6,"-|-");
+          else
+            frame->title_actor->SetText(6,"---");
+          frame->title_actor->Modified();
+          frame->window->Render();
+        }
+
+        // Block/unblock calculation
+        else if (key=="BackSpace")
+        {
+          frame->mainthread->communication_blocked=!frame->mainthread->communication_blocked;
+          if (!frame->mainthread->communication_blocked)
+            frame->step_number=std::max(frame->step_number-2,0);
+
         }
         
         else if (key=="asterisk")
@@ -637,8 +664,22 @@ namespace vtkfig
           {
             for (auto & framepair: mainthread->framemap)
               framepair.second->RTAddFigures();
+            
+
+
             for (auto & framepair: mainthread->framemap)
-              framepair.second->window->Render();
+            {
+              auto frame=framepair.second;
+              if(frame->mainthread->communication_blocked)
+                frame->title_actor->SetText(6,"-|-");
+              else
+                frame->title_actor->SetText(6,"---");
+              frame->title_actor->Modified();
+
+              // for (auto & figure: framepair.second->figures)
+              //   figure->RTUpdateActors();
+              frame->window->Render();
+            }
             //this->Interactor->Render();
           }
           break;
@@ -736,7 +777,7 @@ namespace vtkfig
             frame->RTInit();
             frame->title_actor->SetText(7,frame->parameter.frametitle.c_str());
             frame->title_actor->Modified();
-                                      
+            
           }
           break;
 
@@ -815,6 +856,7 @@ namespace vtkfig
 
       frame->RTInit();
       frame->title_subframe.renderer->AddActor(frame->title_actor);
+      frame->title_actor->SetText(6,"---");
       frame->title_actor->SetText(7,frame->parameter.frametitle.c_str());
 
     }

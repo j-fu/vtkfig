@@ -56,12 +56,12 @@ namespace vtkfig
   void ScalarView::RTBuildVTKPipeline2D(vtkSmartPointer<DATA> gridfunc)
   {
 
-    CalcTransform();
+    RTCalcTransform();
 
     /// should react on elevation view
     //renderer->GetActiveCamera()->SetParallelProjection(1);
 
-    auto values=vtkFloatArray::SafeDownCast(gridfunc->GetPointData()->GetAbstractArray(dataname.c_str()));
+    auto values=vtkDoubleArray::SafeDownCast(gridfunc->GetPointData()->GetAbstractArray(dataname.c_str()));
 
     vtkSmartPointer<vtkExtractCells> subgrid;
     if (celllist)
@@ -185,7 +185,7 @@ namespace vtkfig
   template <class DATA,class FILTER>
   void ScalarView::RTBuildVTKPipeline3D(vtkSmartPointer<DATA> gridfunc)
   {
-    CalcTransform();
+    RTCalcTransform();
 
 
 
