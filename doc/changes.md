@@ -4,6 +4,18 @@ Changes
 
 ## Changes 
 
+- v0.17
+
+  - better handling of small scales:
+     - introduced coordinate scale factor
+     - internal storage in float
+  - show blocked/nonblocked state, active figure
+  - fixed streamline API, defaults
+  - doxygen not anymore target in ALL
+  - Do not use VTK_USE_FILE+
+  - Added setting of camera and view volume to API
+  - Added rectangular grid data viewer vtkfig-view-xyzrect
+
 - v0.16
   - reworked XYPlot: added grid lines + better symbol handling, cleaned API
   - 3D grid view
