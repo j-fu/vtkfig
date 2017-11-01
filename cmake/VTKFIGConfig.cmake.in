@@ -16,7 +16,31 @@ set(CMAKE_CXX_STANDARD 11)
 #link_directories(@VTK_LIBRARY_DIRS@)
 
 find_package(VTK REQUIRED)
-include(${VTK_USE_FILE})
+
+# UseVTK already sets include_directories, but we have to 
+# have this under control in projects. So we include the contents
+# here and give the user the control about setting include_directories
+
+# BEGIN COPIED from UseVTK.cmake
+# Update CMAKE_MODULE_PATH so includes work.
+list(APPEND CMAKE_MODULE_PATH ${VTK_CMAKE_DIR})
+
+# Add compiler flags needed to use VTK.
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${VTK_REQUIRED_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VTK_REQUIRED_CXX_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VTK_REQUIRED_EXE_LINKER_FLAGS}")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${VTK_REQUIRED_SHARED_LINKER_FLAGS}")
+set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${VTK_REQUIRED_MODULE_LINKER_FLAGS}")
+
+# Add preprocessor definitions needed to use VTK.
+set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS ${VTK_DEFINITIONS})
+
+# Add include directories needed to use VTK.
+# include_directories(${VTK_INCLUDE_DIRS})
+
+# Add link directories needed to use VTK.
+link_directories(${VTK_LIBRARY_DIRS})
+# END COPIED from UseVTK.cmake
 
  
 # Our library dependencies (contains definitions for IMPORTED targets)
