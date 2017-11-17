@@ -16,6 +16,10 @@ set(CMAKE_CXX_STANDARD 11)
 #link_directories(@VTK_LIBRARY_DIRS@)
 
 find_package(VTK REQUIRED)
+#  We need this since the update to vtk 8 on OpenSUSE 42.2
+if(NOT (VTK_VERSION_MAJOR LESS 8))
+  find_package(Qt4 REQUIRED)
+endif()
 
 # UseVTK already sets include_directories, but we have to 
 # have this under control in projects. So we include the contents
@@ -50,6 +54,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/@VTKFIG_EXPORT_NAME@Targets.cmake")
 
 # Add preprocessor definitions needed to use VTK.
 #set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS "@VTK_DEFINITIONS@")
+
 
 
 

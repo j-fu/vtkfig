@@ -36,6 +36,12 @@ set(VTKFIG_EXPORT_NAME "VTKFIG${VTKFIG_CONFIG}")
  
 find_package(Threads REQUIRED)
 find_package(VTK REQUIRED)
+message(STATUS "VTK version: ${VTK_VERSION}")
+
+#  We need this since the update to vtk 8 on OpenSUSE 42.2
+if(NOT (VTK_VERSION_MAJOR LESS 8))
+  find_package(Qt4 REQUIRED)
+endif()
 
 # BEGIN COPIED from UseVTK.cmake
 # Update CMAKE_MODULE_PATH so includes work.
