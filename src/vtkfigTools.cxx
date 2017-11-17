@@ -19,6 +19,12 @@ namespace vtkfig
   }
 
 
+  // E.g. get such an array like this:
+  // probeFilter->Update();
+  // auto out =probeFilter->GetPolyDataOutput()->GetPointData()->GetVectors();
+  // PrintArray(out, cout);
+  
+
   void PrintArray(vtkSmartPointer<vtkDataArray> data, std::ostream & os)
   {
     auto nt=data->GetNumberOfTuples();

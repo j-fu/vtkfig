@@ -19,6 +19,7 @@
 
 
 #include "vtkfigVectorView.h"
+#include "vtkfigTools.h"
 
 
 namespace vtkfig
@@ -56,13 +57,13 @@ namespace vtkfig
     auto probePoints =  vtkSmartPointer<vtkPoints>::New();
     double dx=(bounds[1]-bounds[0])/((double)nx);
     double dy=(bounds[3]-bounds[2])/((double)ny);
-    
+
     double x=bounds[0]+0.5*dx;
     for (int ix=0; ix<nx;ix++,x+=dx )
     {
       double  y=bounds[2]+0.5*dy;
       for ( int iy=0;iy<ny;iy++,y+=dy )
-        probePoints->InsertNextPoint ( x, y, state.quiver_surface_distance);
+        probePoints->InsertNextPoint ( x, y, 0);
     }
 
     probePolyData =vtkSmartPointer<vtkPolyData>::New();
@@ -137,9 +138,8 @@ namespace vtkfig
       probeFilter->SetSourceConnection(vector->GetOutputPort());
       probeFilter->SetInputConnection(transprobe->GetOutputPort());
       probeFilter->PassPointArraysOn();
-      
-      
-      
+
+
       auto glyph = vtkSmartPointer<vtkGlyph3D>::New();
       glyph->SetInputConnection(probeFilter->GetOutputPort());
       glyph->SetColorModeToColorByVector();
@@ -157,11 +157,11 @@ namespace vtkfig
       }
       else
       {
-        glyph->SetSourceConnection(arrow3d->GetOutputPort());
         arrow3ds->SetTipResolution(16);
         arrow3ds->SetTipLength(0.3);
         arrow3ds->SetTipRadius(0.1);
         arrow3ds->SetShaftRadius(0.025);
+        glyph->SetSourceConnection(arrow3d->GetOutputPort());
       }
       // map gridfunction
       auto  mapper = vtkSmartPointer<vtkPolyDataMapper>::New();

@@ -698,7 +698,7 @@ namespace vtkfig
     for (int i=0;i<npoints; i++)
       gridvalues->InsertTuple3(i,u[i],v[i],0);
     
-
+    
     gridvalues->Modified();
   }    
   

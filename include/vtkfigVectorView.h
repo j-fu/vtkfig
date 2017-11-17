@@ -138,7 +138,7 @@ namespace vtkfig
     auto probePoints =  vtkSmartPointer<vtkPoints>::New();
     if (state.spacedim==2)
       for (int i=0;i<p.size();i+=2)
-        probePoints->InsertNextPoint (p[i+0],p[i+1],state.quiver_surface_distance);
+        probePoints->InsertNextPoint (p[i+0],p[i+1],0);
     
     if (state.spacedim==3)
       for (int i=0;i<p.size();i+=3)

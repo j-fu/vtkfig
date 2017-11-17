@@ -466,8 +466,6 @@ namespace vtkfig
 
       double quiver_arrowscale_geometry=0.1;
 
-      double quiver_surface_distance=1.0e-10;
-
       double stream_maximum_propagation=1;
 
       int stream_maximum_number_of_steps=500;
