@@ -3,6 +3,9 @@ Changes
 
 
 ## Changes 
+- v0.18
+  - Adaptations for vtk8. Supported vtk versions are now
+    6,7 and 8.
 
 - v0.17
 
