@@ -192,7 +192,7 @@ install(FILES
    DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
  
 # Install the export set for use with the install-tree
-install(EXPORT ${VTKFIG_EXPORT_NAME} DESTINATION  "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+install(EXPORT ${VTKFIG_EXPORT_NAME} DESTINATION  "${DEF_INSTALL_CMAKE_DIR}" COMPONENT dev)
 
 # .. and define an uninstall target.
 add_custom_target(uninstall cat ${PROJECT_BINARY_DIR}/install_manifest.txt | xargs rm -fv)
