@@ -712,7 +712,8 @@ namespace vtkfig
   void Figure::RTUpdateActors()
   {
     SetVMinMax();
-    RTCalcTransform();
+    if (SubClassName()!="XYPlot")
+      RTCalcTransform();
 
     for (auto actor: actors) {auto m=actor->GetMapper(); if (m) m->Update();}
     for (auto actor: ctxactors) {auto m=actor->GetScene(); if (m) m->SetDirty(true);}
