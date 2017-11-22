@@ -162,7 +162,7 @@ set(INSTALL_INCLUDE_DIR include CACHE PATH  "Installation directory for header f
 if(WIN32 AND NOT CYGWIN)
   set(DEF_INSTALL_CMAKE_DIR CMake)
 else()
-  set(DEF_INSTALL_CMAKE_DIR lib/CMake/vtkfig)
+  set(DEF_INSTALL_CMAKE_DIR lib/cmake/vtkfig)
 endif()
 set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH  "Installation directory for CMake files")
 
