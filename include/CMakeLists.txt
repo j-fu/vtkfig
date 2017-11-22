@@ -7,5 +7,6 @@ install(FILES
   vtkfigFrame.h
   vtkfigMainThread.h
   vtkfigTools.h
+  vtkfigDataSet.h
   vtkfigXYPlot.h
 DESTINATION include/vtkfig)
