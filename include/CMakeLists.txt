@@ -1,12 +1,13 @@
 
 install(FILES
-  vtkfigCommunicator.h
-  vtkfigScalarView.h
-  vtkfigVectorView.h
   vtkfigFigure.h
   vtkfigFrame.h
+  vtkfigDataSet.h
+  vtkfigCommunicator.h
   vtkfigMainThread.h
   vtkfigTools.h
-  vtkfigDataSet.h
+  vtkfigScalarView.h
+  vtkfigGridView.h
+  vtkfigVectorView.h
   vtkfigXYPlot.h
 DESTINATION include/vtkfig)
