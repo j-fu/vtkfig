@@ -201,3 +201,17 @@ install(EXPORT ${VTKFIG_EXPORT_NAME}
 
 # .. and define an uninstall target.
 add_custom_target(uninstall cat ${PROJECT_BINARY_DIR}/install_manifest.txt | xargs rm -fv)
+
+
+add_custom_target(update 
+    COMMAND hg pull
+    COMMAND hg update
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    COMMENT "Updating source files in repository"
+    VERBATIM )
+
+add_custom_target(revert
+    COMMAND hg revert --all
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    COMMENT "Revert all changes made to source tree"
+    VERBATIM )
