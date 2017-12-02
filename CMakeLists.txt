@@ -107,6 +107,31 @@ if (DOXYGEN_FOUND)
     VERBATIM )
 endif()
 
+
+
+# 
+# Archive
+# 
+set(ZIP_FILE_NAME_ROOT  "vtkfig-${VTKFIG_VERSION}")
+
+#
+# What is the easy way to do this with CPack proper ?
+#
+add_custom_target(zip hg archive  ${PROJECT_BINARY_DIR}/${ZIP_FILE_NAME_ROOT}.zip)
+
+
+#
+# Upload doc
+#
+set(MYWWW "/home/fuhrmann/Wias/www/fuhrmann")
+add_custom_target(upload 
+                 COMMAND rsync -avu html ${MYWWW}/staging/vtkfig
+                 COMMAND cp -rp ${PROJECT_BINARY_DIR}/${ZIP_FILE_NAME_ROOT}.zip ${MYWWW}/staging/vtkfig
+                 COMMAND make -C ${MYWWW}/sitesrc upload
+                 DEPENDS dox zip
+                 )
+
+
 #include_directories(${PROJECT_BINARY_DIR})
 
 ########################################################
