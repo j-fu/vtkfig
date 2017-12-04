@@ -245,7 +245,9 @@ namespace vtkfig
     /// Write dataset to disk in VTK format
     ///
     /// \param fname File name
-    void WriteVTK(std::string fname);
+    /// \param filetype  File type: "A" for ASCII, "B" for binary
+    ///
+    void WriteVTK(const std::string fname, const std::string filetype);
     
     /// 
     /// Request the space dimension of the dataset
@@ -303,7 +305,7 @@ namespace vtkfig
     double coordinate_scale_factor=1.0;
     
     template<class DATA, class WRITER>
-      void WriteVTK(vtkSmartPointer<DATA> data, std::string fname);
+      void WriteVTK(vtkSmartPointer<DATA> data, const std::string fname, const std::string filetype);
 
     std::map<std::string,vtkSmartPointer<vtkIdList>> masks;
 

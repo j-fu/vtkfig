@@ -20,10 +20,15 @@ namespace vtkfig
   
   
   template<class DATA, class WRITER>
-  void DataSet::WriteVTK(vtkSmartPointer<DATA> data, std::string fname)
+  void DataSet::WriteVTK(vtkSmartPointer<DATA> data, const std::string fname, const std::string filetype )
   {
     auto writer=vtkSmartPointer<WRITER>::New();
-    writer->SetFileTypeToBinary();
+    if (filetype=="A")
+      writer->SetFileTypeToASCII();
+    else if (filetype=="B")
+      writer->SetFileTypeToBinary();
+    else
+      throw std::runtime_error("WriteVTK: wrong file type, choose \"A\" for ascii, \"B\" for binary\n");
     writer->SetFileName(fname.c_str());
     writer->SetInputData(data);
     writer->Write();
@@ -31,12 +36,12 @@ namespace vtkfig
 
   
   
-  void  DataSet::WriteVTK(std::string fname)
+  void  DataSet::WriteVTK(std::string fname, const std::string filetype)
   {
     if (GetDataType()==DataType::UnstructuredGrid) 
-      WriteVTK<vtkUnstructuredGrid,vtkUnstructuredGridWriter>(vtkUnstructuredGrid::SafeDownCast(data),fname);
+      WriteVTK<vtkUnstructuredGrid,vtkUnstructuredGridWriter>(vtkUnstructuredGrid::SafeDownCast(data),fname, filetype);
     if (GetDataType()==DataType::RectilinearGrid) 
-      WriteVTK<vtkRectilinearGrid,vtkRectilinearGridWriter>(vtkRectilinearGrid::SafeDownCast(data),fname);
+      WriteVTK<vtkRectilinearGrid,vtkRectilinearGridWriter>(vtkRectilinearGrid::SafeDownCast(data),fname,filetype);
   }
 
   
