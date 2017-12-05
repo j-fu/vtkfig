@@ -32,10 +32,16 @@ namespace vtkfig
     void MainThread::DeleteMainThread()
     {
 
-      if (mainthread==0)
-        return;
-      delete mainthread;
-      mainthread=0;
+      if (mainthread==0)        return;
+      for (auto&  frame :mainthread->framemap)
+      {
+        for (auto & subframe: frame.second->subframes)
+          subframe.renderer->RemoveAllViewProps();
+        frame.second->window->Finalize();
+            
+      }
+      mainthread->framemap.clear();
+      mainthread->interactor->TerminateApp();
     }
 
 
@@ -152,7 +158,7 @@ namespace vtkfig
     {
       if (connection_open)
         CommunicatorThreadCallback(this);
-      else
+      else if (interactor)
         interactor->Start();
     }
   
@@ -375,10 +381,10 @@ namespace vtkfig
         // disable some standard vtk keys
         if(key== "f")  {}
 
-        // q -> abort
+        // q -> exit
         else if(key == "q")
         {
-          abort();
+          exit(0);
         }
 
         // Reset Camera
@@ -956,6 +962,14 @@ namespace vtkfig
           frame->nvpx=frame->parameter.nvpx;
           frame->nvpy=frame->parameter.nvpy;
         }
+        break;
+
+        case Communicator::Command::FrameActiveSubFrame:
+        {
+          auto frame=mainthread->framemap[mainthread->iframe];
+          mainthread->communicator->SendInt(frame->parameter.active_subframe);
+        }
+        break;
 
         case Communicator::Command::MainThreadRemoveFrame:
         {

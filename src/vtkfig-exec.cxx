@@ -3,6 +3,23 @@
 /// Client code for server-client interaction
 /// 
 
+#include <string>
+
+static const std::string  helpstring=R"(
+vtkfig-exec [-p portnumber] [-t timeout] [-via host] [-ssh] hostname command
+
+Run command on host and send all vtkfig rendering commands to local host.
+
+Parameters:
+   -p   portnumber  Port number on remote host for connection (default: 35000)
+   -t   timeout     Timeout for establishing connection in ms (default: 500)
+   -via vianame     Name of via host (for ssh tunneling)
+   -ssh             Connet via ssh 
+        hostname    Name of host to run command on (mandatory)
+        command     command to run (mandatory; all the remaining part of the command line): 
+   -h               This help.
+)";
+
 #include <thread>
 #include <cassert>
 #include <memory>
@@ -17,38 +34,6 @@
 #include "vtkfigXYPlot.h"
 #include "vtkfigMainThread.h"
 
-
-
-/*
-Idea: 
-Figure gets 2 new methods: ClientMTReceive and ServerRTSend
-
-Istead of RTBuildVTKPipeline, render thread calls RTSend.
-
-MTRecieve then is called on the client side in the main thread.
-
-
-
-vtkfig::InitServer()  starts server mode.
-Initially, restrict server mode to one frame.
-
-Alternatively, there is one client which can have multiple frames. 
-This is better to handle. MTSend then needs to communicate the frame number
-
-How do we communicate the client start ?
-vtkfig-hostfile
-
-host 1 port 1
-host 2 port 2
-
-
-Aim: 
-- server code should run robustly, whether the client is alive or not
-- client should be able to connect/disconnect at any time
-   -> So not only figures but also frames should be proxy objets on the server side
-
-- Problem: client code won't know derived types...
- */
 
 
 namespace vtkfig
@@ -67,7 +52,8 @@ namespace vtkfig
       std::string remotecmd;
       std::string hostname;
       int wtime=500;
-    
+
+      bool help_switch=false;
       bool have_hostname=false;
       bool use_ssh=false;
       int iarg=1;
@@ -117,6 +103,17 @@ namespace vtkfig
             iarg+=1; 
             continue;
           }
+
+          if ((
+                strcmp(argv[iarg],"-h")==0||
+                strcmp(argv[iarg],"--help")==0
+                )
+              && (iarg+1<argc)) 
+          {
+            iarg+=1; 
+            help_switch=true;
+            continue;
+          }
         
         
           /// first "non-switch" is hostname
@@ -137,10 +134,16 @@ namespace vtkfig
             remotecmd.append(argv[iarg]);
             remotecmd.append(" ");
             iarg++;
+            std::cout << helpstring;
           }
         }
 
-      
+        if (help_switch || !remoteswitch)
+        {
+          std::cout << helpstring;
+          exit(1);
+        }
+        
         if (remoteswitch)
         {
           std::string systemcmd;
@@ -366,6 +369,14 @@ namespace vtkfig
           }
           break;
         
+          case Communicator::Command::FrameActiveSubFrame:
+          {
+            int ipos;
+            communicator->ReceiveInt(ipos);
+            frame->SetActiveSubFrame(ipos);
+          }
+          break;
+
           case Communicator::Command::FrameSize:
           {
             int x,y;

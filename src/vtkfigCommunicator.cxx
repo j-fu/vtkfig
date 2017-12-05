@@ -75,7 +75,8 @@ namespace vtkfig
     int Communicator::SendCommand(Command  cmd, int tag)
     {
       int icmd=static_cast<int>(cmd);
-      return Send(&icmd,1,remoteHandle,tag);
+      int rc=0;
+      Send(&icmd,1,remoteHandle,tag);
     }
   
     int Communicator::ReceiveCommand(Command & cmd, int tag)
