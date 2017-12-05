@@ -134,7 +134,6 @@ namespace vtkfig
             remotecmd.append(argv[iarg]);
             remotecmd.append(" ");
             iarg++;
-            std::cout << helpstring;
           }
         }
 
