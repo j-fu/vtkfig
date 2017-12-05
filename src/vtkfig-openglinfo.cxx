@@ -18,13 +18,12 @@ int main()
   auto interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
   interactor->SetRenderWindow(window);
   interactor->Initialize();
-
   int vmaj, vmin;
 #ifdef VTK_USE_OPENGL_LIBRARY
   auto oglwin=vtkOpenGLRenderWindow::SafeDownCast(window);
   cout << "OpenGL supported: "<<  oglwin->SupportsOpenGL()  << endl;
 
-#if VTK_MAJOR_VERSION>6 
+#if VTK_MAJOR_VERSION>6 && (VTK_MAJOR_VERSION!=7 || VTK_MINOR_VERSION!=0)
 
   cout << "         Backend: " << oglwin->GetRenderingBackend() << endl;
   oglwin->GetOpenGLVersion(vmaj, vmin);
