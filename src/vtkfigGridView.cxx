@@ -247,17 +247,33 @@ namespace vtkfig
         cellplot->GetProperty()->SetColor(0.9,0.9,0.9);
       Figure::RTAddActor(cellplot);
       
-      auto edges= vtkSmartPointer<vtkExtractEdges>::New();
-      edges->SetInputConnection(transgeometry->GetOutputPort());
-      auto  emapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      emapper->SetInputConnection(edges->GetOutputPort());
-      emapper->ScalarVisibilityOff();
+
       
-      edgeplot = vtkSmartPointer<vtkActor>::New();
-      edgeplot->GetProperty()->SetColor(0,0,0);
-      edgeplot->SetMapper(emapper);
-      Figure::RTAddActor(edgeplot);
+
+      // Extract edges is slow for large datasets so it is better to
+      // plot cells twice: once with, once without wireframe.
+
+      // auto edges= vtkSmartPointer<vtkExtractEdges>::New();
+      // edges->SetInputConnection(transgeometry->GetOutputPort());
+      // auto  emapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+      // emapper->SetInputConnection(edges->GetOutputPort());
+      // emapper->ScalarVisibilityOff();
       
+      // edgeplot = vtkSmartPointer<vtkActor>::New();
+      // edgeplot->GetProperty()->SetColor(0,0,0);
+      // edgeplot->SetMapper(emapper);
+      // Figure::RTAddActor(edgeplot);
+      
+
+      auto  celledges = vtkSmartPointer<vtkPolyDataMapper>::New();
+      celledges->SetInputConnection(transgeometry->GetOutputPort());
+      celledges->ScalarVisibilityOff();
+      celledges->ImmediateModeRenderingOn();
+      auto celledgeplot = vtkSmartPointer<vtkActor>::New();
+      celledgeplot->SetMapper(celledges);
+      celledgeplot->GetProperty()->SetColor(0,0,0);
+      celledgeplot->GetProperty()->SetRepresentationToWireframe();
+      Figure::RTAddActor(celledgeplot);
       
       
       if (cr && state.show_grid_colorbar)
@@ -376,17 +392,29 @@ namespace vtkfig
       Figure::RTAddActor(cellplot);
       
       
+      // Extract edges is slow, plot cell polydata with wireframe instead
+      // auto edges= vtkSmartPointer<vtkExtractEdges>::New();
+      // edges->SetInputConnection(cutgeometry->GetOutputPort());
+      // auto  emapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+      // emapper->SetInputConnection(edges->GetOutputPort());
+      // emapper->ScalarVisibilityOff();
+      // edgeplot = vtkSmartPointer<vtkActor>::New();
+      // edgeplot->GetProperty()->SetColor(0,0,0);
+      // edgeplot->SetMapper(emapper);
+      // Figure::RTAddActor(edgeplot);
       
-      auto edges= vtkSmartPointer<vtkExtractEdges>::New();
-      edges->SetInputConnection(cutgeometry->GetOutputPort());
-      auto  emapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      emapper->SetInputConnection(edges->GetOutputPort());
-      emapper->ScalarVisibilityOff();
-      edgeplot = vtkSmartPointer<vtkActor>::New();
-      edgeplot->GetProperty()->SetColor(0,0,0);
-      edgeplot->SetMapper(emapper);
-      Figure::RTAddActor(edgeplot);
-      
+
+      auto  celledges = vtkSmartPointer<vtkPolyDataMapper>::New();
+      celledges->SetInputConnection(cutpolydata->GetOutputPort());
+      celledges->ScalarVisibilityOff();
+      celledges->ImmediateModeRenderingOn();
+      auto celledgeplot = vtkSmartPointer<vtkActor>::New();
+      celledgeplot->SetMapper(celledges);
+      celledgeplot->GetProperty()->SetColor(0,0,0);
+      celledgeplot->GetProperty()->SetRepresentationToWireframe();
+      Figure::RTAddActor(celledgeplot);
+
+
       if ( cr)
       {
         cbar=BuildColorBar(cells);
