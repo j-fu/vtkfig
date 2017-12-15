@@ -29,11 +29,7 @@ add_vtkfig_example(example-multiframe)
 add_vtkfig_example(example-comm-client-server-vtk)
 add_vtkfig_example(example-comm-client-server-vtkfig)
 
-
-
-#add_vtkfig_example(devel/example-chartxy)
-#add_vtkfig_example(devel/example-surf2d)
-#add_vtkfig_example(devel/example-axis)
-#add_vtkfig_example(devel/example-draw)
-
+if(VTKFIG_DEVEL)
+  add_subdirectory(devel)
+endif()
 

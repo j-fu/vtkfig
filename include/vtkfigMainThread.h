@@ -122,7 +122,7 @@ namespace vtkfig
 
 
       /// Communication command
-      Communicator::Command cmd; 
+      Communicator::Command cmd=Communicator::Command::Empty; 
 
 
       /// Frame number as parameter during communication

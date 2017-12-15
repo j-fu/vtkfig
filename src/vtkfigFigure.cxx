@@ -162,7 +162,7 @@ namespace vtkfig
   void Figure::RTAddActor(vtkSmartPointer<vtkActor> prop) {actors.push_back(prop);}
   void Figure::RTAddActor2D(vtkSmartPointer<vtkActor2D> prop) {actors2d.push_back(prop);}
   void Figure::RTAddContextActor(vtkSmartPointer<vtkContextActor> prop) {ctxactors.push_back(prop);}
-  bool Figure::IsEmpty(void) {return (actors.size()==0 && actors2d.size()==0&& ctxactors.size()==0);}
+  bool Figure::IsEmpty(void) {return (actors.size()==0 && actors2d.size()==0 && ctxactors.size()==0);}
   
 
 
@@ -522,10 +522,14 @@ namespace vtkfig
       data_center[1]=0.5*(data_bounds[2]+data_bounds[3]);
       data_center[2]=0.5*(data_bounds[4]+data_bounds[5]);
     }
-    else
+    else if (data)
     {
       data->GetBounds(data_bounds);
       data->GetCenter(data_center);
+    }
+    else
+    {
+      throw std::runtime_error("Specify either view volume or dataset for figure\n");
     }
     if (!transform)
       transform =  vtkSmartPointer<vtkTransform>::New();

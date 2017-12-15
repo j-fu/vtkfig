@@ -15,7 +15,7 @@ set(VTKFIG_PATCH_VERSION 20171203)
 set(VTKFIG_VERSION    ${VTKFIG_MAJOR_VERSION}.${VTKFIG_MINOR_VERSION}.${VTKFIG_PATCH_VERSION})
 
 # Allow to specify -DVTKFIG_CONFIG=xxx  at cmake time on the 
-# command line of cmke.
+# command line of cmake.
 SET(VTKFIG_CONFIG "" CACHE STRING "VTKFIG  Config name")
 
 # Define an export name. It seems to be a good idea 
@@ -27,6 +27,7 @@ SET(VTKFIG_CONFIG "" CACHE STRING "VTKFIG  Config name")
 
 set(VTKFIG_EXPORT_NAME "VTKFIG${VTKFIG_CONFIG}")
 
+SET(VTKFIG_DEVEL False CACHE BOOLEAN "VTKFIG  Devlopment configuration")
 
 
 

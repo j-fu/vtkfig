@@ -70,7 +70,7 @@ vtkfigFrame and vtkfigFigure base class.
   double i0=ii;
 
   auto figure=vtkfig::Figure::New();
-
+  figure->SetViewVolume(0,1,0,1,0,1);
   int i,j,k;
   
   

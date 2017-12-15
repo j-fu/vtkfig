@@ -399,7 +399,7 @@ namespace vtkfig
           
           for (auto & actor: figure->ctxactors) 
             renderer->AddActor(actor);
-          
+
           for (auto & actor: figure->actors2d) 
             renderer->AddActor(actor);
           
@@ -416,6 +416,13 @@ namespace vtkfig
     }
   }
 
+
+
+  vtkSmartPointer<vtkRenderer> Frame::GetRenderer(Figure & fig)
+    {
+      
+     return this->subframes[fig.framepos].renderer;
+    }
 
 
 }

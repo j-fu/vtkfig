@@ -213,6 +213,9 @@ namespace vtkfig
     void SetStepNumber(int n) { step_number=std::max(n,0);}
 
 
+    vtkSmartPointer<vtkRenderer> GetRenderer(Figure & fig);
+
+
     ///
     ///  Help string printed when pressing "h"/"?"
     ///
