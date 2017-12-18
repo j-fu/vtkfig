@@ -3,6 +3,13 @@ Changes
 
 
 ## Changes 
+- v0.19
+  - use wireframe instead of vtkExtractEdges for grid view (much faster)
+  - VTKFIG_DEVEL cache variabe to enable developing examples
+  - fixed server-client examples
+  - make install now fully functional
+  - install(EXPORT) with relative directory
+  
 - v0.18
   - Adaptations for vtk8. Supported vtk versions are now
     6,7 and 8.
