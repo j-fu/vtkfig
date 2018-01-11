@@ -20,6 +20,8 @@
 #include "vtkArrowSource.h"
 #include "vtkIdList.h"
 #include "vtkCubeAxesActor2D.h"
+#include "vtkTrivialProducer.h"
+
 
 #include "vtkfigCommunicator.h"
 #include "vtkfigTools.h"
@@ -237,11 +239,11 @@ namespace vtkfig
     void RTCalcTransform();
 
 
-    /// Data set 
-    vtkSmartPointer<vtkDataSet> data=NULL;
+    /// Data producer for grid dataset
+    vtkSmartPointer<vtkTrivialProducer> data_producer=NULL;
 
-    /// Boundary dataset
-    vtkSmartPointer<vtkDataSet> boundary_data=NULL;
+    /// Data producer for boundary grid dataset
+    vtkSmartPointer<vtkTrivialProducer> boundary_data_producer=NULL;
 
     /// coordinate scale
     double coordinate_scale_factor;
@@ -295,7 +297,7 @@ namespace vtkfig
     /// Duck typing interface allowing to handle different VTK datatypes
     /// with the same code
     template <class DATA>
-      void RTBuildDomainPipeline(vtkSmartPointer<vtkRenderer> renderer,vtkSmartPointer<DATA> gridfunc);
+      void RTBuildDomainPipeline0(vtkSmartPointer<vtkRenderer> renderer);
 
     /// Default implementation for 2D/3d datasets. 
     virtual void RTBuildAllVTKPipelines(vtkSmartPointer<vtkRenderer> renderer) 

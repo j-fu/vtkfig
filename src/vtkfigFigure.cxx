@@ -24,6 +24,9 @@ namespace vtkfig
   {
 
 
+    data_producer=vtkSmartPointer<vtkTrivialProducer>::New();
+    boundary_data_producer=vtkSmartPointer<vtkTrivialProducer>::New();
+
     surface_lut=BuildLookupTable(surface_rgbtab,state.surface_rgbtab_size);
     //contour_lut=BuildLookupTable(contour_rgbtab,state.contour_rgbtab_size);
     elevation_lut=BuildLookupTable(elevation_rgbtab,state.elevation_rgbtab_size);
@@ -85,6 +88,7 @@ namespace vtkfig
     if (SubClassName()=="FigureBase") return;
     if (SubClassName()=="Surf2D") return;
 
+    auto data=vtkDataSet::SafeDownCast(data_producer->GetOutputDataObject(0));
 
     auto values=vtkDoubleArray::SafeDownCast(data->GetPointData()->GetAbstractArray(dataname.c_str()));
 
@@ -107,8 +111,11 @@ namespace vtkfig
 
     this->state.spacedim=vtkfig_data.GetSpaceDimension();
 
-    this->data=vtkfig_data.GetVTKDataSet();
-    this->boundary_data=vtkfig_data.GetVTKBoundaryDataSet();
+    this->data_producer->SetOutput(vtkfig_data.GetVTKDataSet());
+    this->data_producer->Modified();
+    this->boundary_data_producer->SetOutput(vtkfig_data.GetVTKBoundaryDataSet());
+
+    this->boundary_data_producer->Modified();
     this->coordinate_scale_factor=vtkfig_data.coordinate_scale_factor;
 
     state.datatype=vtkfig_data.GetDataType();
@@ -507,6 +514,7 @@ namespace vtkfig
   void Figure::RTCalcTransform()
   {
     if (!transform_dirty) return;
+    auto data=vtkDataSet::SafeDownCast(data_producer->GetOutputDataObject(0));
 
     if (  state.xmin<state.xmax 
           &&state.ymin<state.ymax
@@ -727,7 +735,8 @@ namespace vtkfig
 
   void Figure::ServerRTSendData(vtkSmartPointer<internals::Communicator> communicator) 
   {
-    
+    auto data=vtkDataSet::SafeDownCast(data_producer->GetOutputDataObject(0));
+
     if (SubClassName()!="XYPlot")
     {
       communicator->SendCharBuffer((char*)&state,sizeof(state));
@@ -739,20 +748,21 @@ namespace vtkfig
 
   void Figure::ClientMTReceiveData(vtkSmartPointer<internals::Communicator> communicator)
   {
+    //auto data=vtkDataSet::SafeDownCast(data_producer->GetOutputDataObject(0));
+    
     if (SubClassName()!="XYPlot")
     {
 
       communicator->ReceiveCharBuffer((char*)&state,sizeof(state));
       communicator->ReceiveString(dataname);
 
-      if (data==NULL)
-      {
-        if (state.datatype==DataSet::DataType::RectilinearGrid)
-          data=vtkSmartPointer<vtkRectilinearGrid>::New();
-        else if (state.datatype==DataSet::DataType::UnstructuredGrid)
-          data=vtkSmartPointer<vtkUnstructuredGrid>::New();
-      }
+      vtkSmartPointer<vtkDataSet> data;
+      if (state.datatype==DataSet::DataType::RectilinearGrid)
+        data=vtkSmartPointer<vtkRectilinearGrid>::New();
+      else if (state.datatype==DataSet::DataType::UnstructuredGrid)
+        data=vtkSmartPointer<vtkUnstructuredGrid>::New();
       communicator->Receive(data,1,1);
+      data_producer->SetOutput(data);
     }
     ClientMTReceive(communicator);
   }
@@ -762,12 +772,12 @@ namespace vtkfig
 
   /// \todo add filter to extract boundary edges
   template <class DATA>
-  void Figure::RTBuildDomainPipeline(vtkSmartPointer<vtkRenderer> renderer, vtkSmartPointer<DATA> gridfunc)
+  void Figure::RTBuildDomainPipeline0(vtkSmartPointer<vtkRenderer> renderer)
   {
     RTCalcTransform();
 
     auto geometry=vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
-    geometry->SetInputDataObject(gridfunc);
+    geometry->SetInputConnection(data_producer->GetOutputPort());
     
     auto transgeometry=vtkSmartPointer<vtkTransformFilter>::New();
     transgeometry->SetInputConnection(geometry->GetOutputPort());
@@ -862,13 +872,13 @@ namespace vtkfig
 
     if (state.datatype==DataSet::DataType::UnstructuredGrid)
     {
-      auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
-      this->RTBuildDomainPipeline<vtkUnstructuredGrid>(renderer,griddata); 
+//      auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
+      this->RTBuildDomainPipeline0<vtkUnstructuredGrid>(renderer); 
     }
     else if (state.datatype==DataSet::DataType::RectilinearGrid)
     {
-      auto griddata=vtkRectilinearGrid::SafeDownCast(data);
-      this->RTBuildDomainPipeline<vtkRectilinearGrid>(renderer,griddata);
+//      auto griddata=vtkRectilinearGrid::SafeDownCast(data);
+      this->RTBuildDomainPipeline0<vtkRectilinearGrid>(renderer);
     }
   }
   

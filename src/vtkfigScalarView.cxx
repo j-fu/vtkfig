@@ -53,7 +53,7 @@ namespace vtkfig
   /// 2D Filter
 
   template <class DATA, class FILTER>
-  void ScalarView::RTBuildVTKPipeline2D(vtkSmartPointer<DATA> gridfunc)
+  void ScalarView::RTBuildVTKPipeline2D()
   {
 
     RTCalcTransform();
@@ -61,13 +61,13 @@ namespace vtkfig
     /// should react on elevation view
     //renderer->GetActiveCamera()->SetParallelProjection(1);
 
-    auto values=vtkDoubleArray::SafeDownCast(gridfunc->GetPointData()->GetAbstractArray(dataname.c_str()));
+    auto values=vtkDoubleArray::SafeDownCast(DATA::SafeDownCast(data_producer->GetOutputDataObject(0))->GetPointData()->GetAbstractArray(dataname.c_str()));
 
     vtkSmartPointer<vtkExtractCells> subgrid;
     if (celllist)
     {
       subgrid=vtkSmartPointer<vtkExtractCells>::New();
-      subgrid->SetInputDataObject(gridfunc);
+      subgrid->SetInputConnection(data_producer->GetOutputPort());
       subgrid->SetCellList(celllist);
     }
 
@@ -77,7 +77,7 @@ namespace vtkfig
     if (celllist)
       scalar->SetInputConnection(subgrid->GetOutputPort());
     else
-      scalar->SetInputDataObject(gridfunc);
+      scalar->SetInputConnection(data_producer->GetOutputPort());
 
     auto geometry=vtkSmartPointer<FILTER>::New();
     geometry->SetInputConnection(scalar->GetOutputPort());
@@ -95,7 +95,7 @@ namespace vtkfig
     if (celllist)
     {
       auto allgeometry=vtkSmartPointer<FILTER>::New();
-      allgeometry->SetInputDataObject(gridfunc);
+      allgeometry->SetInputConnection(data_producer->GetOutputPort());
 
       transallgeometry=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
       transallgeometry->SetTransform(transform);
@@ -183,7 +183,7 @@ namespace vtkfig
   /// 3D Filter
 
   template <class DATA,class FILTER>
-  void ScalarView::RTBuildVTKPipeline3D(vtkSmartPointer<DATA> gridfunc)
+  void ScalarView::RTBuildVTKPipeline3D()
   {
     RTCalcTransform();
 
@@ -193,7 +193,7 @@ namespace vtkfig
     if (celllist)
     {
       subgrid=vtkSmartPointer<vtkExtractCells>::New();
-      subgrid->SetInputDataObject(gridfunc);
+      subgrid->SetInputConnection(data_producer->GetOutputPort());
       subgrid->SetCellList(celllist);
     }
 
@@ -204,7 +204,7 @@ namespace vtkfig
     if (celllist)
       scalar->SetInputConnection(subgrid->GetOutputPort());
     else
-      scalar->SetInputDataObject(gridfunc);
+      scalar->SetInputConnection(data_producer->GetOutputPort());
     
 
 
@@ -217,7 +217,7 @@ namespace vtkfig
     if (celllist)
     {
       auto allgeometry=vtkSmartPointer<FILTER>::New();
-      allgeometry->SetInputDataObject(gridfunc);
+      allgeometry->SetInputConnection(data_producer->GetOutputPort());
 
       transallgeometry=vtkSmartPointer<vtkTransformFilter>::New();
       transallgeometry->SetTransform(transform);
@@ -351,22 +351,17 @@ namespace vtkfig
 
     if (state.datatype==DataSet::DataType::UnstructuredGrid)
     {
-      auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
-      
       if (state.spacedim==2)
-        this->RTBuildVTKPipeline2D<vtkUnstructuredGrid,vtkGeometryFilter>(griddata);
+        this->RTBuildVTKPipeline2D<vtkUnstructuredGrid,vtkGeometryFilter>();
       else
-        this->RTBuildVTKPipeline3D<vtkUnstructuredGrid,vtkGeometryFilter>(griddata); 
+        this->RTBuildVTKPipeline3D<vtkUnstructuredGrid,vtkGeometryFilter>(); 
     }
     else if (state.datatype==DataSet::DataType::RectilinearGrid)
     {
-      auto griddata=vtkRectilinearGrid::SafeDownCast(data);
-      
-      
       if (state.spacedim==2)
-        this->RTBuildVTKPipeline2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(griddata);
+        this->RTBuildVTKPipeline2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>();
       else
-        this->RTBuildVTKPipeline3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(griddata);
+        this->RTBuildVTKPipeline3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>();
     }
   }
   

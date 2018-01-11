@@ -199,19 +199,18 @@ namespace vtkfig
   /// 2D Filter
 
   template <class DATA, class FILTER>
-  void GridView::RTBuildVTKPipeline2D(vtkSmartPointer<DATA> gridfunc)
+  void GridView::RTBuildVTKPipeline2D()
   {
     RTCalcTransform();
-
     {
       double range[2];
-      auto cr=vtkDoubleArray::SafeDownCast(gridfunc->GetCellData()->GetAbstractArray("cellregions"));
+      auto cr=vtkDoubleArray::SafeDownCast(DATA::SafeDownCast(data_producer->GetOutputDataObject(0))->GetCellData()->GetAbstractArray("cellregions"));
       
       auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
       if (cr)
       {
         scalar->Assign("cellregions",vtkDataSetAttributes::SCALARS,vtkAssignAttribute::CELL_DATA);
-        scalar->SetInputDataObject(gridfunc);
+        scalar->SetInputConnection(data_producer->GetOutputPort());
         cr->GetRange(range);
         
         cell_lut->SetTableRange(range[0],range[1]);
@@ -222,7 +221,7 @@ namespace vtkfig
       if (cr)
         geometry->SetInputConnection(scalar->GetOutputPort());
       else
-        geometry->SetInputDataObject(gridfunc);
+        geometry->SetInputConnection(data_producer->GetOutputPort());
       
       
       
@@ -285,7 +284,9 @@ namespace vtkfig
         Figure::RTAddActor2D(cbar);
       }
     }
+
     
+    auto boundary_data=vtkDataSet::SafeDownCast(boundary_data_producer->GetOutputDataObject(0));
     if (boundary_data)
     {
       double brange[2];
@@ -294,7 +295,7 @@ namespace vtkfig
       {
         auto bscalar = vtkSmartPointer<vtkAssignAttribute>::New();
         bscalar->Assign("boundarycellregions",vtkDataSetAttributes::SCALARS,vtkAssignAttribute::CELL_DATA);
-        bscalar->SetInputDataObject(boundary_data);
+        bscalar->SetInputConnection(boundary_data_producer->GetOutputPort());
         bcr->GetRange(brange);
         
         bface_lut->SetTableRange(brange[0],brange[1]);
@@ -335,17 +336,18 @@ namespace vtkfig
   /// 3D Filter
 
   template <class DATA,class FILTER>
-  void GridView::RTBuildVTKPipeline3D(vtkSmartPointer<DATA> gridfunc)
+  void GridView::RTBuildVTKPipeline3D()
   {
     RTCalcTransform();
     {
       double range[2];
-      auto cr=vtkDoubleArray::SafeDownCast(gridfunc->GetCellData()->GetAbstractArray("cellregions"));
+      auto cr=vtkDoubleArray::SafeDownCast(DATA::SafeDownCast(data_producer->GetOutputDataObject(0))->GetCellData()->GetAbstractArray("cellregions"));
+
       auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
       if (cr)
       {
         scalar->Assign("cellregions",vtkDataSetAttributes::SCALARS,vtkAssignAttribute::CELL_DATA);
-        scalar->SetInputDataObject(gridfunc);
+        scalar->SetInputConnection(data_producer->GetOutputPort());
         cr->GetRange(range);
         
         cell_lut->SetTableRange(range[0],range[1]);
@@ -364,7 +366,7 @@ namespace vtkfig
       if (cr)
         transgeometry->SetInputConnection(scalar->GetOutputPort());
       else
-        transgeometry->SetInputDataObject(gridfunc);
+        transgeometry->SetInputConnection(data_producer->GetOutputPort());
       
       
       
@@ -424,10 +426,13 @@ namespace vtkfig
         Figure::RTAddActor2D(cbar);
       }
     }
+
+    auto boundary_data=vtkDataSet::SafeDownCast(boundary_data_producer->GetOutputDataObject(0));
     if (boundary_data)
     {
       double brange[2];
       auto bcr=vtkDoubleArray::SafeDownCast(boundary_data->GetCellData()->GetAbstractArray("boundarycellregions"));
+
       if (bcr)
       {
         auto bscalar = vtkSmartPointer<vtkAssignAttribute>::New();
@@ -489,32 +494,21 @@ namespace vtkfig
   /// Generic access to filter
   void  GridView::RTBuildVTKPipeline()
   {
-
-
-    auto udata=vtkUnstructuredGrid::SafeDownCast(data);
-    if (udata)
+    if (state.datatype==DataSet::DataType::UnstructuredGrid)
     {
-      
       if (state.spacedim==2)
-        this->RTBuildVTKPipeline2D<vtkUnstructuredGrid,vtkGeometryFilter>(udata);
+        this->RTBuildVTKPipeline2D<vtkUnstructuredGrid,vtkGeometryFilter>();
       else
-        this->RTBuildVTKPipeline3D<vtkUnstructuredGrid,vtkGeometryFilter>(udata); 
+        this->RTBuildVTKPipeline3D<vtkUnstructuredGrid,vtkGeometryFilter>(); 
       return;
     }
-
-    auto rdata=vtkRectilinearGrid::SafeDownCast(data);
-    if (rdata)
+    else if (state.datatype==DataSet::DataType::RectilinearGrid)
     {
       if (state.spacedim==2)
-        this->RTBuildVTKPipeline2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(rdata);
+        this->RTBuildVTKPipeline2D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>();
       else
-        this->RTBuildVTKPipeline3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>(rdata);
+        this->RTBuildVTKPipeline3D<vtkRectilinearGrid,vtkRectilinearGridGeometryFilter>();
       return;
     }
   }
-  
-  
-
-
-  
 }

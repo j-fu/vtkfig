@@ -52,6 +52,8 @@ namespace vtkfig
     assert(data);
     assert(state.spacedim==2);
     double bounds[6];
+    auto data=vtkDataSet::SafeDownCast(data_producer->GetOutputDataObject(0));
+
     data->GetBounds(bounds);
     
     auto probePoints =  vtkSmartPointer<vtkPoints>::New();
@@ -76,6 +78,7 @@ namespace vtkfig
     assert(state.spacedim==3);
 
     double bounds[6];
+    auto data=vtkDataSet::SafeDownCast(data_producer->GetOutputDataObject(0));
     data->GetBounds(bounds);
     
     auto probePoints =  vtkSmartPointer<vtkPoints>::New();
@@ -101,7 +104,7 @@ namespace vtkfig
 
 
   template <class DATA>
-  void  VectorView::RTBuildVTKPipeline(vtkSmartPointer<DATA> gridfunc)
+  void  VectorView::RTBuildVTKPipeline0()
   {
     RTCalcTransform();
 
@@ -110,7 +113,7 @@ namespace vtkfig
     /// so one has to transform first without assiging the vector atrribute
     /// an assign after transform.
     auto transgeometry=vtkSmartPointer<vtkTransformFilter>::New();
-    transgeometry->SetInputData(gridfunc);
+    transgeometry->SetInputConnection(data_producer->GetOutputPort());
     transgeometry->SetTransform(transform);
 
    
@@ -296,16 +299,14 @@ namespace vtkfig
   /// Generic access to filter
   void  VectorView::RTBuildVTKPipeline()
   {
-
+    
     if (state.datatype==DataSet::DataType::UnstructuredGrid)
     {
-      auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
-      this->RTBuildVTKPipeline<vtkUnstructuredGrid>(griddata);
+      this->RTBuildVTKPipeline0<vtkUnstructuredGrid>();
     }
     else if (state.datatype==DataSet::DataType::RectilinearGrid)
     {
-      auto griddata=vtkRectilinearGrid::SafeDownCast(data);
-      this->RTBuildVTKPipeline<vtkRectilinearGrid>(griddata);
+      this->RTBuildVTKPipeline0<vtkRectilinearGrid>();
     }
   }
 

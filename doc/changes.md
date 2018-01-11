@@ -3,6 +3,11 @@ Changes
 
 
 ## Changes 
+- v0.20
+  - Internal restructuring: use vtkTrivialDataProducer instead of data object
+    when constructing pipelines: this allows for changing
+    grids. No API change necessary.
+
 - v0.19
   - use wireframe instead of vtkExtractEdges for grid view (much faster)
   - VTKFIG_DEVEL cache variabe to enable developing examples
@@ -15,7 +20,6 @@ Changes
     6,7 and 8.
 
 - v0.17
-
   - better handling of small scales:
      - introduced coordinate scale factor
      - internal storage in float

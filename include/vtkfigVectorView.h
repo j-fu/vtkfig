@@ -121,8 +121,7 @@ namespace vtkfig
       void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator) override final;
       
 
-      template <class DATA>
-        void  RTBuildVTKPipeline(vtkSmartPointer<DATA> gridfunc);
+      template <class DATA> void  RTBuildVTKPipeline0();
 
         
       vtkSmartPointer<vtkPolyData> probePolyData;
@@ -134,7 +133,7 @@ namespace vtkfig
     inline
     void VectorView::SetQuiverPoints( const V&p)
   {
-    assert(data);
+
     auto probePoints =  vtkSmartPointer<vtkPoints>::New();
     if (state.spacedim==2)
       for (int i=0;i<p.size();i+=2)
@@ -187,7 +186,7 @@ namespace vtkfig
     inline
     void VectorView::SetStreamLineSeedPoints( const V&p)
   {
-    assert(data);
+
     auto seedPoints =  vtkSmartPointer<vtkPoints>::New();
     if (state.spacedim==2)
       for (int i=0;i<p.size();i+=2)

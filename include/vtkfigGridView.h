@@ -83,10 +83,10 @@ namespace vtkfig
     vtkSmartPointer<vtkScalarBarActor> bcbar=NULL;
     
     template <class GRIDFUNC, class FILTER>
-      void RTBuildVTKPipeline2D( vtkSmartPointer<GRIDFUNC> gridfunc);
+      void RTBuildVTKPipeline2D();
     
     template <class GRIDFUNC, class FILTER>
-      void RTBuildVTKPipeline3D(vtkSmartPointer<GRIDFUNC> gridfunc);
+      void RTBuildVTKPipeline3D();
     
   };
   
