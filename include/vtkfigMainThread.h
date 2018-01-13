@@ -88,7 +88,7 @@ namespace vtkfig
       /// if multithreading is off
       static void CommunicatorThreadCallback(MainThread*);
 
-
+      
       /// Add frame, to be called from render thread
       static void RTAddFrame(MainThread* mt, int iframe);
 

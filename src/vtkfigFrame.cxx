@@ -132,6 +132,19 @@ namespace vtkfig
     SendCommand("Dump", internals::Communicator::Command::FrameDump);
   }
 
+  void Frame::StartVideo(std::string fname)
+  {
+    parameter.filename=fname;
+    SendCommand("StartVideo", internals::Communicator::Command::StartVideo);
+  }
+
+  void Frame::StopVideo()
+  {
+    SendCommand("StopVideo", internals::Communicator::Command::StopVideo);
+  }
+
+
+
   void Frame::SetSize(int x, int y)
   {
     parameter.winsize_x=x;

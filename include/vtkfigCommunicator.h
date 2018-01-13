@@ -37,6 +37,8 @@ namespace vtkfig
           FrameActiveSubFrameCameraFocalPoint,
           FrameDump,
           FrameTitle,
+          StartVideo,
+          StopVideo,
           WindowTitle,
           FrameLinkCamera,
           FrameLayout,

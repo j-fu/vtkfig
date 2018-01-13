@@ -9,9 +9,12 @@
 #include <memory>
 #include <vector>
 
-#include "vtkSmartPointer.h"
-#include "vtkRenderer.h"
-#include "vtkCornerAnnotation.h"
+
+#include <vtkSmartPointer.h>
+#include <vtkRenderer.h>
+#include <vtkCornerAnnotation.h>
+#include <vtkOggTheoraWriter.h>
+
 #include "vtkfigCommunicator.h"
 
 namespace vtkfig
@@ -65,6 +68,18 @@ namespace vtkfig
     /// \param fname Image file name
     void WritePNG(std::string fname);
 
+
+    ///
+    /// Start video recording.
+    /// 
+    /// \param fname Video file name
+    void StartVideo(std::string fname);
+
+    
+    ///
+    /// Stop video recording.
+    /// 
+    void StopVideo();
 
     /// 
     /// Add figure at position (0)
@@ -381,6 +396,10 @@ Figures must be first clicked on before editing works.
 
     /// Init title actor
     void RTInit();
+
+    /// Video writer
+    vtkSmartPointer<vtkOggTheoraWriter> videowriter=0;
+
 
   };
 }

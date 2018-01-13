@@ -685,6 +685,16 @@ namespace vtkfig
               // for (auto & figure: framepair.second->figures)
               //   figure->RTUpdateActors();
               frame->window->Render();
+              if (frame->videowriter)
+              {
+                this->Interactor->Render();
+                auto imgfilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
+                imgfilter->SetInput(frame->window);
+                imgfilter->Update();
+                frame->videowriter->SetInputConnection(imgfilter->GetOutputPort());
+                this->Interactor->Render();
+                frame->videowriter->Write();
+              }
             }
             //this->Interactor->Render();
           }
@@ -705,6 +715,25 @@ namespace vtkfig
           
             this->Interactor->Render();
             pngwriter->Write();
+          }
+          break;
+
+          // Start video
+          case Communicator::Command::StartVideo:
+          {
+            auto frame=mainthread->framemap[mainthread->iframe];
+
+            frame->videowriter =  vtkSmartPointer<vtkOggTheoraWriter>::New();
+            frame->videowriter->SetFileName(frame->parameter.filename.c_str());
+            frame->videowriter->Start();
+          }
+          break;
+
+          case Communicator::Command::StopVideo:
+          {
+            auto frame=mainthread->framemap[mainthread->iframe];
+            frame->videowriter->End();
+            frame->videowriter=0;
           }
           break;
 

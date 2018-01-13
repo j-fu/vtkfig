@@ -7,6 +7,7 @@ Changes
   - Internal restructuring: use vtkTrivialDataProducer instead of data object
     when constructing pipelines: this allows for changing
     grids. No API change necessary.
+  - Video recording via vtkOggTheoraWriter
 
 - v0.19
   - use wireframe instead of vtkExtractEdges for grid view (much faster)
