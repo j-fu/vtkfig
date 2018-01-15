@@ -49,7 +49,6 @@ namespace vtkfig
 
   void VectorView::SetQuiverGrid(int nx, int ny)
   {
-    assert(data);
     assert(state.spacedim==2);
     double bounds[6];
     auto data=vtkDataSet::SafeDownCast(data_producer->GetOutputDataObject(0));
@@ -74,7 +73,6 @@ namespace vtkfig
   
   void VectorView::SetQuiverGrid(int nx, int ny, int nz)
   {
-    assert(data);
     assert(state.spacedim==3);
 
     double bounds[6];
