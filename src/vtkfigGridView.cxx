@@ -35,8 +35,6 @@ namespace vtkfig
   /// Constructor
   GridView::GridView(): Figure()
   {
-    cell_lut=BuildLookupTable(cell_rgbtab,cell_rgbtab_size);
-    bface_lut=BuildLookupTable(bface_rgbtab,bface_rgbtab_size);
     cutgeometry=vtkSmartPointer<vtkExtractGeometry>::New();
     cutgeometry->SetImplicitFunction(planeZ);
     bcutgeometry=vtkSmartPointer<vtkExtractGeometry>::New();
@@ -203,7 +201,6 @@ namespace vtkfig
   {
     RTCalcTransform();
     {
-      double range[2];
       auto cr=vtkDoubleArray::SafeDownCast(DATA::SafeDownCast(data_producer->GetOutputDataObject(0))->GetCellData()->GetAbstractArray("cellregions"));
       
       auto scalar = vtkSmartPointer<vtkAssignAttribute>::New();
@@ -211,10 +208,6 @@ namespace vtkfig
       {
         scalar->Assign("cellregions",vtkDataSetAttributes::SCALARS,vtkAssignAttribute::CELL_DATA);
         scalar->SetInputConnection(data_producer->GetOutputPort());
-        cr->GetRange(range);
-        
-        cell_lut->SetTableRange(range[0],range[1]);
-        cell_lut->Modified();
       }
       
       auto geometry=vtkSmartPointer<FILTER>::New();
@@ -280,6 +273,8 @@ namespace vtkfig
         cbar=BuildColorBar(cells);
         cbar->SetTitle("C    ");
         cbar->SetLabelFormat(" %-2.0f     ");
+        double range[2];
+        cell_lut->GetTableRange(range);
         cbar->SetNumberOfLabels((int)(range[1]-range[0]+1));
         Figure::RTAddActor2D(cbar);
       }
@@ -289,17 +284,14 @@ namespace vtkfig
     auto boundary_data=vtkDataSet::SafeDownCast(boundary_data_producer->GetOutputDataObject(0));
     if (boundary_data)
     {
-      double brange[2];
+
       auto bcr=vtkDoubleArray::SafeDownCast(boundary_data->GetCellData()->GetAbstractArray("boundarycellregions"));
       if (bcr)
       {
         auto bscalar = vtkSmartPointer<vtkAssignAttribute>::New();
         bscalar->Assign("boundarycellregions",vtkDataSetAttributes::SCALARS,vtkAssignAttribute::CELL_DATA);
         bscalar->SetInputConnection(boundary_data_producer->GetOutputPort());
-        bcr->GetRange(brange);
-        
-        bface_lut->SetTableRange(brange[0],brange[1]);
-        bface_lut->Modified();
+
         auto bgeometry=vtkSmartPointer<FILTER>::New();
         bgeometry->SetInputConnection(bscalar->GetOutputPort());
         
@@ -324,6 +316,8 @@ namespace vtkfig
           bcbar=BuildColorBar(bcells,1);
           bcbar->SetTitle("B    ");
           bcbar->SetLabelFormat(" %-2.0f     ");
+          double brange[2];
+          bface_lut->GetTableRange(brange);
           bcbar->SetNumberOfLabels((int)(brange[1]-brange[0]+1));
           Figure::RTAddActor2D(bcbar);
         }

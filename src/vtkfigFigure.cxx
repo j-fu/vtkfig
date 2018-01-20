@@ -1,19 +1,16 @@
-#include "vtkTransform.h"
-#include "vtkCamera.h"
-#include "vtkProperty2D.h"
-#include "vtkTextProperty.h"
-#include "vtkCommand.h"
-#include "vtkDataSetSurfaceFilter.h"
-#include "vtkTransformFilter.h"
-#include "vtkOutlineFilter.h"
-#include "vtkCubeAxesActor2D.h"
-#include "vtkMapper.h"
-#include "vtkMapper2D.h"
+#include <vtkTransform.h>
+#include <vtkCamera.h>
+#include <vtkProperty2D.h>
+#include <vtkTextProperty.h>
+#include <vtkCommand.h>
+#include <vtkDataSetSurfaceFilter.h>
+#include <vtkTransformFilter.h>
+#include <vtkOutlineFilter.h>
+#include <vtkCubeAxesActor2D.h>
+#include <vtkMapper.h>
+#include <vtkMapper2D.h>
+#include <vtkContextScene.h>
 
-
-
-
-#include "vtkContextScene.h"
 
 #include "vtkfigFigure.h"
 
@@ -32,6 +29,9 @@ namespace vtkfig
     elevation_lut=BuildLookupTable(elevation_rgbtab,state.elevation_rgbtab_size);
     quiver_lut=BuildLookupTable(quiver_rgbtab,state.quiver_rgbtab_size);
     stream_lut=BuildLookupTable(stream_rgbtab,state.stream_rgbtab_size);
+
+    cell_lut=BuildLookupTable(cell_rgbtab,cell_rgbtab_size);
+    bface_lut=BuildLookupTable(bface_rgbtab,bface_rgbtab_size);
 
 
 
@@ -95,7 +95,7 @@ namespace vtkfig
     if (!values) return;
 
     double vrange[2];
-    // If  comp is  -1, the  range of  the magnitude  (L2 norm)  over all
+    // If  comp (2nd argument) is  -1, the  range of  the magnitude  (L2 norm)  over all
     // components  will  be provided.  The  range  is computed  and  then
     // cached,  and  will  not  be re-computed  on  subsequent  calls  to
     // GetRange() unless the array is modified or the requested component
@@ -111,11 +111,14 @@ namespace vtkfig
 
     this->state.spacedim=vtkfig_data.GetSpaceDimension();
 
+    this->data_producer->SetOutput(0);
     this->data_producer->SetOutput(vtkfig_data.GetVTKDataSet());
     this->data_producer->Modified();
-    this->boundary_data_producer->SetOutput(vtkfig_data.GetVTKBoundaryDataSet());
 
+    this->boundary_data_producer->SetOutput(0);
+    this->boundary_data_producer->SetOutput(vtkfig_data.GetVTKBoundaryDataSet());
     this->boundary_data_producer->Modified();
+
     this->coordinate_scale_factor=vtkfig_data.coordinate_scale_factor;
 
     state.datatype=vtkfig_data.GetDataType();
@@ -123,7 +126,50 @@ namespace vtkfig
     this->dataname=name;
     this->celllist=0;
     this->title=name;
+
+    // We have to inquire properties of data (ranges etc.) here because
+    // in the rendering pipelines they can be used only once
+    // In fact, we should find a way to move these things to the 
+    // corresponding derived classes. Idea: 
+    // virtual method ExploreData() 
+    
+    // Data for scalar/vector stuff
     SetVMinMax();
+
+    // Data for grid visualization
+    auto cr=vtkDoubleArray::SafeDownCast(vtkfig_data.GetVTKDataSet()->GetCellData()->GetAbstractArray("cellregions"));
+    if (cr)
+    {
+      double range[2];
+      cr->GetRange(range);
+      cell_lut->SetTableRange(range[0],range[1]);
+      cell_lut->Modified();
+      if (cbar)
+      {
+        cbar->SetNumberOfLabels((int)(range[1]-range[0]+1));
+        cbar->Modified();
+      }
+    }
+    
+    // Data for grid visualization
+    auto boundary_data=vtkfig_data.GetVTKBoundaryDataSet();
+    if  (boundary_data)
+    {
+      auto bcr=vtkDoubleArray::SafeDownCast(boundary_data->GetCellData()->GetAbstractArray("boundarycellregions"));
+      if (bcr)
+      {
+        double range[2];
+        bcr->GetRange(range);
+        bface_lut->SetTableRange(range[0],range[1]);
+        bface_lut->Modified();
+        if (bcbar)
+        {
+          bcbar->SetNumberOfLabels((int)(range[1]-range[0]+1));
+          bcbar->Modified();
+        }
+      }
+    }
+      
   }
   
   
@@ -869,17 +915,10 @@ namespace vtkfig
   /// Generic access to filter
   void  Figure::RTBuildDomainPipeline(vtkSmartPointer<vtkRenderer> renderer)
   {
-
     if (state.datatype==DataSet::DataType::UnstructuredGrid)
-    {
-//      auto griddata=vtkUnstructuredGrid::SafeDownCast(data);
       this->RTBuildDomainPipeline0<vtkUnstructuredGrid>(renderer); 
-    }
     else if (state.datatype==DataSet::DataType::RectilinearGrid)
-    {
-//      auto griddata=vtkRectilinearGrid::SafeDownCast(data);
       this->RTBuildDomainPipeline0<vtkRectilinearGrid>(renderer);
-    }
   }
   
 

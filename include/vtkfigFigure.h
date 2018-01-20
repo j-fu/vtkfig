@@ -268,6 +268,28 @@ namespace vtkfig
     RGBTable stream_rgbtab{{0,0,0,1},{1,1,0,0}};
 
 
+    vtkSmartPointer<vtkLookupTable> cell_lut;
+    vtkSmartPointer<vtkLookupTable> bface_lut;
+    RGBTable cell_rgbtab{
+      {0.00, 1.0, 0.5, 0.5},
+      {0.25, 1.0, 1.0, 0.5},
+      {0.50, 0.5, 1.0, 0.5},
+      {0.75, 0.5, 1.0, 1.0},
+      {1.00, 0.5, 0.5, 1.0}};
+    int cell_rgbtab_size=65;
+
+    RGBTable bface_rgbtab{
+      {0.00, 0.8, 0.0, 0.0},
+      {0.25, 0.8, 0.8, 0.0},
+      {0.50, 0.0, 0.8, 0.0},
+      {0.75, 0.0, 0.8, 0.8},
+      {1.00, 0.0, 0.0, 0.8}};
+    int bface_rgbtab_size=65;
+
+    vtkSmartPointer<vtkScalarBarActor> cbar=NULL;
+    vtkSmartPointer<vtkScalarBarActor> bcbar=NULL;
+
+
 
     /// Color lookup table for contour plots
     ///vtkSmartPointer<vtkLookupTable> contour_lut;

@@ -322,6 +322,13 @@ namespace vtkfig
       int mynxlabels;
       int mynylabels;
       
+
+      // nice to have but not with opengl2
+      // https://gitlab.kitware.com/vtk/vtk/issues/15799
+      XYPlotActor->GetProperty()->SetLineStipplePattern(0xf0f0);
+      XYPlotActor->GetProperty()->SetLineStippleRepeatFactor(5);
+
+
       if (PlotState.adjust_labels)
       {
         XYPlotActor->GetXAxisActor2D()->GetAdjustedRange(xrange);
@@ -336,14 +343,20 @@ namespace vtkfig
         mynxlabels=XYPlotActor->GetNumberOfXLabels();
         mynylabels=XYPlotActor->GetNumberOfYLabels();
       }
-      
+
+      // The number of grid lines can change, so there may be more or less
+      // of them in a new plot. We however keep the once allocated vectors
+      // and have to extend them if they are too short.
+      // If they are too long , we switch off the superfluous ones
+      // (via the second argument in SetPlotLines())
+
       for (int i=XGridLines.size();i<mynxlabels; i++)
         XGridLines.emplace_back(XYPlotActor, num_curves,PlotState.grid_rgb);
       
       for (int i=YGridLines.size();i<mynylabels; i++)
         YGridLines.emplace_back(XYPlotActor, num_curves,PlotState.grid_rgb);
       
-      
+
       double dx=0.999999*(xrange[1]-xrange[0])/(mynxlabels-1);
       double x=xrange[0]+dx;
       for (int i=1;i<mynxlabels;i++,x+=dx)
@@ -420,6 +433,8 @@ namespace vtkfig
   void XYPlot::AddPlot()
   {
 
+
+
     while (num_plots>=AllPlotData.size())
     {
       AllPlotData.emplace_back(XYPlotActor,num_curves);
@@ -478,8 +493,6 @@ namespace vtkfig
     XYPlotActor->SetPlotLabel(plot.GetDataSetNumber(), NextPlotInfo.legend);
 
 
-
-
     if (PlotState.fixXMin>PlotState.fixXMax)     
       XYPlotActor->SetXRange(PlotState.dynXMin,PlotState.dynXMax);
     else
@@ -492,8 +505,9 @@ namespace vtkfig
 
     XYPlotActor->SetLegendPosition2(0.15,0.05*(num_plots+1));
 
+
+
     num_plots++;
-    PlotGrid();
 
     XYPlotActor->Modified();
   }
@@ -509,6 +523,7 @@ namespace vtkfig
 
     XYPlotActor->SetLineWidth(2.0*PlotState.line_width);
     XYPlotActor->SetGlyphSize(0.01*PlotState.marker_size);
+    PlotGrid();
     
     if (PlotState.legend_show)
     {
