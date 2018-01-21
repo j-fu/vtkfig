@@ -1,13 +1,14 @@
 #include <cassert>
 
-#include "vtkTextProperty.h"
-#include "vtkPropCollection.h"
-#include "vtkCamera.h"
-#include "vtkRenderWindow.h"
+#include <vtkTextProperty.h>
+#include <vtkPropCollection.h>
+#include <vtkCamera.h>
+#include <vtkRenderWindow.h>
 
 #include "vtkfigFrame.h"
 #include "vtkfigFigure.h"
 #include "vtkfigMainThread.h"
+#include "config.h"
 
 namespace vtkfig
 {

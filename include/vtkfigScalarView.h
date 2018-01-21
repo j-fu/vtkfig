@@ -1,12 +1,11 @@
 #ifndef VTKFIG_SCALARVIEW_H
 #define VTKFIG_SCALARVIEW_H
 
-#include "vtkRenderer.h"
-#include "vtkCommand.h"
-
-#include "vtkDataSetAttributes.h"
-#include "vtkGeometryFilter.h"
-#include "vtkRectilinearGridGeometryFilter.h"
+#include <vtkRenderer.h>
+#include <vtkCommand.h>
+#include <vtkDataSetAttributes.h>
+#include <vtkGeometryFilter.h>
+#include <vtkRectilinearGridGeometryFilter.h>
 
 #include "vtkfigDataSet.h"
 #include "vtkfigTools.h"

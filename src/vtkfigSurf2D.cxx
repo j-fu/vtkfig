@@ -1,12 +1,13 @@
-#include "vtkActor.h"
-#include "vtkProperty.h"
-#include "vtkTextProperty.h"
-#include "vtkOutlineFilter.h"
-#include "vtkStructuredGridGeometryFilter.h"
-#include "vtkAxesActor.h"
-#include "vtkCaptionActor2D.h"
+#include <vtkActor.h>
+#include <vtkProperty.h>
+#include <vtkTextProperty.h>
+#include <vtkOutlineFilter.h>
+#include <vtkStructuredGridGeometryFilter.h>
+#include <vtkAxesActor.h>
+#include <vtkCaptionActor2D.h>
 
 #include "vtkfigSurf2D.h"
+#include "config.h"
 
 namespace vtkfig
 {

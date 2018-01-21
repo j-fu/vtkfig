@@ -1,8 +1,9 @@
-#include "vtkAxis.h"
-#include "vtkContextView.h"
-#include "vtkContextScene.h"
+#include <vtkAxis.h>
+#include <vtkContextView.h>
+#include <vtkContextScene.h>
 
 #include "vtkfigChartXY.h"
+#include "config.h"
 
 namespace vtkfig
 {

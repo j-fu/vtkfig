@@ -1,5 +1,7 @@
 #ifndef VTKFIG_TOOLS_H
 #define VTKFIG_TOOLS_H
+
+#include <vtkSmartPointer.h>
 #include <vtkDelaunay2D.h>
 #include <vtkDelaunay3D.h>
 #include <vtkProperty.h>
@@ -9,13 +11,10 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
-
-
-#include "vtkSmartPointer.h"
-#include "vtkPolyDataMapper.h"
-#include "vtkPolyDataMapper.h"
-#include "vtkLookupTable.h"
-#include "vtkScalarBarActor.h"
+#include <vtkPolyDataMapper.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkLookupTable.h>
+#include <vtkScalarBarActor.h>
 
 #include "vtkfigCommunicator.h"
 

@@ -1,7 +1,8 @@
-#include "vtkRectilinearGridWriter.h"
-#include "vtkUnstructuredGridWriter.h"
+#include <vtkRectilinearGridWriter.h>
+#include <vtkUnstructuredGridWriter.h>
 
 #include "vtkfigDataSet.h"
+#include "config.h"
 
 namespace vtkfig
 {

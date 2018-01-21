@@ -1,10 +1,9 @@
 #ifndef VTKFIG_COMMUNICATOR_H
 #define VTKFIG_COMMUNICATOR_H
 
-
-#include "vtkSocketController.h"
-#include "vtkServerSocket.h"
-#include "vtkSocketCommunicator.h"
+#include <vtkSocketController.h>
+#include <vtkServerSocket.h>
+#include <vtkSocketCommunicator.h>
 
 
 namespace vtkfig

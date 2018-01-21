@@ -1,12 +1,12 @@
 #ifndef VTKFIG_CHARTXY_H
 #define VTKFIG_CHARTXY_H
 
-#include "vtkDoubleArray.h"
-#include "vtkChartXY.h"
-#include "vtkTable.h"
-#include "vtkPlot.h"
-#include "vtkPointData.h"
-#include "vtkContextActor.h"
+#include <vtkDoubleArray.h>
+#include <vtkChartXY.h>
+#include <vtkTable.h>
+#include <vtkPlot.h>
+#include <vtkPointData.h>
+#include <vtkContextActor.h>
 
 
 #include "vtkfigFigure.h"

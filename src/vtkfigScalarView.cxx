@@ -1,32 +1,32 @@
-#include "vtkSliderRepresentation2D.h"
-#include "vtkProperty2D.h"
-#include "vtkAlgorithmOutput.h"
-#include "vtkTextProperty.h"
-#include "vtkRectilinearGrid.h"
-#include "vtkGeometryFilter.h"
-#include "vtkRectilinearGridGeometryFilter.h"
-#include "vtkUnstructuredGrid.h"
-#include "vtkUnstructuredGridGeometryFilter.h"
-#include "vtkPlane.h"
-#include "vtkCutter.h"
-#include "vtkImplicitBoolean.h"
-#include "vtkOutlineFilter.h"
-#include "vtkCubeAxesActor2D.h"
-#include "vtkAppendPolyData.h"
-#include "vtkAssignAttribute.h"
-#include "vtkCamera.h"
-#include "vtkTextActor.h"
-#include "vtkCoordinate.h"
-#include "vtkTransformPolyDataFilter.h"
-#include "vtkTransformFilter.h"
-#include "vtkClipPolyData.h"
-#include "vtkWarpScalar.h"
-
-#include "vtkExtractCells.h"
-#include "vtkIdList.h"
+#include <vtkSliderRepresentation2D.h>
+#include <vtkProperty2D.h>
+#include <vtkAlgorithmOutput.h>
+#include <vtkTextProperty.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkGeometryFilter.h>
+#include <vtkRectilinearGridGeometryFilter.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkUnstructuredGridGeometryFilter.h>
+#include <vtkPlane.h>
+#include <vtkCutter.h>
+#include <vtkImplicitBoolean.h>
+#include <vtkOutlineFilter.h>
+#include <vtkCubeAxesActor2D.h>
+#include <vtkAppendPolyData.h>
+#include <vtkAssignAttribute.h>
+#include <vtkCamera.h>
+#include <vtkTextActor.h>
+#include <vtkCoordinate.h>
+#include <vtkTransformPolyDataFilter.h>
+#include <vtkTransformFilter.h>
+#include <vtkClipPolyData.h>
+#include <vtkWarpScalar.h>
+#include <vtkExtractCells.h>
+#include <vtkIdList.h>
 
 
 #include "vtkfigScalarView.h"
+#include "config.h"
 
 
 namespace vtkfig
@@ -134,8 +134,9 @@ namespace vtkfig
 //      mapper->InterpolateScalarsBeforeMappingOn();
       mapper->UseLookupTableScalarRangeOn();
       mapper->SetLookupTable(surface_lut);
+#ifdef VTK_HAS_MAPPER_IMMEDIATE_RENDERING_ON
       mapper->ImmediateModeRenderingOn();
-
+#endif
       surface_plot->SetMapper(mapper);
       surface_plot->SetVisibility(state.show_surface);
       Figure::RTAddActor(surface_plot);

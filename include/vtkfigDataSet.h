@@ -5,14 +5,15 @@
 #include <map>
 #include <cmath>
 
-#include "vtkSmartPointer.h"
-#include "vtkUnstructuredGrid.h"
-#include "vtkRectilinearGrid.h"
-#include "vtkDoubleArray.h"
-#include "vtkPointData.h"
-#include "vtkCellData.h"
-#include "vtkCellType.h"
-#include "vtkIdList.h"
+#include <vtkSmartPointer.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkDoubleArray.h>
+#include <vtkPointData.h>
+#include <vtkCellData.h>
+#include <vtkCellType.h>
+#include <vtkIdList.h>
+
 
 namespace vtkfig
 {
@@ -242,6 +243,28 @@ namespace vtkfig
     void SetCoordinateScaleFactor(double factor) { coordinate_scale_factor=factor;}
 
     ///
+    /// Set scale factor for x coordinates 
+    ///
+    /// This has to be set before the grid is added to the dataset.
+    ///
+    void SetCoordinateScaleFactorX(double factor) { coordinate_scale_factor_xyz[0]=factor;}
+
+    ///
+    /// Set scale factor for y coordinates 
+    ///
+    /// This has to be set before the grid is added to the dataset.
+    ///
+    void SetCoordinateScaleFactorY(double factor) { coordinate_scale_factor_xyz[1]=factor;}
+
+    ///
+    /// Set scale factor for z coordinates 
+    ///
+    /// This has to be set before the grid is added to the dataset.
+    ///
+    void SetCoordinateScaleFactorZ(double factor) { coordinate_scale_factor_xyz[2]=factor;}
+
+
+    ///
     /// Write dataset to disk in VTK format
     ///
     /// \param fname File name
@@ -303,6 +326,8 @@ namespace vtkfig
     vtkSmartPointer<vtkDataSet> data=NULL;
     vtkSmartPointer<vtkDataSet> boundary_data=NULL;
     double coordinate_scale_factor=1.0;
+    double coordinate_scale_factor_xyz[3]={1.0,1.0,1.0};
+
     
     template<class DATA, class WRITER>
       void WriteVTK(vtkSmartPointer<DATA> data, const std::string fname, const std::string filetype);
@@ -339,7 +364,10 @@ namespace vtkfig
       
       for (int ipoint=0;ipoint<points.size(); ipoint+=2)
       {
-        gridpoints->InsertNextPoint(points[ipoint+0]*coordinate_scale_factor,points[ipoint+1]*coordinate_scale_factor,0);
+        gridpoints->InsertNextPoint(
+          points[ipoint+0]*coordinate_scale_factor*coordinate_scale_factor_xyz[0],
+          points[ipoint+1]*coordinate_scale_factor*coordinate_scale_factor_xyz[1],
+          0);
       }
     }
     else
@@ -352,9 +380,10 @@ namespace vtkfig
       
       for (int ipoint=0;ipoint<points.size(); ipoint+=3)
       {
-        gridpoints->InsertNextPoint(points[ipoint+0]*coordinate_scale_factor,
-                                    points[ipoint+1]*coordinate_scale_factor,
-                                    points[ipoint+2]*coordinate_scale_factor);
+        gridpoints->InsertNextPoint(points[ipoint+0]*coordinate_scale_factor*coordinate_scale_factor_xyz[0],
+				    points[ipoint+1]*coordinate_scale_factor*coordinate_scale_factor_xyz[1],
+                                    points[ipoint+2]*coordinate_scale_factor*coordinate_scale_factor_xyz[2]
+	  );
       }
     }    
   }
@@ -456,9 +485,9 @@ namespace vtkfig
     ycoord->SetNumberOfTuples(Ny);
     
     for (int i=0; i<Nx; i++)
-      xcoord->InsertComponent(i, 0, x[i]*coordinate_scale_factor);
+      xcoord->InsertComponent(i, 0, x[i]*coordinate_scale_factor*coordinate_scale_factor_xyz[0]);
     for (int i=0; i<Ny; i++)
-      ycoord->InsertComponent(i, 0, y[i]*coordinate_scale_factor);
+      ycoord->InsertComponent(i, 0, y[i]*coordinate_scale_factor*coordinate_scale_factor_xyz[1]);
     
     this->data->Modified();
   }
@@ -513,11 +542,11 @@ namespace vtkfig
     zcoord->SetNumberOfTuples(Nz);
     
     for (int i=0; i<Nx; i++)
-      xcoord->InsertComponent(i, 0, x[i]*coordinate_scale_factor);
+      xcoord->InsertComponent(i, 0, x[i]*coordinate_scale_factor*coordinate_scale_factor_xyz[0]);
     for (int i=0; i<Ny; i++)
-      ycoord->InsertComponent(i, 0, y[i]*coordinate_scale_factor);
+      ycoord->InsertComponent(i, 0, y[i]*coordinate_scale_factor*coordinate_scale_factor_xyz[1]);
     for (int i=0; i<Nz; i++)
-      zcoord->InsertComponent(i, 0, z[i]*coordinate_scale_factor);
+      zcoord->InsertComponent(i, 0, z[i]*coordinate_scale_factor*coordinate_scale_factor_xyz[2]);
     
     this->data->Modified();
   }

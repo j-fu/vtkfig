@@ -13,6 +13,7 @@
 
 
 #include "vtkfigFigure.h"
+#include "config.h"
 
 namespace vtkfig
 {

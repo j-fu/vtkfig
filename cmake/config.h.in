@@ -1,8 +1,20 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
 ///
 /// Configuration file for vtkfig libraries
 ///
 
 #ifndef CONFIG_APPLE
 #define CONFIG_APPLE @CONFIG_APPLE@
+#endif
+
+
+#include <vtkVersionMacros.h>
+
+#if VTK_MAJOR_VERSION<8  || (VTK_MAJOR_VERSION==8 && VTK_MINOR_VERSION <1)
+#define VTK_HAS_MAPPER_IMMEDIATE_RENDERING_ON 
+#endif
+
 #endif
 

@@ -1,11 +1,11 @@
 #ifndef VTKFIG_GRID_VIEW_H
 #define VTKFIG_GRID_VIEW_H
 
-#include "vtkCommand.h"
-#include "vtkDataSetAttributes.h"
-#include "vtkGeometryFilter.h"
-#include "vtkRectilinearGridGeometryFilter.h"
-#include "vtkExtractGeometry.h"
+#include <vtkCommand.h>
+#include <vtkDataSetAttributes.h>
+#include <vtkGeometryFilter.h>
+#include <vtkRectilinearGridGeometryFilter.h>
+#include <vtkExtractGeometry.h>
 
 #include "vtkfigDataSet.h"
 #include "vtkfigTools.h"

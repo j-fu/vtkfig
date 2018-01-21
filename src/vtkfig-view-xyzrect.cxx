@@ -4,17 +4,19 @@
 ///  Scalar function on 3D rectilinear grid
 ///
 
-#include <chrono>
-#include "vtkfigFrame.h"
-#include "vtkfigDataSet.h"
-#include "vtkfigScalarView.h"
-#include "vtkfigTools.h"
-
-
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
 #include <sstream>
+#include <chrono>
+
+#include "vtkfigFrame.h"
+#include "vtkfigDataSet.h"
+#include "vtkfigScalarView.h"
+#include "vtkfigTools.h"
+#include "config.h"
+
+
 
 
 std::shared_ptr<std::vector<double>>  read_file(std::string name)

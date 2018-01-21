@@ -1,21 +1,17 @@
 #include <stdexcept>
 #include <chrono>
 
-#include "vtkRenderWindow.h"
-#include "vtkRenderWindowInteractor.h"
-#include "vtkInteractorStyleTrackballCamera.h"
-#include "vtkWindowToImageFilter.h"
-#include "vtkPNGWriter.h"
-#include "vtkCommand.h"
-#include "vtkProperty.h"
-#include "vtkProperty2D.h"
-#include "vtkObjectBase.h"
-#include "vtkPropCollection.h"
-
-#include "vtkContextScene.h"
-
-
-
+#include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkInteractorStyleTrackballCamera.h>
+#include <vtkWindowToImageFilter.h>
+#include <vtkPNGWriter.h>
+#include <vtkCommand.h>
+#include <vtkProperty.h>
+#include <vtkProperty2D.h>
+#include <vtkObjectBase.h>
+#include <vtkPropCollection.h>
+#include <vtkContextScene.h>
 
 #include "vtkfigFrame.h"
 #include "vtkfigFigure.h"

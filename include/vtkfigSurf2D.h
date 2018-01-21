@@ -1,11 +1,11 @@
 #ifndef VTKFIG_SURF2D_H
 #define VTKFIG_SURF2D_H
 
-#include "vtkRectilinearGrid.h"
-#include "vtkStructuredGrid.h"
-#include "vtkPointData.h"
-#include "vtkDoubleArray.h"
-#include "vtkWarpScalar.h"
+#include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
+#include <vtkPointData.h>
+#include <vtkDoubleArray.h>
+#include <vtkWarpScalar.h>
 
 
 #include "vtkfigFigure.h"

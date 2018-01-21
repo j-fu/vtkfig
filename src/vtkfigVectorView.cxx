@@ -1,25 +1,26 @@
-#include "vtkActor.h"
-#include "vtkPointData.h"
-#include "vtkProperty.h"
-#include "vtkTextProperty.h"
-#include "vtkContourFilter.h"
-#include "vtkOutlineFilter.h"
-#include "vtkRectilinearGridGeometryFilter.h"
-#include "vtkGeometryFilter.h"
-#include "vtkGlyph3D.h"
-#include "vtkRectilinearGrid.h"
-#include "vtkGlyphSource2D.h"
-#include "vtkAssignAttribute.h"
-#include "vtkProbeFilter.h"
-#include "vtkTransformPolyDataFilter.h"
-#include "vtkTransformFilter.h"
-#include "vtkStreamTracer.h"
-#include "vtkRibbonFilter.h"
-#include "vtkArrayCalculator.h"
+#include <vtkActor.h>
+#include <vtkPointData.h>
+#include <vtkProperty.h>
+#include <vtkTextProperty.h>
+#include <vtkContourFilter.h>
+#include <vtkOutlineFilter.h>
+#include <vtkRectilinearGridGeometryFilter.h>
+#include <vtkGeometryFilter.h>
+#include <vtkGlyph3D.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkGlyphSource2D.h>
+#include <vtkAssignAttribute.h>
+#include <vtkProbeFilter.h>
+#include <vtkTransformPolyDataFilter.h>
+#include <vtkTransformFilter.h>
+#include <vtkStreamTracer.h>
+#include <vtkRibbonFilter.h>
+#include <vtkArrayCalculator.h>
 
 
 #include "vtkfigVectorView.h"
 #include "vtkfigTools.h"
+#include "config.h"
 
 
 namespace vtkfig

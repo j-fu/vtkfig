@@ -1,12 +1,12 @@
 #ifndef VTKFIG_XYPLOT_H
 #define VTKFIG_XYPLOT_H
 
-#include "vtkDoubleArray.h"
-#include "vtkXYPlotActor.h"
-#include "vtkRectilinearGrid.h"
-#include "vtkPointData.h"
-#include "vtkXYPlotWidget.h"
-#include "vtkLegendBoxActor.h"
+#include <vtkDoubleArray.h>
+#include <vtkXYPlotActor.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkPointData.h>
+#include <vtkXYPlotWidget.h>
+#include <vtkLegendBoxActor.h>
 
 
 #include "vtkfigFigure.h"

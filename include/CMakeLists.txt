@@ -1,4 +1,3 @@
-
 install(FILES
   vtkfigFigure.h
   vtkfigFrame.h

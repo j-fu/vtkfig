@@ -4,7 +4,8 @@
 #include <memory>
 #include <map>
 #include <condition_variable>
-#include "vtkRenderWindowInteractor.h"
+
+#include <vtkRenderWindowInteractor.h>
 
 #include "vtkfigCommunicator.h"
 

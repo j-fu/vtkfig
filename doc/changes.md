@@ -4,9 +4,8 @@ Changes
 
 ## Changes 
 - v0.20
-  - Internal restructuring: use vtkTrivialDataProducer instead of data object
-    when constructing pipelines: this allows for changing
-    grids. No API change necessary.
+  - Internal restructuring for changing grids: use vtkTrivialDataProducer instead of data object
+    when constructing pipelines, detect  region number ranges with vminmax.No API change necessary.
   - Video recording via vtkOggTheoraWriter
 
 - v0.19
@@ -27,7 +26,7 @@ Changes
   - show blocked/nonblocked state, active figure
   - fixed streamline API, defaults
   - doxygen not anymore target in ALL
-  - Do not use VTK_USE_FILE+
+  - Do not use VTK_USE_FILE
   - Added setting of camera and view volume to API
   - Added rectangular grid data viewer vtkfig-view-xyzrect
 

@@ -1,9 +1,10 @@
-#include "vtkProperty2D.h"
-#include "vtkTextProperty.h"
-#include "vtkAxisActor2D.h"
-#include "vtkLegendBoxActor.h"
+#include <vtkProperty2D.h>
+#include <vtkTextProperty.h>
+#include <vtkAxisActor2D.h>
+#include <vtkLegendBoxActor.h>
 
 #include "vtkfigXYPlot.h"
+#include "config.h"
 
 namespace vtkfig
 {

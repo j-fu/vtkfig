@@ -1,9 +1,9 @@
+#include <vtkColorTransferFunction.h>
+#include <vtkTextProperty.h>
+
 #include "vtkfigTools.h"
+#include "config.h"
 
-
-
-#include "vtkColorTransferFunction.h"
-#include "vtkTextProperty.h"
 namespace vtkfig
 {
 

@@ -1,6 +1,8 @@
 #include <cstdio>
 #include <thread>
+
 #include "vtkfigCommunicator.h"
+#include "config.h"
 
 namespace vtkfig
 {

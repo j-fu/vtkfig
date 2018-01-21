@@ -4,6 +4,7 @@
 /// 
 
 #include <string>
+#include "config.h"
 
 static const std::string  helpstring=R"(
 vtkfig-exec [-p portnumber] [-t timeout] [-via host] [-ssh] hostname command
@@ -23,7 +24,7 @@ Parameters:
 #include <thread>
 #include <cassert>
 #include <memory>
-#include "vtkSmartPointer.h"
+#include <vtkSmartPointer.h>
 
 #include "vtkfigFrame.h"
 #include "vtkfigCommunicator.h"
@@ -33,6 +34,7 @@ Parameters:
 #include "vtkfigGridView.h"
 #include "vtkfigXYPlot.h"
 #include "vtkfigMainThread.h"
+#include "config.h"
 
 
 

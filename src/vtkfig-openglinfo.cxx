@@ -1,10 +1,12 @@
-#include "vtkSmartPointer.h"
-#include "vtkRenderingOpenGLConfigure.h"
-#include "vtkOpenGLRenderWindow.h"
-#include "vtkRenderWindow.h"
-#include "vtkRenderWindowInteractor.h"
-#include "vtkRenderer.h"
+#include <vtkSmartPointer.h>
+#include <vtkRenderingOpenGLConfigure.h>
+#include <vtkOpenGLRenderWindow.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkRenderer.h>
 #include <vtkVersion.h>
+
+#include "config.h"
 
 int main()
 {

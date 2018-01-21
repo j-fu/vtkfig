@@ -1,10 +1,13 @@
 #ifndef VTKFIG_QUIVER_H
 #define VTKFIG_QUIVER_H
 
-#include "vtkPolyData.h"
-#include "vtkDoubleArray.h"
+#include <vtkPolyData.h>
+#include <vtkDoubleArray.h>
+
 #include "vtkfigFigure.h"
 #include "vtkfigTools.h"
+
+
 
 namespace vtkfig
 {

@@ -1,30 +1,31 @@
-#include "vtkSliderRepresentation2D.h"
-#include "vtkProperty2D.h"
-#include "vtkAlgorithmOutput.h"
-#include "vtkTextProperty.h"
-#include "vtkRectilinearGrid.h"
-#include "vtkGeometryFilter.h"
-#include "vtkRectilinearGridGeometryFilter.h"
-#include "vtkUnstructuredGrid.h"
-#include "vtkUnstructuredGridGeometryFilter.h"
-#include "vtkPlane.h"
-#include "vtkCutter.h"
-#include "vtkImplicitBoolean.h"
-#include "vtkOutlineFilter.h"
-#include "vtkCubeAxesActor2D.h"
-#include "vtkAppendPolyData.h"
-#include "vtkAssignAttribute.h"
-#include "vtkCamera.h"
-#include "vtkTextActor.h"
-#include "vtkCornerAnnotation.h"
-#include "vtkCoordinate.h"
-#include "vtkExtractEdges.h"
-#include "vtkTransformPolyDataFilter.h"
-#include "vtkTransformFilter.h"
+#include <vtkSliderRepresentation2D.h>
+#include <vtkProperty2D.h>
+#include <vtkAlgorithmOutput.h>
+#include <vtkTextProperty.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkGeometryFilter.h>
+#include <vtkRectilinearGridGeometryFilter.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkUnstructuredGridGeometryFilter.h>
+#include <vtkPlane.h>
+#include <vtkCutter.h>
+#include <vtkImplicitBoolean.h>
+#include <vtkOutlineFilter.h>
+#include <vtkCubeAxesActor2D.h>
+#include <vtkAppendPolyData.h>
+#include <vtkAssignAttribute.h>
+#include <vtkCamera.h>
+#include <vtkTextActor.h>
+#include <vtkCornerAnnotation.h>
+#include <vtkCoordinate.h>
+#include <vtkExtractEdges.h>
+#include <vtkTransformPolyDataFilter.h>
+#include <vtkTransformFilter.h>
 
 
 
 #include "vtkfigGridView.h"
+#include "config.h"
 
 
 namespace vtkfig
@@ -232,7 +233,10 @@ namespace vtkfig
       }
       else
         cells->ScalarVisibilityOff();
+
+#ifdef VTK_HAS_MAPPER_IMMEDIATE_RENDERING_ON
       cells->ImmediateModeRenderingOn();
+#endif
       cellplot = vtkSmartPointer<vtkActor>::New();
       cellplot->SetMapper(cells);
       if (!cr)
@@ -260,7 +264,9 @@ namespace vtkfig
       auto  celledges = vtkSmartPointer<vtkPolyDataMapper>::New();
       celledges->SetInputConnection(transgeometry->GetOutputPort());
       celledges->ScalarVisibilityOff();
+#ifdef VTK_HAS_MAPPER_IMMEDIATE_RENDERING_ON
       celledges->ImmediateModeRenderingOn();
+#endif
       auto celledgeplot = vtkSmartPointer<vtkActor>::New();
       celledgeplot->SetMapper(celledges);
       celledgeplot->GetProperty()->SetColor(0,0,0);
@@ -305,7 +311,9 @@ namespace vtkfig
         bcells->UseLookupTableScalarRangeOn();
         bcells->SetLookupTable(bface_lut);
         bcells->ScalarVisibilityOn();
+#ifdef VTK_HAS_MAPPER_IMMEDIATE_RENDERING_ON
         bcells->ImmediateModeRenderingOn();
+#endif
         bcellplot = vtkSmartPointer<vtkActor>::New();
         bcellplot->SetMapper(bcells);
         bcellplot->GetProperty()->SetLineWidth(5);
@@ -380,7 +388,9 @@ namespace vtkfig
       }
       else
         cells->ScalarVisibilityOff();
+#ifdef VTK_HAS_MAPPER_IMMEDIATE_RENDERING_ON
       cells->ImmediateModeRenderingOn();
+#endif
       cellplot = vtkSmartPointer<vtkActor>::New();
       cellplot->SetMapper(cells);
       if (!cr)
@@ -403,7 +413,9 @@ namespace vtkfig
       auto  celledges = vtkSmartPointer<vtkPolyDataMapper>::New();
       celledges->SetInputConnection(cutpolydata->GetOutputPort());
       celledges->ScalarVisibilityOff();
+#ifdef VTK_HAS_MAPPER_IMMEDIATE_RENDERING_ON
       celledges->ImmediateModeRenderingOn();
+#endif
       auto celledgeplot = vtkSmartPointer<vtkActor>::New();
       celledgeplot->SetMapper(celledges);
       celledgeplot->GetProperty()->SetColor(0,0,0);
@@ -457,7 +469,9 @@ namespace vtkfig
         bcells->UseLookupTableScalarRangeOn();
         bcells->SetLookupTable(bface_lut);
         bcells->ScalarVisibilityOn();
+#ifdef VTK_HAS_MAPPER_IMMEDIATE_RENDERING_ON
         bcells->ImmediateModeRenderingOn();
+#endif
         bcellplot = vtkSmartPointer<vtkActor>::New();
         bcellplot->SetMapper(bcells);
         Figure::RTAddActor(bcellplot);
