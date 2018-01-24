@@ -661,6 +661,7 @@ namespace vtkfig
           break;
 
 
+
           // Add actors from figures to renderer
           case Communicator::Command::MainThreadShow:
           {
@@ -733,6 +734,13 @@ namespace vtkfig
           }
           break;
 
+          case Communicator::Command::FrameRemoveFigure:
+          {
+            auto frame=mainthread->framemap[mainthread->iframe];
+            frame->RTRemoveFigure(frame->parameter.current_figure);
+          }
+          break;
+          
 
           case Communicator::Command::FrameLayout:
           {
@@ -1056,9 +1064,16 @@ namespace vtkfig
         case Communicator::Command::FrameAddFigure:
         {
           auto frame=mainthread->framemap[mainthread->iframe];
-          auto figure=frame->figures.back();
-          mainthread->communicator->SendString(figure->SubClassName());
-          mainthread->communicator->SendInt(figure->framepos);
+          mainthread->communicator->SendString(frame->parameter.current_figure->SubClassName());
+          mainthread->communicator->SendInt(frame->parameter.current_figure->framepos);
+        }
+        break;
+
+        case Communicator::Command::FrameRemoveFigure:
+        {
+          auto frame=mainthread->framemap[mainthread->iframe];
+          mainthread->communicator->SendString(frame->parameter.current_figure->SubClassName());
+          mainthread->communicator->SendInt(frame->parameter.current_figure->framepos);
         }
         break;
 

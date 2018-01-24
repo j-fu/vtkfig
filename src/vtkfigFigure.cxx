@@ -127,6 +127,9 @@ namespace vtkfig
     this->dataname=name;
     this->celllist=0;
     this->title=name;
+    this->state.coordinate_scale_factor_xyz[0]=vtkfig_data.coordinate_scale_factor*vtkfig_data.coordinate_scale_factor_xyz[0];
+    this->state.coordinate_scale_factor_xyz[1]=vtkfig_data.coordinate_scale_factor*vtkfig_data.coordinate_scale_factor_xyz[1];
+    this->state.coordinate_scale_factor_xyz[2]=vtkfig_data.coordinate_scale_factor*vtkfig_data.coordinate_scale_factor_xyz[2];
 
     // We have to inquire properties of data (ranges etc.) here because
     // in the rendering pipelines they can be used only once
@@ -870,7 +873,14 @@ namespace vtkfig
     if (state.show_domain_axes)
     {
       axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
-      axes->SetRanges(data_bounds);
+      double unscaled_data_bounds[6];
+      unscaled_data_bounds[0]=data_bounds[0]/this->state.coordinate_scale_factor_xyz[0];
+      unscaled_data_bounds[1]=data_bounds[1]/this->state.coordinate_scale_factor_xyz[0];
+      unscaled_data_bounds[2]=data_bounds[2]/this->state.coordinate_scale_factor_xyz[1];
+      unscaled_data_bounds[3]=data_bounds[3]/this->state.coordinate_scale_factor_xyz[1];
+      unscaled_data_bounds[4]=data_bounds[4]/this->state.coordinate_scale_factor_xyz[2];
+      unscaled_data_bounds[5]=data_bounds[5]/this->state.coordinate_scale_factor_xyz[2];
+      axes->SetRanges(unscaled_data_bounds);
       axes->SetUseRanges(1);
       axes->SetInputConnection(transgeometry->GetOutputPort());
       axes->GetProperty()->SetColor(0, 0, 0);

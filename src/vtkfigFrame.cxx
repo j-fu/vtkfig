@@ -74,10 +74,18 @@ namespace vtkfig
     if (ipos>=nvpx*nvpy)
       SetAutoLayout(ipos+1);
     
-    this->figures.push_back(fig);
+    this->figures.insert(fig);
     fig->framepos=ipos;
+    parameter.current_figure=fig;
     SendCommand("AddFigure", internals::Communicator::Command::FrameAddFigure);
   }
+
+  void Frame::RemoveFigure(Figure* fig)
+  {
+    this->figures.erase(fig);
+    SendCommand("RemoveFigure", internals::Communicator::Command::FrameRemoveFigure);
+  }
+
 
   void Frame::SetActiveSubFrame(int ipos)
   {
@@ -391,6 +399,32 @@ namespace vtkfig
     RTAddFigures();
   }
   
+  void Frame::RTRemoveFigure(Figure *figure)
+  {
+
+    auto &subframe=this->subframes[figure->framepos];
+    auto &renderer=subframe.renderer;
+
+    if (
+      !figure->IsEmpty()  
+      && renderer->GetActors()->GetNumberOfItems()>0
+      )
+
+
+    for (auto & actor: figure->actors) 
+      renderer->RemoveActor(actor);
+    
+    for (auto & actor: figure->ctxactors) 
+      renderer->RemoveActor(actor);
+    
+    for (auto & actor: figure->actors2d) 
+      renderer->RemoveActor(actor);
+    
+    RTResetCamera(subframe);
+        
+  }
+
+
   void Frame::RTAddFigures()
   {
     for (auto & figure: this->figures)
@@ -398,8 +432,6 @@ namespace vtkfig
       if (!this->subframes[figure->framepos].hidden)
       {
         auto &renderer=this->subframes[figure->framepos].renderer;
-        
-        auto &window=this->window;
         
         if (
           figure->IsEmpty()  

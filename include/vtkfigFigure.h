@@ -412,7 +412,7 @@ namespace vtkfig
       double zmin=1.0;
       double zmax=-1.0;
 
-      
+      double coordinate_scale_factor_xyz[3]={1,1,1};
       
       bool accumulate_range=false;
 

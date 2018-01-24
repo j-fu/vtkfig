@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <vector>
+#include <set>
 
 
 #include <vtkSmartPointer.h>
@@ -120,6 +121,24 @@ namespace vtkfig
     /// \param ipos Number of position in frame grid
     ///
     void AddFigure(std::shared_ptr<Figure> figure, int ipos){AddFigure(figure.get(),ipos);};
+
+
+    /// 
+    /// Remove figure
+    /// 
+    void RemoveFigure(Figure *figure);
+
+    /// 
+    /// Remove figure
+    /// 
+    void RemoveFigure(Figure &figure) {RemoveFigure(&figure);};
+
+    /// 
+    /// Remove figure
+    /// 
+    void RemoveFigure(std::shared_ptr<Figure> figure) {RemoveFigure(figure.get());}
+
+
 
     /// Link camera to other camera
     ///
@@ -288,7 +307,7 @@ Figures must be first clicked on before editing works.
     int number_in_frame_list=-1;
 
     /// List of all figures in frame
-    std::vector<Figure*>figures;
+    std::set<Figure*>figures;
 
     /// Number of viewports in x direction
     int nvpx;
@@ -308,7 +327,9 @@ Figures must be first clicked on before editing works.
     void RTSetActiveSubFrameCameraFocalPoint(SubFrame& sf, double a[3]);
     void RTSetActiveSubFrameCameraPosition(SubFrame& sf, double a[3]);
 
+
     void RTAddFigures();
+    void RTRemoveFigure(Figure *figure);
     void RTHideSubframe(SubFrame &subframe);
     void RTUnHideSubframe(SubFrame &subframe);
     void RTSetSingleView(bool single_viewport);
@@ -381,6 +402,7 @@ Figures must be first clicked on before editing works.
       int single_subframe_view;
       int active_subframe;
 
+      Figure * current_figure;
     } parameter;
     /// The spinning main thread
     internals::MainThread *mainthread;
