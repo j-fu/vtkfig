@@ -49,6 +49,14 @@ namespace vtkfig
     surface_lut=BuildLookupTable(tab,tabsize);
   }
 
+  void ScalarView::SetElevationZShift(double val)
+  {
+    state.warp_ztran=val;
+    warp_transform->Identity();
+    warp_transform->Translate(0,0,state.warp_ztran);
+  }
+
+
   /////////////////////////////////////////////////////////////////////
   /// 2D Filter
 
@@ -106,11 +114,9 @@ namespace vtkfig
 
     if (true) // Elevation
     {
-      auto wtransform =  vtkSmartPointer<vtkTransform>::New();
-      wtransform->Translate(0,0,0.5);
       auto wtransgeometry=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
       wtransgeometry->SetInputConnection(transgeometry->GetOutputPort());
-      wtransgeometry->SetTransform(wtransform);
+      wtransgeometry->SetTransform(warp_transform);
 
       auto elevation = vtkSmartPointer<vtkWarpScalar>::New();
       elevation->SetInputConnection(wtransgeometry->GetOutputPort());

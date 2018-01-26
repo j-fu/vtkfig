@@ -229,6 +229,10 @@ namespace vtkfig
     /// Items for surface plot
     vtkSmartPointer<vtkActor>     surface_plot;
 
+    /// Items for elevation plot
+    vtkSmartPointer<vtkTransform> warp_transform;
+
+
     vtkSmartPointer<vtkCubeAxesActor2D> axes;
     vtkSmartPointer<vtkActor> outline;
     vtkSmartPointer<vtkActor> splot;
@@ -499,6 +503,8 @@ namespace vtkfig
       double stream_initial_integration_step=0.001;
 
       double stream_maximum_integration_step=0.1;
+
+      double warp_ztran=0.0;
 
       DataSet::DataType datatype;
       

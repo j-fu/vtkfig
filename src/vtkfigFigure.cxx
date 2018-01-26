@@ -65,7 +65,11 @@ namespace vtkfig
     arrow3d=vtkSmartPointer<vtkTransformPolyDataFilter>::New();
     arrow3d->SetTransform(arrow3dt);
     arrow3d->SetInputConnection(arrow3ds->GetOutputPort());
-
+    
+    
+    warp_transform =  vtkSmartPointer<vtkTransform>::New();
+    warp_transform->Translate(0,0,state.warp_ztran);
+    
 
 
     
