@@ -15,7 +15,7 @@ namespace vtkfig
 
   /////////////////////////////////////
   /// Public API 
-  
+ 
   Frame::Frame()
   {
     mainthread=internals::MainThread::CreateMainThread();
@@ -63,7 +63,6 @@ namespace vtkfig
     default:
       throw std::runtime_error("Currently not more than 16 subframes in frame");
     }
-
     assert(nfig<=ncol*nrow);
     SetLayout(ncol,nrow);
   }
@@ -83,6 +82,7 @@ namespace vtkfig
   void Frame::RemoveFigure(Figure* fig)
   {
     this->figures.erase(fig);
+    parameter.current_figure=fig;
     SendCommand("RemoveFigure", internals::Communicator::Command::FrameRemoveFigure);
   }
 
