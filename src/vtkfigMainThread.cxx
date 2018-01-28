@@ -205,12 +205,9 @@ namespace vtkfig
 
     void MainThread::Interact()
     {
-      // if (!this->running_multithreaded)
-      //   throw std::runtime_error("Interact: render thread is dead");
-
-      SendCommand(-1, "Show", Communicator::Command::MainThreadShow);
-
       this->communication_blocked=true;
+      
+      SendCommand(-1, "Show", Communicator::Command::MainThreadShow);
 
       do
       {
@@ -621,7 +618,7 @@ namespace vtkfig
       {
       
 
-        if (this->mainthread->communication_blocked) return;
+        if (this->mainthread->communication_blocked && mainthread->cmd != Communicator::Command::MainThreadShow) return;
       
         if (
           vtkCommand::TimerEvent == eventId  // Check if timer event
@@ -662,9 +659,9 @@ namespace vtkfig
 
 
 
-          // Add actors from figures to renderer
           case Communicator::Command::MainThreadShow:
           {
+            // Add actors from figures to renderer
             for (auto & framepair: mainthread->framemap)
               framepair.second->RTAddFigures();
             
@@ -673,16 +670,18 @@ namespace vtkfig
             for (auto & framepair: mainthread->framemap)
             {
               auto frame=framepair.second;
+
               if(frame->mainthread->communication_blocked)
                 frame->title_actor->SetText(6,"-|-");
               else
                 frame->title_actor->SetText(6,"---");
+
               frame->title_actor->Modified();
 
               // for (auto & figure: framepair.second->figures)
               //   figure->RTUpdateActors();
               frame->window->Render();
-              if (frame->videowriter)
+              if (frame->videowriter && ! frame->mainthread->communication_blocked)
               {
                 this->Interactor->Render();
                 auto imgfilter = vtkSmartPointer<vtkWindowToImageFilter>::New();

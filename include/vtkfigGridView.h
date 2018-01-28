@@ -29,7 +29,8 @@ namespace vtkfig
     std::string SubClassName() override final {return std::string("GridView");}
 
 
-    void ShowGridColorbar(bool b) { state.show_grid_colorbar=b;}
+    void ShowGridColorbar(bool b) { Figure::state.show_grid_colorbar=b;}
+    void ShowGridEdges(bool b) { Figure::state.show_grid_edges=b;}
 
     /// Process keyboard and mouse move events
     void RTProcessKey(const std::string key) override final;

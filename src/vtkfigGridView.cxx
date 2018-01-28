@@ -245,35 +245,36 @@ namespace vtkfig
       
 
       
-
-      // Extract edges is slow for large datasets so it is better to
-      // plot cells twice: once with, once without wireframe.
-
-      // auto edges= vtkSmartPointer<vtkExtractEdges>::New();
-      // edges->SetInputConnection(transgeometry->GetOutputPort());
-      // auto  emapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      // emapper->SetInputConnection(edges->GetOutputPort());
-      // emapper->ScalarVisibilityOff();
-      
-      // edgeplot = vtkSmartPointer<vtkActor>::New();
-      // edgeplot->GetProperty()->SetColor(0,0,0);
-      // edgeplot->SetMapper(emapper);
-      // Figure::RTAddActor(edgeplot);
-      
-
-      auto  celledges = vtkSmartPointer<vtkPolyDataMapper>::New();
-      celledges->SetInputConnection(transgeometry->GetOutputPort());
-      celledges->ScalarVisibilityOff();
+      if (Figure::state.show_grid_edges)
+      {
+        // Extract edges is slow for large datasets so it is better to
+        // plot cells twice: once with, once without wireframe.
+        
+        // auto edges= vtkSmartPointer<vtkExtractEdges>::New();
+        // edges->SetInputConnection(transgeometry->GetOutputPort());
+        // auto  emapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+        // emapper->SetInputConnection(edges->GetOutputPort());
+        // emapper->ScalarVisibilityOff();
+        
+        // edgeplot = vtkSmartPointer<vtkActor>::New();
+        // edgeplot->GetProperty()->SetColor(0,0,0);
+        // edgeplot->SetMapper(emapper);
+        // Figure::RTAddActor(edgeplot);
+        
+        
+        auto  celledges = vtkSmartPointer<vtkPolyDataMapper>::New();
+        celledges->SetInputConnection(transgeometry->GetOutputPort());
+        celledges->ScalarVisibilityOff();
 #ifdef VTK_HAS_MAPPER_IMMEDIATE_RENDERING_ON
-      celledges->ImmediateModeRenderingOn();
+        celledges->ImmediateModeRenderingOn();
 #endif
-      auto celledgeplot = vtkSmartPointer<vtkActor>::New();
-      celledgeplot->SetMapper(celledges);
-      celledgeplot->GetProperty()->SetColor(0,0,0);
-      celledgeplot->GetProperty()->SetRepresentationToWireframe();
-      Figure::RTAddActor(celledgeplot);
-      
-      
+        auto celledgeplot = vtkSmartPointer<vtkActor>::New();
+        celledgeplot->SetMapper(celledges);
+        celledgeplot->GetProperty()->SetColor(0,0,0);
+        celledgeplot->GetProperty()->SetRepresentationToWireframe();
+        Figure::RTAddActor(celledgeplot);
+      }
+
       if (cr && state.show_grid_colorbar)
       {
         cbar=BuildColorBar(cells);

@@ -431,6 +431,8 @@ namespace vtkfig
       char surface_colorbar_label_format[32]=" %+9.2e";
       
       double aspect=1.0;
+
+      bool show_grid_edges=true;
       
       bool show_surface=true;
       
