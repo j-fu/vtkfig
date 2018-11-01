@@ -508,6 +508,8 @@ namespace vtkfig
 
       double warp_ztran=0.0;
 
+      double elevation_scale=1.0;
+
       DataSet::DataType datatype;
       
       

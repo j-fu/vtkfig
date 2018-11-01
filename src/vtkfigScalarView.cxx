@@ -56,6 +56,13 @@ namespace vtkfig
     warp_transform->Translate(0,0,state.warp_ztran);
   }
 
+  void ScalarView::SetElevationScale(double val)
+  {
+    state.elevation_scale=val;
+    warp_transform->Identity();
+    warp_transform->Translate(0,0,state.warp_ztran);
+  }
+
 
   /////////////////////////////////////////////////////////////////////
   /// 2D Filter
@@ -120,7 +127,7 @@ namespace vtkfig
 
       auto elevation = vtkSmartPointer<vtkWarpScalar>::New();
       elevation->SetInputConnection(wtransgeometry->GetOutputPort());
-      elevation->SetScaleFactor(0.5/(state.real_vmax-state.real_vmin));
+      elevation->SetScaleFactor(state.elevation_scale*0.5/(state.real_vmax-state.real_vmin));
       vtkSmartPointer<vtkPolyDataMapper> wmapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       wmapper->SetInputConnection(elevation->GetOutputPort());
       vtkSmartPointer<vtkActor> wplot = vtkSmartPointer<vtkActor>::New();

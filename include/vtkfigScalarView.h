@@ -57,6 +57,9 @@ namespace vtkfig
     /// Change zshift for elevation plot
     void SetElevationZShift(double val);
     
+    /// Change scale for elevation plot
+    void SetElevationScale(double val);
+    
     
     ///
     /// Set Surface RGB table from vector
