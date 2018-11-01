@@ -1,3 +1,4 @@
+#include <limits>
 #include <vtkColorTransferFunction.h>
 #include <vtkTextProperty.h>
 
@@ -23,7 +24,7 @@ namespace vtkfig
   // probeFilter->Update();
   // auto out =probeFilter->GetPolyDataOutput()->GetPointData()->GetVectors();
   // PrintArray(out, cout);
-  
+
 
   void PrintArray(vtkSmartPointer<vtkDataArray> data, std::ostream & os)
   {
@@ -72,7 +73,7 @@ namespace vtkfig
       else
         ctf->AddRGBPoint(xrgb[i].x,xrgb[i].r,xrgb[i].g, xrgb[i].b);
     }
-    
+
     lut->SetNumberOfTableValues(size);
     lut->Build();
     for(size_t i = 0; i < size; ++i)
@@ -94,9 +95,9 @@ namespace vtkfig
 // vtkScalarBarActor::GetAnnotationTextProperty
 // vtkScalarBarActor::SetUnconstrainedFontSize
 
-    
+
     vtkSmartPointer<vtkScalarBarActor>     colorbar = vtkSmartPointer<vtkScalarBarActor>::New();
-    
+
     //colorbar->UnconstrainedFontSizeOn();
     //colorbar->AnnotationTextScalingOff();
     colorbar->SetLookupTable(mapper->GetLookupTable());
@@ -110,22 +111,22 @@ namespace vtkfig
     colorbar->SetPosition(0.8, 0.1);
     if (irank>0)
       colorbar->SetPosition(0.9, 0.1);
-      
+
     colorbar->GetTitleTextProperty()->ItalicOff();
     colorbar->GetLabelTextProperty()->ItalicOff();
     colorbar->GetTitleTextProperty()->BoldOn();
     colorbar->GetLabelTextProperty()->BoldOn();
     colorbar->GetTitleTextProperty()->SetFontSize(10);
     colorbar->GetLabelTextProperty()->SetFontSize(80);
-    
+
 //        colorbar->GetAnnotationTextProperty()->SetFontSize(80);
-    
-    colorbar->GetTitleTextProperty()->SetColor(0,0,0);     
-    colorbar->GetTitleTextProperty()->SetFontFamilyToCourier();     
-    colorbar->GetLabelTextProperty()->SetColor(0,0,0);     
-    colorbar->GetLabelTextProperty()->SetFontFamilyToCourier();     
+
+    colorbar->GetTitleTextProperty()->SetColor(0,0,0);
+    colorbar->GetTitleTextProperty()->SetFontFamilyToCourier();
+    colorbar->GetLabelTextProperty()->SetColor(0,0,0);
+    colorbar->GetLabelTextProperty()->SetFontFamilyToCourier();
 //        colorbar->GetAnnotationTextProperty()->SetColor(1,0,0);
-    
+
     return colorbar;
   }
 
