@@ -297,7 +297,7 @@ namespace vtkfig
       return 1;
     }
 
-    if (edit&& key=="BackSpace")
+    if (edit&& key=="Delete")
     {
       int i=planecut->GetNumberOfContours();
       if (i>0)
@@ -341,7 +341,7 @@ namespace vtkfig
       return 1;
     }
     
-    if (edit&& key=="BackSpace")
+    if (edit&& key=="Delete")
     {
       int i=isoline_filter->GetNumberOfContours();
       if (i>0)

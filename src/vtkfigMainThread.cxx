@@ -617,8 +617,11 @@ namespace vtkfig
         )
       {
       
+        
+        // Not clear why it was like that...
+        // if (this->mainthread->communication_blocked && mainthread->cmd != Communicator::Command::MainThreadShow) return;
 
-        if (this->mainthread->communication_blocked && mainthread->cmd != Communicator::Command::MainThreadShow) return;
+        if (this->mainthread->communication_blocked) return;
       
         if (
           vtkCommand::TimerEvent == eventId  // Check if timer event
