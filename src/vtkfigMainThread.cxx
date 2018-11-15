@@ -69,7 +69,7 @@ namespace vtkfig
       if (multi_string!=0 && atoi(multi_string))
       {
         if (debug_level>0)
-          cout << "overriding multithreading default (off) on APPLE" << endl;
+          cout << "vtkfig: overriding multithreading default (off) on APPLE" << endl;
         try_running_multithreaded=true;
       }
 #endif
@@ -77,7 +77,7 @@ namespace vtkfig
       if (multi_string!=0 && !atoi(multi_string))
       {
         if (debug_level>0)
-          cout << "overriding multithreading default (on) on" << endl;
+          cout << "vtkfig: overriding multithreading default (on)" << endl;
         try_running_multithreaded=false;
       }
       
@@ -93,20 +93,20 @@ namespace vtkfig
       {
         int port=atoi(port_string);
         if (port<=0) 
-          throw std::runtime_error("Invalid port number for server");
+          throw std::runtime_error("vtkfig: Invalid port number for server");
         OpenConnection(port,wtime);
       }
 
       if (debug_level>0)
       {   
-        char sc='c';
+        std::string sc="client";
         if (connection_open) 
-          sc='s';
+          sc="server";
 
         if (try_running_multithreaded)
-          cout << sc<< " try running multithreaded" << endl;
+          cout << "vtkfig: try running multithreaded as " << sc << endl;
         else
-          cout << sc<<" try running single threaded" << endl;
+          cout << "vtkfig: try running single threaded as " << sc << endl;
       }
     }
 
@@ -115,16 +115,16 @@ namespace vtkfig
     {
       if (connection_open) return;
 
-      cout << "Server start listening on port "<< port << endl;
+      cout << "vtkfig: Server start listening on port "<< port << endl;
       communicator=vtkSmartPointer<Communicator>::New();
       communicator->server_listen_num_retry=1;
       communicator->server_listen_waiting_time=1000*wtime;
       int rc=communicator->ServerConnect(port);
       if (rc)  
-        cout << "Server connected" << endl;
+        cout << "vtkfig: Server connected" << endl;
       else
       {
-        cout << "Nobody is listening ... giving up" << endl;
+        cout << "vtkfig: Nobody is listening ... giving up" << endl;
         throw std::runtime_error("Server connection failed");
         exit(1);
       }
@@ -134,7 +134,7 @@ namespace vtkfig
     MainThread::~MainThread()
     {
       if (debug_level>0)
-        cout << " ~mt"  << endl;
+        cout << "vtkfig: ~MainThread"  << endl;
       if (this->running_multithreaded)
       {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -205,9 +205,8 @@ namespace vtkfig
 
     void MainThread::Interact()
     {
-      this->communication_blocked=true;
       
-      SendCommand(-1, "Show", Communicator::Command::MainThreadShow);
+      SendCommand(-1, "ShowAndBlock", Communicator::Command::MainThreadShowAndBlock);
 
       do
       {
@@ -223,7 +222,7 @@ namespace vtkfig
     void MainThread::SendCommand(int number_in_frame_list, const std::string from, Communicator::Command cmd)
     {
       if (debug_level>0)
-        cout << "mt " << from << " " << number_in_frame_list << endl;
+        cout << "vtkfig: MainThread: " << from << " " << number_in_frame_list << endl;
 
 
       this->cmd=cmd;
@@ -618,9 +617,6 @@ namespace vtkfig
       {
       
         
-        // Not clear why it was like that...
-        // if (this->mainthread->communication_blocked && mainthread->cmd != Communicator::Command::MainThreadShow) return;
-
         if (this->mainthread->communication_blocked) return;
       
         if (
@@ -663,12 +659,14 @@ namespace vtkfig
 
 
           case Communicator::Command::MainThreadShow:
+          case Communicator::Command::MainThreadShowAndBlock:
           {
             // Add actors from figures to renderer
             for (auto & framepair: mainthread->framemap)
               framepair.second->RTAddFigures();
             
-
+            if (mainthread->cmd==Communicator::Command::MainThreadShowAndBlock)
+              mainthread->communication_blocked=true;
 
             for (auto & framepair: mainthread->framemap)
             {
@@ -927,6 +925,9 @@ namespace vtkfig
     void MainThread::RenderThread(MainThread* mainthread)
     {
 
+      if (mainthread->debug_level>0)
+        cout << "vtkfig: RenderThread start" << endl;
+
       MainThread::PrepareRenderThread(mainthread);
       mainthread->running_multithreaded=true;
 
@@ -934,11 +935,17 @@ namespace vtkfig
       mainthread->running_multithreaded=false;
       mainthread->condition_variable.notify_all();
     
-      mainthread->interactor->SetRenderWindow(0);
+      // No need for this (?) - let TerminateApp()
+      // take care of this... Seems to work
+      // mainthread->interactor->SetRenderWindow(0);
+
       mainthread->interactor->TerminateApp();
+
       mainthread->running_multithreaded=false;
-                                     
+      
       //window->Finalize();
+      if (mainthread->debug_level>0)
+        cout << "vtkfig: RenderThread stop" << endl;
     }
 
     void MainThread::Start(void)
@@ -974,7 +981,7 @@ namespace vtkfig
           std::unique_lock<std::mutex> lock(mainthread->mutex);
 
         if (mainthread->debug_level>0) 
-          cout << "s cmd: " << static_cast<int>(mainthread->cmd) << " frame: " <<mainthread->iframe<< endl;
+          cout << "vtkfig: server cmd: " << static_cast<int>(mainthread->cmd) << " frame: " <<mainthread->iframe<< endl;
 
         mainthread->communicator->SendCommand(mainthread->cmd);
         mainthread->communicator->SendInt(mainthread->iframe);
@@ -1105,7 +1112,7 @@ namespace vtkfig
         {
 
           if (mainthread->debug_level>0)
-            cout << "s term" << endl;
+            cout << "vtkfig: server termination" << endl;
           mainthread->framemap.clear();
           // Notify that command was exeuted
           mainthread->condition_variable.notify_all();
@@ -1116,7 +1123,7 @@ namespace vtkfig
         
         default:
         {
-          cout << "s cmd: " << static_cast<int>(mainthread->cmd) << endl;
+          cout << "vtkfig: server cmd: " << static_cast<int>(mainthread->cmd) << endl;
           throw std::runtime_error("wrong command on server");
         }
         

@@ -191,6 +191,7 @@ namespace vtkfig
     /// This title will show up within the frame
     ///
     ///  \param title Title
+
     void SetFrameTitle(const std::string title);
 
     ///

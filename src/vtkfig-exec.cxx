@@ -150,12 +150,12 @@ namespace vtkfig
           std::string systemcmd;
           if (use_ssh)
           {
-            cout << "Connecting via ssh" << endl;
+            cout << "vtkfig-exec: Connecting via ssh" << endl;
             systemcmd.append("ssh -q ");
           
             if (via)
             {
-              cout << "Connecting via " << via_hostname <<  endl;
+              cout << "vtkfig-exec: Connecting via " << via_hostname <<  endl;
 
               systemcmd.append("-L ");
               systemcmd.append(std::to_string(port));
@@ -206,7 +206,7 @@ namespace vtkfig
       
         while (iretry<nretry)
         {
-          cout << "Client connecting to "<< hostname << ":" << port << "..." << endl;
+          cout << "vtkfig-exec: Client connecting to "<< hostname << ":" << port << "..." << endl;
           rc=communicator->ClientConnect(hostname.c_str(),port);
           if (rc) break;
           std::this_thread::sleep_for (std::chrono::milliseconds(twait));
@@ -215,11 +215,11 @@ namespace vtkfig
         }
       
         if (rc)
-          cout << "Client connected to "<< hostname << ":" << port << endl;
+          cout << "vtkfig-exec: Client connected to "<< hostname << ":" << port << endl;
         else
         {
 
-          cout << "Client failed to connect to "<< hostname << ":" << port << endl;
+          cout << "vtkfig-exec: Client failed to connect to "<< hostname << ":" << port << endl;
           throw std::runtime_error("Giving up");
         }
       
@@ -238,7 +238,7 @@ namespace vtkfig
           communicator->ReceiveCommand(cmd);
           communicator->ReceiveInt(framenum);
           if (debug_level>0) 
-            cout << "c cmd: " << static_cast<int>(cmd) << " frame: " << framenum << endl;
+            cout << "vtkfig-exec: client cmd: " << static_cast<int>(cmd) << " frame: " << framenum << endl;
         
           if (framenum>=0)
             frame=MainThread::mainthread->framemap[framenum];
@@ -249,14 +249,14 @@ namespace vtkfig
           case Communicator::Command::Dummy:
           {
             if (debug_level>0)
-              cout << "Dummy" << endl;
+              cout << "vtkfig-exec: Dummy" << endl;
           }
           break;
         
           case Communicator::Command::Clear:
           {
             if (debug_level>0)
-              cout << "clear" << endl;
+              cout << "vtkfig-exec: clear" << endl;
           }
           break;
         
@@ -266,13 +266,13 @@ namespace vtkfig
             communicator->ReceiveString(s);
           
             if (debug_level>0)
-              cout << "String: " <<  s << endl;
+              cout << "vtkfig-exec: String: " <<  s << endl;
           }
           break;
         
           case Communicator::Command::Exit:
           {
-            cout << "Exit by request" << endl;
+            cout << "vtkfig-exec: Exit by request" << endl;
             return 0;
           }
           break;
@@ -282,7 +282,7 @@ namespace vtkfig
             frame=new vtkfig::Frame();
           
             if (debug_level>0)
-              cout << "New frame" << endl;
+              cout << "vtkfig-exec: New frame" << endl;
           }
           break;
 
@@ -294,7 +294,7 @@ namespace vtkfig
             frame->SetLayout(nX,nY);
           
 //            if (debug_level>0)
-            cout << "frame layout " << nX << " " << nY << endl;
+            cout << "vtkfig-exec: frame layout " << nX << " " << nY << endl;
           }
           break;
 
@@ -302,7 +302,7 @@ namespace vtkfig
           {
             MainThread::mainthread->RemoveFrame(MainThread::mainthread->framemap[framenum]);
             if (debug_level>0)
-              cout << "Remove Frame" << endl;
+              cout << "vtkfig-exec: Remove Frame" << endl;
           
           }
           break;
@@ -319,39 +319,39 @@ namespace vtkfig
               figure=new vtkfig::Surf2D();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
-                cout << "Add Surf2d" << endl;
+                cout << "vtkfig-exec: Add Surf2d" << endl;
             }
             else if (figtype=="ScalarView")
             {
               figure=new vtkfig::ScalarView();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
-                cout << "Add ScalarView" << endl;
+                cout << "vtkfig-exec: Add ScalarView" << endl;
             }
             else if (figtype=="VectorView")
             {
               figure=new vtkfig::VectorView();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
-                cout << "Add VectorView" << endl;
+                cout << "vtkfig-exec: Add VectorView" << endl;
             }
             else if (figtype=="GridView")
             {
               figure=new vtkfig::GridView();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
-                cout << "Add GridView" << endl;
+                cout << "vtkfig-exec: Add GridView" << endl;
             }
             else if (figtype=="XYPlot")
             {
               figure=new vtkfig::XYPlot();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
-                cout << "Add XYPlot" << endl;
+                cout << "vtkfig-exec: Add XYPlot" << endl;
             }
             else
             {
-              cout << "Communication error addfig: type"<< figtype << endl;
+              cout << "vtkfig-exec: Communication error addfig: type"<< figtype << endl;
               return 0;
             }
           }
@@ -440,7 +440,7 @@ namespace vtkfig
           case Communicator::Command::MainThreadTerminate:
           {
             if (debug_level>0)
-              cout << "c term" << endl;
+              cout << "vtkfig-exec: client termination" << endl;
             MainThread::mainthread->Terminate();
             return 0;
           }
@@ -449,7 +449,7 @@ namespace vtkfig
         
           default:
           {
-            throw std::runtime_error("wrong command on client");
+            throw std::runtime_error("vtkfig-exec: wrong command on client");
             return 0;
           }
         

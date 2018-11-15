@@ -25,6 +25,7 @@ namespace vtkfig
         Dummy=-1,
           Empty=0,
           MainThreadShow=100,
+          MainThreadShowAndBlock,
           MainThreadAddFrame,
           MainThreadRemoveFrame,
           FrameAddFigure,
