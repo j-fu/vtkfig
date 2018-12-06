@@ -46,7 +46,7 @@ endif()
 
 #  We need this since the update to vtk 8 on OpenSUSE 42.2
 if(NOT ("${VTK_VERSION_MAJOR}" LESS 8))
-  find_package(Qt4 REQUIRED)
+  find_package(Qt4)
 endif()
 
 # BEGIN COPIED from UseVTK.cmake

@@ -18,7 +18,7 @@ set(CMAKE_CXX_STANDARD 11)
 find_package(VTK REQUIRED)
 #  We need this since the update to vtk 8 on OpenSUSE 42.2
 if(NOT (VTK_VERSION_MAJOR LESS 8))
-  find_package(Qt4 REQUIRED)
+  find_package(Qt4)
 endif()
 
 # UseVTK already sets include_directories, but we have to 
