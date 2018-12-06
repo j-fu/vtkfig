@@ -36,7 +36,7 @@ namespace vtkfig
   
   void Frame::Show() { mainthread->Show(); step_number++;}
 
-  void Frame::Interact() { mainthread->Interact();step_number++;}
+  void Frame::Interact() {mainthread->Show();  mainthread->Interact();step_number++;}
 
   void Frame::SetAutoLayout(int nfig)
   {
