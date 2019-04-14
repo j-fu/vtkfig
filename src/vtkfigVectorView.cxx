@@ -227,7 +227,7 @@ namespace vtkfig
       stream->SetMaximumPropagation(state.stream_maximum_propagation);
       stream->SetInitialIntegrationStep(state.stream_initial_integration_step);
       stream->SetMaximumIntegrationStep(state.stream_maximum_integration_step);
-      stream->SetIntegrationDirectionToForward();
+      stream->SetIntegrationDirectionToBoth();
       stream->SetIntegratorTypeToRungeKutta4();
       stream->SetMaximumNumberOfSteps(state.stream_maximum_number_of_steps);
 

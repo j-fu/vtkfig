@@ -17,7 +17,8 @@ add_library(vtkfig
   vtkfigGridView.cxx  
   vtkfigVectorView.cxx  
   vtkfigXYPlot.cxx
-
+  vtkfigcapi.cxx
+  
   
   vtkfigChartXY.cxx
   vtkfigSurf2D.cxx

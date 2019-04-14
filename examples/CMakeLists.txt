@@ -4,6 +4,11 @@ function (add_vtkfig_example  EXAMPLE)
 endfunction()
 
 
+add_executable(example-capi example-capi.c)
+target_link_libraries(example-capi vtkfig ${VTK_LIBRARIES})
+
+
+
 add_vtkfig_example(example-xyplot)
 add_vtkfig_example(example-simplexcontour2d)
 add_vtkfig_example(example-simplexcontour3d)

@@ -263,7 +263,7 @@ namespace vtkfig
 
   void Figure::RTShowArrowScale()
   {
-  // if (this->SubClassName()!="VectorView") return;
+    if (this->SubClassName()!="VectorView") return;
 
     RTMessage("arrow_scale="+std::to_string(state.quiver_arrowscale_user));
   }
