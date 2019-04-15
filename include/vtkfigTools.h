@@ -20,6 +20,8 @@
 
 namespace vtkfig
 {
+  void PrintOpenGLInfo(void);
+
   /// RGB point for color tables
   struct RGBPoint { double x,r,g,b;};
 

@@ -1,4 +1,4 @@
-#include <vtkfigcapi.h>
+#include <vtkfigCAPI.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>

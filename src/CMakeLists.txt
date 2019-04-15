@@ -6,7 +6,7 @@ function (add_vtkfig_binary  BINARY)
 endfunction()
 
 
-add_library(vtkfig 
+add_library(vtkfig SHARED
   vtkfigFrame.cxx
   vtkfigFigure.cxx
   vtkfigDataSet.cxx
@@ -17,12 +17,13 @@ add_library(vtkfig
   vtkfigGridView.cxx  
   vtkfigVectorView.cxx  
   vtkfigXYPlot.cxx
-  vtkfigcapi.cxx
-  
+  vtkfigCAPI.cxx
   
   vtkfigChartXY.cxx
   vtkfigSurf2D.cxx
-)
+  )
+target_link_libraries(vtkfig vtkfig ${VTK_LIBRARIES})
+
 
 ###### target_link_libraries(vtkfig PUBLIC ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 #target_link_libraries(vtkfig vtklib)
