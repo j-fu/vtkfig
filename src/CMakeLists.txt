@@ -22,7 +22,7 @@ add_library(vtkfig SHARED
   vtkfigChartXY.cxx
   vtkfigSurf2D.cxx
   )
-target_link_libraries(vtkfig vtkfig ${VTK_LIBRARIES})
+target_link_libraries(vtkfig ${VTK_LIBRARIES})
 
 
 ###### target_link_libraries(vtkfig PUBLIC ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
