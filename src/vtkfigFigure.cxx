@@ -387,18 +387,17 @@ namespace vtkfig
     {
 //      state.show_isolines=!state.show_isolines;
       state.show_isosurfaces=!state.show_isosurfaces;
-      //      isoline_plot->SetVisibility(state.show_isolines);
       isosurface_plot->SetVisibility(state.show_isosurfaces);
       RTUpdateIsoSurfaceFilter();
       isosurface_plot->Modified();
       return;
     }
 
-    if (key=="S" && state.spacedim==2)
+    if (key=="S")
     {
       state.show_surface=!state.show_surface;
-      state.show_isolines=!state.show_isolines;
-      isoline_plot->SetVisibility(state.show_isolines);
+//      state.show_isolines=!state.show_isolines;
+      isoline_plot->SetVisibility(state.show_surface);
       surface_plot->SetVisibility(state.show_surface);
       isoline_plot->Modified();
       surface_plot->Modified();

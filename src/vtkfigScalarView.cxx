@@ -177,7 +177,7 @@ namespace vtkfig
       isoline_plot->SetMapper(mapper);
       isoline_plot->GetProperty()->SetColor(0,0,0);
       isoline_plot->GetProperty()->SetLineWidth(state.isoline_width);
-      isoline_plot->SetVisibility(state.show_isolines);
+      isoline_plot->SetVisibility(state.show_surface);
       Figure::RTAddActor(isoline_plot);
 
       // if (state.show_contour_colorbar)
@@ -262,7 +262,7 @@ namespace vtkfig
       
 
     vtkSmartPointer<vtkClipPolyData> clipgeometry=0;
-    if (false) // plot complete outline surface
+    if (false) // plot complete outline surface: need idea in KUI
     {
       
       clipgeometry=vtkSmartPointer<vtkClipPolyData>::New();
@@ -306,10 +306,12 @@ namespace vtkfig
     mapper->UseLookupTableScalarRangeOn();
     mapper->SetLookupTable(surface_lut);
     
-    vtkSmartPointer<vtkActor>     plot = vtkSmartPointer<vtkActor>::New();
-    plot->GetProperty()->SetOpacity(1);
-    plot->SetMapper(mapper);
-    Figure::RTAddActor(plot);
+    surface_plot = vtkSmartPointer<vtkActor>::New();
+    surface_plot->GetProperty()->SetOpacity(1);
+    surface_plot->SetVisibility(state.show_surface);
+ 
+    surface_plot->SetMapper(mapper);
+    Figure::RTAddActor(surface_plot);
     
     Figure::RTAddActor2D(BuildColorBar(mapper));
 
@@ -330,7 +332,7 @@ namespace vtkfig
       isoline_plot->GetProperty()->SetColor(0,0,0);
       isoline_plot->GetProperty()->SetLineWidth(state.isoline_width);
       isoline_plot->SetMapper(mapper);
-      isoline_plot->SetVisibility(state.show_isolines);
+      isoline_plot->SetVisibility(state.show_surface);
       Figure::RTAddActor(isoline_plot);
     }
 
