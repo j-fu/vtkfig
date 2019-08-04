@@ -1,7 +1,9 @@
-//
-// Development example for server-client communication via sockets
-// using vtkfig communicator
-//
+///
+/// \example example-comm-client-server-vtkfig.cxx
+///
+/// Example for server-client communication via sockets
+/// using vtkfig communicator
+///
 
 #include <thread>
 #include <cstring>

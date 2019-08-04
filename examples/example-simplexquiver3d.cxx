@@ -1,7 +1,7 @@
 ///
-///   \example   examples/example-simplexquiver2d.cxx
+///   \example  example-simplexquiver3d.cxx
 ///
-///  Vector function on 3D simplex grid
+///  Vector function on 3D simplex grid.
 ///
 
 #include "vtkMath.h"
@@ -77,26 +77,26 @@ int main(void)
       {1.0, 0.0, 0.0, 0.0}
     };
   
-  auto frame=vtkfig::Frame::New();
+  vtkfig::Frame frame;
   
-  auto griddata=vtkfig::DataSet::New();
-  griddata->SetSimplexGrid(3,points,cells);
-  griddata->SetPointScalar(val ,"val");
-  griddata->SetPointVector(u,v,w ,"grad");
+  vtkfig::DataSet  griddata;
+  griddata.SetSimplexGrid(3,points,cells);
+  griddata.SetPointScalar(val ,"val");
+  griddata.SetPointVector(u,v,w ,"grad");
   
-  auto contour=vtkfig::ScalarView::New();
-  contour->SetData(griddata,"val");
-  contour->SetSurfaceRGBTable(colors,255);
-  contour->ShowIsolines(false);
-  contour->SetValueRange(-1,1);
+  vtkfig::ScalarView contour;
+  contour.SetData(griddata,"val");
+  contour.SetSurfaceRGBTable(colors,255);
+  contour.ShowIsolines(false);
+  contour.SetValueRange(-1,1);
   
-  auto quiver=vtkfig::VectorView::New();
-  quiver->SetData(griddata,"grad");
-  quiver->SetQuiverGrid(10,10,10);
+  vtkfig::VectorView quiver;
+  quiver.SetData(griddata,"grad");
+  quiver.SetQuiverGrid(10,10,10);
 
   
-  frame->AddFigure(contour);
-  frame->AddFigure(quiver);
+  frame.AddFigure(contour);
+  frame.AddFigure(quiver);
 
 
   
@@ -115,13 +115,13 @@ int main(void)
       v[ival]=dGdy(points[ipoint+0],points[ipoint+1],points[ipoint+2],t);
       w[ival]=dGdz(points[ipoint+0],points[ipoint+1],points[ipoint+2],t);
     }
-    griddata->SetPointScalar(val ,"val");
-    griddata->SetPointVector(u,v ,w,"grad");
+    griddata.SetPointScalar(val ,"val");
+    griddata.SetPointVector(u,v ,w,"grad");
 
-    frame->Show();
+    frame.Show();
 
     if (ii==3) 
-      frame->WritePNG("example-simplexquiver2d.png");
+      frame.WritePNG("example-simplexquiver3d.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

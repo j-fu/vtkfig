@@ -1,5 +1,5 @@
 ///
-///   \example   examples/example-xyplot.cxx
+///   \example   example-xyplot.cxx
 ///
 ///  Plot of 1D functions
 ///
@@ -14,8 +14,6 @@
 int main()
 {
   size_t nspin=vtkfig::NSpin();
-  auto frame=vtkfig::Frame::New();
-
 
   const int NN = 40;
   const double t_low = 0;
@@ -40,10 +38,10 @@ int main()
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
 
+  vtkfig::Frame frame;
+  vtkfig::XYPlot xyplot;
 
-  auto xyplot=vtkfig::XYPlot::New();
-
-  frame->AddFigure(xyplot);
+  frame.AddFigure(xyplot);
   while (ii<nspin)
   {
     double t = tt;
@@ -60,28 +58,28 @@ int main()
     char titlebuf[20];
   
     snprintf(titlebuf,20,"frame %lu",ii++);
-    xyplot->Clear();
-    xyplot->SetTitle(titlebuf);
-    xyplot->SetPlotColor(0,0,1);
-    xyplot->SetXAxisLabelFormat("%3.1f");
-    xyplot->SetYAxisLabelFormat("%3.1f");
+    xyplot.Clear();
+    xyplot.SetTitle(titlebuf);
+    xyplot.SetPlotColor(0,0,1);
+    xyplot.SetXAxisLabelFormat("%3.1f");
+    xyplot.SetYAxisLabelFormat("%3.1f");
 
-    xyplot->SetPlotLineType("-");
-    xyplot->SetPlotMarkerType("d");
-    xyplot->SetMarkerSize(1);
-    xyplot->SetPlotLegend("A");
+    xyplot.SetPlotLineType("-");
+    xyplot.SetPlotMarkerType("d");
+    xyplot.SetMarkerSize(1);
+    xyplot.SetPlotLegend("A");
 
-    xyplot->AddPlot(x1, y1);
-    xyplot->SetPlotColor(1,0,0);
-    xyplot->SetPlotMarkerType("o");
-    xyplot->SetPlotLegend("B");
-    xyplot->AddPlot(x2, y2);
+    xyplot.AddPlot(x1, y1);
+    xyplot.SetPlotColor(1,0,0);
+    xyplot.SetPlotMarkerType("o");
+    xyplot.SetPlotLegend("B");
+    xyplot.AddPlot(x2, y2);
 
 
-    frame->Show();
+    frame.Show();
     
     if (ii==3) 
-        frame->WritePNG("example-xyplot.png");
+        frame.WritePNG("example-xyplot.png");
 
     tt+=0.1;
     auto t1=std::chrono::system_clock::now();

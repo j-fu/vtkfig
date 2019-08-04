@@ -1,5 +1,5 @@
 ///
-///   \example   examples/example-simplexcontour3d.cxx
+///   \example  example-simplexcontour3d.cxx
 ///
 ///  Scalar function on 3D simplex grid
 ///
@@ -57,18 +57,18 @@ int main(void)
       {1.0, 1.0, 0.0, 0.0}
     };
 
-  auto frame=vtkfig::Frame::New();
+  vtkfig::Frame frame;
 
-  auto griddata=vtkfig::DataSet::New();
-  griddata->SetSimplexGrid(3,points,cells);
-  griddata->SetPointScalar(values,"V");
+  vtkfig::DataSet griddata;;
+  griddata.SetSimplexGrid(3,points,cells);
+  griddata.SetPointScalar(values,"V");
 
-  auto contour=vtkfig::ScalarView::New();
-  contour->SetData(griddata,"V");
-  contour->SetSurfaceRGBTable(colors,255);
-  contour->SetValueRange(-1,1);
+  vtkfig::ScalarView contour;
+  contour.SetData(griddata,"V");
+  contour.SetSurfaceRGBTable(colors,255);
+  contour.SetValueRange(-1,1);
 
-  frame->AddFigure(contour);
+  frame.AddFigure(contour);
 
 
 
@@ -84,11 +84,11 @@ int main(void)
       values[ival]=G(points[ipoint+0],points[ipoint+1],points[ipoint+2],t);
 
 
-    griddata->SetPointScalar(values,"V");
+    griddata.SetPointScalar(values,"V");
 
-    frame->Show();
+    frame.Show();
      if (ii==3) 
-      frame->WritePNG("example-simplexcontour3d.png");
+      frame.WritePNG("example-simplexcontour3d.png");
    
     t+=dt;
     auto t1=std::chrono::system_clock::now();

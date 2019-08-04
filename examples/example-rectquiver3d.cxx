@@ -1,7 +1,7 @@
 ///
-///   \example   examples/example-rectquiver2d.cxx
+///   \example  example-rectquiver3d.cxx
 ///
-///  Vector function on 2D rectilinear grid
+///  Vector function quiver view on 3D rectilinear grid
 ///
 
 #include "vtkfigFrame.h"
@@ -91,28 +91,28 @@ int main(void)
     };
   
 
-  auto frame=vtkfig::Frame::New();
+  vtkfig::Frame frame;
 
-  auto griddata=vtkfig::DataSet::New();
-  griddata->SetRectilinearGrid(x,y,z);
-  griddata->SetPointScalar(val ,"val");
-  griddata->SetPointVector(u,v , w, "grad");
+  vtkfig::DataSet griddata;
+  griddata.SetRectilinearGrid(x,y,z);
+  griddata.SetPointScalar(val ,"val");
+  griddata.SetPointVector(u,v , w, "grad");
 
-  auto contour=vtkfig::ScalarView::New();
-  contour->SetData(griddata,"val");
-  contour->SetSurfaceRGBTable(colors,255);
-  contour->ShowIsolines(false);
-  contour->SetValueRange(-1,1);
+  vtkfig::ScalarView contour;
+  contour.SetData(griddata,"val");
+  contour.SetSurfaceRGBTable(colors,255);
+  contour.ShowIsolines(false);
+  contour.SetValueRange(-1,1);
   
-  auto quiver=vtkfig::VectorView::New();
-  quiver->SetData(griddata,"grad");
-  quiver->SetQuiverGrid(10,10,10);
+  vtkfig::VectorView quiver;
+  quiver.SetData(griddata,"grad");
+  quiver.SetQuiverGrid(10,10,10);
 
 
 
 
-  frame->AddFigure(contour);
-  frame->AddFigure(quiver);
+  frame.AddFigure(contour);
+  frame.AddFigure(quiver);
 
 
 
@@ -134,13 +134,13 @@ int main(void)
         v[idx] = dGdy(x[i],y[j],z[k],t);
         w[idx] = dGdz(x[i],y[j],z[k],t);
       }
-    griddata->SetPointScalar(val ,"val");
-    griddata->SetPointVector(u,v ,w,"grad");
+    griddata.SetPointScalar(val ,"val");
+    griddata.SetPointVector(u,v ,w,"grad");
     
-    frame->Show();
+    frame.Show();
 
     if (ii==3) 
-      frame->WritePNG("example-rectquiver3d.png");
+      frame.WritePNG("example-rectquiver3d.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

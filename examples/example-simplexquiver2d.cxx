@@ -1,5 +1,5 @@
 ///
-///   \example   examples/example-simplexquiver2d.cxx
+///   \example  example-simplexquiver2d.cxx
 ///
 ///  Vector function on 2D simplex grid
 ///
@@ -65,7 +65,6 @@ int main(void)
 
 
   
-  auto frame=vtkfig::Frame::New();
   
   auto colors=vtkfig::RGBTable
     { 
@@ -90,26 +89,27 @@ int main(void)
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
   
-  auto griddata=vtkfig::DataSet::New();
-  griddata->SetSimplexGrid(2,points,cells);
-  griddata->SetPointScalar(z ,"v");
-  griddata->SetPointVector(u,v ,"grad");
+  vtkfig::Frame frame;
+  vtkfig::DataSet griddata;
+  griddata.SetSimplexGrid(2,points,cells);
+  griddata.SetPointScalar(z ,"v");
+  griddata.SetPointVector(u,v ,"grad");
   
-  auto contour=vtkfig::ScalarView::New();
-  contour->SetData(griddata,"v");
-  contour->SetSurfaceRGBTable(colors,255);
-  contour->ShowIsolines(false);
+  vtkfig::ScalarView contour;
+  contour.SetData(griddata,"v");
+  contour.SetSurfaceRGBTable(colors,255);
+  contour.ShowIsolines(false);
   
-  auto quiver=vtkfig::VectorView::New();
-  quiver->SetData(griddata,"grad");
-  quiver->SetQuiverGrid(15,15);
+  vtkfig::VectorView quiver;
+  quiver.SetData(griddata,"grad");
+  quiver.SetQuiverGrid(15,15);
 
-  contour->KeepXYAspect(false);
-  quiver->KeepXYAspect(false);
+  contour.KeepXYAspect(false);
+  quiver.KeepXYAspect(false);
 
   
-  frame->AddFigure(contour);
-  frame->AddFigure(quiver);
+  frame.AddFigure(contour);
+  frame.AddFigure(quiver);
   
   while (ii<nspin)
   {
@@ -120,13 +120,13 @@ int main(void)
       u[ival]=dGdx(points[ipoint+0],points[ipoint+1],t);
       v[ival]=dGdy(points[ipoint+0],points[ipoint+1],t);
     }
-    griddata->SetPointScalar(z ,"v");
-    griddata->SetPointVector(u,v ,"grad");
+    griddata.SetPointScalar(z ,"v");
+    griddata.SetPointVector(u,v ,"grad");
 
-    frame->Show();
+    frame.Show();
 
     if (ii==3) 
-      frame->WritePNG("example-simplexquiver2d.png");
+      frame.WritePNG("example-simplexquiver2d.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

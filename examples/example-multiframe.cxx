@@ -1,10 +1,13 @@
-///
-///   \example   examples/example-gridview.cxx
-///
-/// Multiple frames. 
-///
-/// Here the problem is that we get interaction only in the first frame...
-///
+/**
+\example example-multiframe.cxx
+
+Multiple frames with vtkfig. 
+
+Interaction happens  only with the first one,
+so it is not really optimal.
+*/
+
+
 #include <chrono>
 #include "vtkfigFrame.h"
 #include "vtkfigDataSet.h"
@@ -67,37 +70,37 @@ int main(void)
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
 
-  auto frame1=vtkfig::Frame::New();
-  auto frame2=vtkfig::Frame::New();
-  auto frame3=vtkfig::Frame::New();
+  vtkfig::Frame frame1;
+  vtkfig::Frame frame2;
+  vtkfig::Frame frame3;
 
-  frame1->SetSize(400,400);
-  frame2->SetSize(400,400);
-  frame2->SetPosition(500,0);
-  frame3->SetSize(400,400);
-  frame3->SetPosition(1000,0);
-  frame2->LinkCamera(frame1);
-
-
-  auto griddata=vtkfig::DataSet::New();
-  griddata->SetRectilinearGrid(x,y);
-  griddata->SetPointScalar(u ,"u");
-  griddata->SetPointScalar(v ,"v");
+  frame1.SetSize(400,400);
+  frame2.SetSize(400,400);
+  frame2.SetPosition(500,0);
+  frame3.SetSize(400,400);
+  frame3.SetPosition(1000,0);
+  frame2.LinkCamera(frame1);
 
 
-  auto contour_u=vtkfig::ScalarView::New();
-  contour_u->SetData(griddata,"u");
-  contour_u->SetSurfaceRGBTable(colors,255);
-  frame1->AddFigure(contour_u);
+  vtkfig::DataSet griddata;
+  griddata.SetRectilinearGrid(x,y);
+  griddata.SetPointScalar(u ,"u");
+  griddata.SetPointScalar(v ,"v");
 
-  auto contour_v=vtkfig::ScalarView::New();
-  contour_v->SetData(griddata,"v");
-  contour_v->SetSurfaceRGBTable(colors,255);
-  frame2->AddFigure(contour_v);
 
-  auto xyplot=vtkfig::XYPlot::New();
-  xyplot->SetYRange(-0.5,0.5);
-  frame3->AddFigure(xyplot);
+  vtkfig::ScalarView contour_u;
+  contour_u.SetData(griddata,"u");
+  contour_u.SetSurfaceRGBTable(colors,255);
+  frame1.AddFigure(contour_u);
+
+  vtkfig::ScalarView contour_v;
+  contour_v.SetData(griddata,"v");
+  contour_v.SetSurfaceRGBTable(colors,255);
+  frame2.AddFigure(contour_v);
+
+  vtkfig::XYPlot xyplot;
+  xyplot.SetYRange(-0.5,0.5);
+  frame3.AddFigure(xyplot);
 
   while (ii<nspin)
   {
@@ -113,21 +116,21 @@ int main(void)
         v[j*Nx+i] = f;
       }
 
-    griddata->SetPointScalar(u ,"u");
-    griddata->SetPointScalar(v ,"v");
+    griddata.SetPointScalar(u ,"u");
+    griddata.SetPointScalar(v ,"v");
 
-    xyplot->Clear();
-    xyplot->SetPlotColor(0,0,1);
-    xyplot->SetPlotLineType("-");
-    xyplot->SetPlotLegend("y=0.5");
-    xyplot->AddPlot(x, fx);
-    xyplot->SetPlotColor(1,0,0);
-    xyplot->SetPlotLineType("-");
-    xyplot->SetPlotLegend("x=0.5");
-    xyplot->AddPlot(y, fy);
-    frame1->Show();
-    frame2->Show();
-    frame3->Show();
+    xyplot.Clear();
+    xyplot.SetPlotColor(0,0,1);
+    xyplot.SetPlotLineType("-");
+    xyplot.SetPlotLegend("y=0.5");
+    xyplot.AddPlot(x, fx);
+    xyplot.SetPlotColor(1,0,0);
+    xyplot.SetPlotLineType("-");
+    xyplot.SetPlotLegend("x=0.5");
+    xyplot.AddPlot(y, fy);
+    frame1.Show();
+    frame2.Show();
+    frame3.Show();
 
 
     t+=dt;

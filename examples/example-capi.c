@@ -1,3 +1,8 @@
+/**
+   \example example-capi.c
+
+   Example for usage of vtkfig C API.
+*/
 #include <vtkfigCAPI.h>
 #include <stdio.h>
 #include <math.h>

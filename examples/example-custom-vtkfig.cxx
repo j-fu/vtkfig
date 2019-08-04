@@ -1,7 +1,9 @@
 ///
-///   \example   examples/example-custom.cxx
+///   \example  example-custom-vtkfig.cxx
 ///
-///   Custom vtk pipeline with vtkfig::Figure
+///   Custom vtk pipeline with vtkfig::Figure.
+///
+///  Example showing creation of custom scenes using  vtkfig::Frame and vtkfig::Figure base class.
 ///
 
 #include <chrono>
@@ -25,12 +27,6 @@ inline double G(double x,double y, double t)
 
 int main(void)
 {
-
-  cout <<
-R"(
-Example showing creation of custom scenes using 
-vtkfigFrame and vtkfigFigure base class.
-)";
 
   size_t nspin=vtkfig::NSpin();
 
@@ -108,7 +104,7 @@ vtkfigFrame and vtkfigFigure base class.
       {1.0, 1.0, 0.0, 0.0}
     };
 
-  vtkSmartPointer<vtkLookupTable> lut = vtkfig::BuildLookupTable(rgbcolors,255);
+  vtkSmartPointer<vtkLookupTable> lut = vtkfig::internal::BuildLookupTable(rgbcolors,255);
   
   gridfunc->GetPointData()->SetScalars(colors);
   
@@ -146,7 +142,7 @@ vtkfigFrame and vtkfigFigure base class.
   // renderer
   figure->RTAddActor(surfplot);
   figure->RTAddActor(outline);
-  figure->RTAddActor2D(vtkfig::BuildColorBar(mapper));
+  figure->RTAddActor2D(vtkfig::internal::BuildColorBar(mapper));
   frame->AddFigure(figure);
   
   

@@ -1,7 +1,9 @@
-//
-// Learning example for server-client communication via sockets
-// using vtk infrastructure
-//
+/// \example example-comm-client-server-vtk.cxx
+/// 
+/// Example for server-client communication via sockets
+/// using vtk infrastructure
+///
+
 #include <cstdio>
 #include <thread>
 #include <cassert>

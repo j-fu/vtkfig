@@ -1,9 +1,7 @@
-///
-///   \example   examples/example-gridview.cxx
-///
-///  2D Grid visualization
-///
-
+/**
+\example example-gridview3d.cxx
+3D Grid visualization with vtkfig::GridView
+*/
 
 #include <chrono>
 #include <vtkMath.h>
@@ -80,22 +78,21 @@ int main(void)
       {1.0, 1.0, 0.0, 0.0}
     };
 
-  auto frame=vtkfig::Frame::New();
-  frame->SetSize(800,400);
+  vtkfig::Frame frame;
+  frame.SetSize(800,400);
 
-  auto ugriddata=vtkfig::DataSet::New();
-  ugriddata->SetSimplexGrid(3,points,cells);
+  vtkfig::DataSet ugriddata;
+  ugriddata.SetSimplexGrid(3,points,cells);
 
-
-  auto rgriddata=vtkfig::DataSet::New();
-  rgriddata->SetRectilinearGrid(x,y,z);
-  auto rgview=vtkfig::GridView::New();
-  rgview->SetData(rgriddata);
-  auto ugview=vtkfig::GridView::New();
-  ugview->SetData(ugriddata);
-  ugview->SetTitle("Unstructured Grid");
-  rgview->SetTitle("Rectilinear Grid");
-  frame->AddFigure(rgview,0);
-  frame->AddFigure(ugview,1);
-  frame->Interact();
+  vtkfig::DataSet rgriddata;
+  rgriddata.SetRectilinearGrid(x,y,z);
+  vtkfig::GridView rgview;
+  rgview.SetData(rgriddata);
+  vtkfig::GridView ugview;
+  ugview.SetData(ugriddata);
+  ugview.SetTitle("Unstructured Grid");
+  rgview.SetTitle("Rectilinear Grid");
+  frame.AddFigure(rgview,0);
+  frame.AddFigure(ugview,1);
+  frame.Interact();
 }

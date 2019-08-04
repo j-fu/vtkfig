@@ -1,7 +1,7 @@
 ///
-///   \example   examples/example-rectquiver2d.cxx
+///   \example   example-rectstream2d.cxx
 ///
-///  Vector function on 2D rectilinear grid
+///  Streamline view for vectors on 3D grid
 ///
 
 #include "vtkfigFrame.h"
@@ -51,8 +51,6 @@ int main(void)
   const double dy = (y_upp-y_low)/(Ny-1);
   const double dz = (z_upp-z_low)/(Nz-1);
 
-  auto frame=vtkfig::Frame::New();
-
   auto colors=vtkfig::RGBTable
     { 
       {0.0, 0.3, 0.3, 1.0},
@@ -81,9 +79,11 @@ int main(void)
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
 
-  auto griddata=vtkfig::DataSet::New();
-  griddata->SetRectilinearGrid(x,y,z);
-  griddata->SetPointVector(u,v ,w ,"flow");
+  vtkfig::Frame frame;
+
+  vtkfig::DataSet griddata;
+  griddata.SetRectilinearGrid(x,y,z);
+  griddata.SetPointVector(u,v ,w ,"flow");
   std::vector<double> seeds=
   {
     0,0.1,0,
@@ -96,15 +96,15 @@ int main(void)
 
 
   
-  auto vview=vtkfig::VectorView::New();
-  vview->SetData(griddata,"flow");
-  vview->SetQuiverGrid(5,5,15);
-  vview->SetStreamLineSeedPoints(seeds);
-  vview->ShowStreamLines(true);
-  vview->SetValueRange(0,3);
+  vtkfig::VectorView  vview;
+  vview.SetData(griddata,"flow");
+  vview.SetQuiverGrid(5,5,15);
+  vview.SetStreamLineSeedPoints(seeds);
+  vview.ShowStreamLines(true);
+  vview.SetValueRange(0,3);
 
 
-  frame->AddFigure(vview);
+  frame.AddFigure(vview);
 
 
   while (ii<nspin)
@@ -119,12 +119,12 @@ int main(void)
           w[k*Nx*Ny+j*Nx+i] = UZ(x[i],y[j],z[k],t);
         }
     
-    griddata->SetPointVector(u,v,w,"flow");
+    griddata.SetPointVector(u,v,w,"flow");
 
-    frame->Show();
+    frame.Show();
 
     if (ii==3) 
-      frame->WritePNG("example-rectstream3.png");
+      frame.WritePNG("example-rectstream3.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;
