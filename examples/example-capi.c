@@ -26,15 +26,16 @@ int main(int argc, char *argv[])
   double y_upp = 4;
   double dx = (x_upp-x_low)/(Nx-1);
   double dy = (y_upp-y_low)/(Ny-1);
-
-  for (int i=0; i<Nx; i++)
+  int i,j;
+  
+  for (i=0; i<Nx; i++)
     x[i] = x_low+i*dx;
   
-  for (int i=0; i<Ny; i++)
+  for (i=0; i<Ny; i++)
     y[i] = y_low + i*dy;
 
-  for (int i=0; i<Nx; i++)
-    for (int j=0; j<Ny; j++)
+  for (i=0; i<Nx; i++)
+    for (j=0; j<Ny; j++)
     {
       z[j*Nx+i] = G(x[i],y[j],0);
     }
@@ -54,8 +55,8 @@ int main(int argc, char *argv[])
   double dt=0.1;
   while (ii<nspin)
   {
-    for (int i=0; i<Nx; i++)
-      for (int j=0; j<Ny; j++)
+    for (i=0; i<Nx; i++)
+      for (j=0; j<Ny; j++)
       {
         z[j*Nx+i] = G(x[i],y[j],t);
       }

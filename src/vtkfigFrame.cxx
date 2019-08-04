@@ -361,7 +361,7 @@ namespace vtkfig
     {
       if (subframe.renderer)
       {
-        subframe.renderer->Clear();
+//        subframe.renderer->Clear(); crashes somehow, but seems to be not relevant
         if (!subframe.hidden)
           this->window->RemoveRenderer(subframe.renderer);
       }

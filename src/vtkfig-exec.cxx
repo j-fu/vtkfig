@@ -13,7 +13,7 @@ Run command on host and send all vtkfig rendering commands to local host.
 
 Parameters:
    -p   portnumber  Port number on remote host for connection (default: 35000)
-   -t   timeout     Timeout for establishing connection in ms (default: 500)
+   -t   timeout     Timeout for establishing connection in ms (default: 1000)
    -via vianame     Name of via host (for ssh tunneling)
    -ssh             Connet via ssh 
         hostname    Name of host to run command on (mandatory)
@@ -53,7 +53,7 @@ namespace vtkfig
       int port=35000;
       std::string remotecmd;
       std::string hostname;
-      int wtime=500;
+      int timeout=1000;
 
       bool help_switch=false;
       bool have_hostname=false;
@@ -86,7 +86,7 @@ namespace vtkfig
         
           if (strcmp(argv[iarg],"-t")==0 && (iarg+1<argc)) 
           {
-            wtime=atoi(argv[iarg+1]); 
+            timeout=atoi(argv[iarg+1]); 
             iarg+=2; 
             continue;
           }
@@ -191,7 +191,7 @@ namespace vtkfig
           cout << systemcmd << endl;
         
           system(systemcmd.c_str());
-          std::this_thread::sleep_for (std::chrono::milliseconds(wtime));
+          std::this_thread::sleep_for (std::chrono::milliseconds(timeout));
         }   
       
         communicator=vtkSmartPointer<Communicator>::New();
@@ -231,14 +231,14 @@ namespace vtkfig
         while (1)
         {
           Communicator::Command cmd;
-          Figure *figure;
           Frame* frame;
           int framenum=-1;        
         
+//          std::this_thread::sleep_for(std::chrono::milliseconds(1000));
           communicator->ReceiveCommand(cmd);
           communicator->ReceiveInt(framenum);
           if (debug_level>0) 
-            cout << "vtkfig-exec: client cmd: " << static_cast<int>(cmd) << " frame: " << framenum << endl;
+            cout << "vtkfig-exec: received: " << static_cast<int>(cmd) << " frame: " << framenum <<  " ";
         
           if (framenum>=0)
             frame=MainThread::mainthread->framemap[framenum];
@@ -249,14 +249,14 @@ namespace vtkfig
           case Communicator::Command::Dummy:
           {
             if (debug_level>0)
-              cout << "vtkfig-exec: Dummy" << endl;
+              cout << " Dummy" << endl;
           }
           break;
         
           case Communicator::Command::Clear:
           {
             if (debug_level>0)
-              cout << "vtkfig-exec: clear" << endl;
+              cout << " clear" << endl;
           }
           break;
         
@@ -266,23 +266,23 @@ namespace vtkfig
             communicator->ReceiveString(s);
           
             if (debug_level>0)
-              cout << "vtkfig-exec: String: " <<  s << endl;
+              cout << " String: " <<  s << endl;
           }
           break;
         
           case Communicator::Command::Exit:
           {
-            cout << "vtkfig-exec: Exit by request" << endl;
+            cout << " Exit by request" << endl;
             return 0;
           }
           break;
-        
+          
           case Communicator::Command::MainThreadAddFrame:
           {
             frame=new vtkfig::Frame();
-          
+            
             if (debug_level>0)
-              cout << "vtkfig-exec: New frame" << endl;
+              cout << " New frame" << endl;
           }
           break;
 
@@ -293,8 +293,8 @@ namespace vtkfig
             communicator->ReceiveInt(nY);
             frame->SetLayout(nX,nY);
           
-//            if (debug_level>0)
-            cout << "vtkfig-exec: frame layout " << nX << " " << nY << endl;
+            if (debug_level>0)
+              cout << " frame layout " << nX << " " << nY << endl;
           }
           break;
 
@@ -302,8 +302,8 @@ namespace vtkfig
           {
             MainThread::mainthread->RemoveFrame(MainThread::mainthread->framemap[framenum]);
             if (debug_level>0)
-              cout << "vtkfig-exec: Remove Frame" << endl;
-          
+              cout << " Remove Frame" << endl;
+            
           }
           break;
         
@@ -316,42 +316,42 @@ namespace vtkfig
           
             if (figtype=="Surf2D")
             {
-              figure=new vtkfig::Surf2D();
+              auto figure=new vtkfig::Surf2D();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
-                cout << "vtkfig-exec: Add Surf2d" << endl;
+                cout << " Add Surf2d ipos= " << ipos << endl;
             }
             else if (figtype=="ScalarView")
             {
-              figure=new vtkfig::ScalarView();
+              auto figure=new vtkfig::ScalarView();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
-                cout << "vtkfig-exec: Add ScalarView" << endl;
+                cout << " Add ScalarView ipos= " << ipos  << endl;
             }
             else if (figtype=="VectorView")
             {
-              figure=new vtkfig::VectorView();
+              auto figure=new vtkfig::VectorView();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
-                cout << "vtkfig-exec: Add VectorView" << endl;
+                cout << " Add VectorView ipos= " << ipos  << endl;
             }
             else if (figtype=="GridView")
             {
-              figure=new vtkfig::GridView();
+              auto figure=new vtkfig::GridView();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
-                cout << "vtkfig-exec: Add GridView" << endl;
+                cout << " Add GridView ipos= " << ipos  << endl;
             }
             else if (figtype=="XYPlot")
             {
-              figure=new vtkfig::XYPlot();
+              auto figure=new vtkfig::XYPlot();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
-                cout << "vtkfig-exec: Add XYPlot" << endl;
+                cout << " Add XYPlot  ipos= " << ipos  << endl;
             }
             else
             {
-              cout << "vtkfig-exec: Communication error addfig: type"<< figtype << endl;
+              cout << " Communication error addfig: type"<< figtype << endl;
               return 0;
             }
           }
@@ -359,6 +359,8 @@ namespace vtkfig
         
           case Communicator::Command::MainThreadShow:
           {
+            if (debug_level>0)
+              cout << " MainThreadShow" << endl;
             for (auto & framepair: MainThread::mainthread->framemap)
             {
               for (auto figure: framepair.second->figures)
@@ -372,8 +374,11 @@ namespace vtkfig
         
           case Communicator::Command::FrameActiveSubFrame:
           {
+            assert(frame);
             int ipos;
             communicator->ReceiveInt(ipos);
+            if (debug_level>0)
+              cout << " SetActiveSubframe ipos:"<< ipos << endl;
             frame->SetActiveSubFrame(ipos);
           }
           break;
@@ -383,6 +388,8 @@ namespace vtkfig
             int x,y;
             communicator->ReceiveInt(x);
             communicator->ReceiveInt(y);
+            if (debug_level>0)
+              cout << " FrameSize: " << x  << " " << y << endl;
             frame->SetSize(x,y);
           }
           break;
@@ -392,6 +399,8 @@ namespace vtkfig
             int x,y;
             communicator->ReceiveInt(x);
             communicator->ReceiveInt(y);
+            if (debug_level>0)
+              cout << " FramePosition: " << x  << " " << y << endl;
             frame->SetPosition(x,y);
           }
           break;
@@ -400,6 +409,8 @@ namespace vtkfig
           {
             std::string title;
             communicator->ReceiveString(title);
+            if (debug_level>0)
+              cout << " FrameTitle: " << title << endl;
             frame->SetFrameTitle(title);
           }
           break;
@@ -408,6 +419,8 @@ namespace vtkfig
           {
             std::string title;
             communicator->ReceiveString(title);
+            if (debug_level>0)
+              cout << " WindowTitle: " << title << endl;
             frame->SetWindowTitle(title);
           }
           break;
@@ -416,6 +429,8 @@ namespace vtkfig
           {
             std::string fname;
             communicator->ReceiveString(fname);
+            if (debug_level>0)
+              cout << " FrameDump: " << fname << endl;
             frame->WritePNG(fname);
           }
           break;
@@ -428,6 +443,10 @@ namespace vtkfig
             communicator->ReceiveInt(thisframepos);
             communicator->ReceiveInt(otherframenum);
             communicator->ReceiveInt(otherframepos);
+            if (debug_level>0)
+              cout << " FrameLinkCamera: "<< endl;
+
+
             auto otherframe=MainThread::mainthread->framemap[otherframenum];
             frame->LinkCamera(
               thisframepos,
@@ -440,7 +459,7 @@ namespace vtkfig
           case Communicator::Command::MainThreadTerminate:
           {
             if (debug_level>0)
-              cout << "vtkfig-exec: client termination" << endl;
+              cout << " client termination" << endl;
             MainThread::mainthread->Terminate();
             return 0;
           }

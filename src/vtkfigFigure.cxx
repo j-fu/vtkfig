@@ -180,7 +180,10 @@ namespace vtkfig
       
   }
   
-  
+  void Figure::SetTransformDirty()
+  { 
+    this->transform_dirty=true;
+  }
 
   void Figure::SetMaskedData(DataSet& vtkfig_data, const std::string name,const std::string maskname)
   {
@@ -794,7 +797,7 @@ namespace vtkfig
     {
       communicator->SendCharBuffer((char*)&state,sizeof(state));
       communicator->SendString(dataname);
-      communicator->Send(data,1,1);
+      communicator->Send(data,internals::Communicator::remoteHandle,static_cast<int>(internals::Communicator::Tag::DataSet));
     }
     ServerRTSend(communicator);
   };
@@ -808,16 +811,16 @@ namespace vtkfig
 
       communicator->ReceiveCharBuffer((char*)&state,sizeof(state));
       communicator->ReceiveString(dataname);
-
       vtkSmartPointer<vtkDataSet> data;
       if (state.datatype==DataSet::DataType::RectilinearGrid)
         data=vtkSmartPointer<vtkRectilinearGrid>::New();
       else if (state.datatype==DataSet::DataType::UnstructuredGrid)
         data=vtkSmartPointer<vtkUnstructuredGrid>::New();
-      communicator->Receive(data,1,1);
+      communicator->Receive(data,internals::Communicator::remoteHandle,static_cast<int>(internals::Communicator::Tag::DataSet));
       data_producer->SetOutput(data);
     }
     ClientMTReceive(communicator);
+        
   }
   
 

@@ -111,26 +111,6 @@ namespace vtkfig
     }
 
 
-    void MainThread::OpenConnection(int port, int wtime)
-    {
-      if (connection_open) return;
-
-      cout << "vtkfig: Server start listening on port "<< port << endl;
-      communicator=vtkSmartPointer<Communicator>::New();
-      communicator->server_listen_num_retry=1;
-      communicator->server_listen_waiting_time=1000*wtime;
-      int rc=communicator->ServerConnect(port);
-      if (rc)  
-        cout << "vtkfig: Server connected" << endl;
-      else
-      {
-        cout << "vtkfig: Nobody is listening ... giving up" << endl;
-        throw std::runtime_error("Server connection failed");
-        exit(1);
-      }
-      connection_open=true;
-    }
-   
     MainThread::~MainThread()
     {
       if (debug_level>0)
@@ -149,6 +129,7 @@ namespace vtkfig
     }
 
 
+   
 
     void  MainThread::Update()
     {
@@ -166,21 +147,18 @@ namespace vtkfig
       framemap[lastframenum++]=frame;
       if (lastframenum==1)
       {
-        if (try_running_multithreaded)
+        if (connection_open)
+        {
+          PrepareCommunicatorThread(this);
+          CommunicatorThreadCallback(this);
+        }
+        else if (try_running_multithreaded)
         {
           Start();
         }
         else
         {
-          if (connection_open)
-          {
-            PrepareCommunicatorThread(this);
-            CommunicatorThreadCallback(this);
-          }
-          else
-          {
             PrepareRenderThread(this);
-          }
         }
       }
       else
@@ -222,7 +200,7 @@ namespace vtkfig
     void MainThread::SendCommand(int number_in_frame_list, const std::string from, Communicator::Command cmd)
     {
       if (debug_level>0)
-        cout << "vtkfig: MainThread: " << from << " " << number_in_frame_list << endl;
+        cout << "vtkfig: MainThread::SendCommand " << from << " " << number_in_frame_list << endl;
 
 
       this->cmd=cmd;
@@ -965,6 +943,27 @@ namespace vtkfig
 
     ////////////////////////////////////////////////////////////////
     /// Server communication 
+
+    void MainThread::OpenConnection(int port, int wtime)
+    {
+      if (connection_open) return;
+
+      cout << "vtkfig: Server start listening on port "<< port << endl;
+      communicator=vtkSmartPointer<Communicator>::New();
+      communicator->server_listen_num_retry=1;
+      communicator->server_listen_waiting_time=1000*wtime;
+      int rc=communicator->ServerConnect(port);
+      if (rc)  
+        cout << "vtkfig: Server connected" << endl;
+      else
+      {
+        cout << "vtkfig: Nobody is listening ... giving up" << endl;
+        throw std::runtime_error("Server connection failed");
+        exit(1);
+      }
+      connection_open=true;
+    }
+
     void  MainThread::PrepareCommunicatorThread(MainThread* mainthread)
     {
       mainthread->cmd=Communicator::Command::MainThreadAddFrame;
@@ -980,11 +979,15 @@ namespace vtkfig
         if (mainthread->running_multithreaded)
           std::unique_lock<std::mutex> lock(mainthread->mutex);
 
+//        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
         if (mainthread->debug_level>0) 
-          cout << "vtkfig: server cmd: " << static_cast<int>(mainthread->cmd) << " frame: " <<mainthread->iframe<< endl;
+          cout << "vtkfig: send cmd: " << static_cast<int>(mainthread->cmd) << " frame: " <<mainthread->iframe<< endl;
+
 
         mainthread->communicator->SendCommand(mainthread->cmd);
         mainthread->communicator->SendInt(mainthread->iframe);
+
 
         // Command dispatch
         switch(mainthread->cmd)
@@ -992,7 +995,6 @@ namespace vtkfig
           
         case Communicator::Command::MainThreadAddFrame:
         {
-
         }
         break;
 

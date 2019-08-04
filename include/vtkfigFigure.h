@@ -128,6 +128,8 @@ namespace vtkfig
     /// Keep aspect ratio
     void KeepXYAspect(bool b) {state.keep_aspect=b;}
 
+    ///  InvalidateTransform
+    void SetTransformDirty();
 
     /// Toggle rendering of domain axes
     void ShowDomainAxes(bool b) { state.show_domain_axes=b;}

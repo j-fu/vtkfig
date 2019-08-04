@@ -104,15 +104,17 @@ namespace vtkfig
           String,
           CharBuffer,
           FloatBuffer,
-          DoubleBuffer
+          DoubleBuffer,
+          DataSet
           };
+
+      static const int remoteHandle=1;
 
     private:
       friend class MainThread;
       friend class Frame;
       friend class Client;
 
-      const int remoteHandle=1;
 
       int server_listen_num_retry=10;
       int server_listen_retry_timeout=100;

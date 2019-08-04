@@ -314,12 +314,15 @@ namespace vtkfig
 
   void VectorView::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator)
   {
+        cout <<"ServerRTSend" << endl;
     communicator->Send(probePolyData,1,1);
     communicator->Send(seedPolyData,1,1);
   }
 
   void VectorView::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator)
   {
+        cout <<"ClientMTReceive" << endl;
+
 
     if (probePolyData==NULL)
       probePolyData=vtkSmartPointer<vtkPolyData>::New();
