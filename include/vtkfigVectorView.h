@@ -1,3 +1,9 @@
+/**
+    \file vtkfigVectorView.h
+
+    Provide user API  class vtkfig::VectorView derived from vtkfig::Figure for visualizing 2D/3D vector data.
+*/
+
 #ifndef VTKFIG_QUIVER_H
 #define VTKFIG_QUIVER_H
 
@@ -19,8 +25,13 @@ namespace vtkfig
   class VectorView: public Figure
     {
     public:
-      
+
+      /// Constructor
       VectorView();
+
+      /// Destructor
+      ~VectorView(){};
+      /// Smart pointer constructor.
       static std::shared_ptr<VectorView> New() { return std::make_shared<VectorView>(); }
       virtual std::string SubClassName() override final {return std::string("VectorView");}
     
@@ -120,8 +131,8 @@ namespace vtkfig
     private:
      
       void RTBuildVTKPipeline() override final;
-      void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator) override final;
-      void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator) override final;
+      void ServerMPSend(vtkSmartPointer<internals::Communicator> communicator) override final;
+      void ClientMPReceive(vtkSmartPointer<internals::Communicator> communicator) override final;
       
 
       template <class DATA> void  RTBuildVTKPipeline0();

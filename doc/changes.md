@@ -2,10 +2,16 @@ Changes
 =======
 
 
-## Changes 
+## Changes
+- tip
+  - Started C language API (mainly for calling from Julia)
+  - Fixed a number of smaller bugs
+  - Restructured documentation
+  - Switched examples to reference based idiom due to better interaction with doxygen
+  
 - v0.20
   - Internal restructuring for changing grids: use vtkTrivialDataProducer instead of data object
-    when constructing pipelines, detect  region number ranges with vminmax.No API change necessary.
+    when constructing pipelines, detect  region number ranges with vminmax. No API change necessary.
   - Video recording via vtkOggTheoraWriter
 
 - v0.19

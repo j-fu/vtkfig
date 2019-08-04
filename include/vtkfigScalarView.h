@@ -1,3 +1,9 @@
+/**
+    \file vtkfigScalarView.h
+
+    Provide user API  class vtkfig::ScalarView derived from vtkfig::Figure for visualizing 2D/3D scalar data.
+*/
+
 #ifndef VTKFIG_SCALARVIEW_H
 #define VTKFIG_SCALARVIEW_H
 
@@ -23,8 +29,16 @@ namespace vtkfig
   {
     
   public:
+
+    /// Constructor.
     ScalarView();
+
+    /// Destructor.
+    ~ScalarView(){};
+
+    /// Create smart pointer to ScalarView instance
     static std::shared_ptr<ScalarView> New() { return std::make_shared<ScalarView>();}
+
     virtual std::string SubClassName()  override final {return std::string("ScalarView");}
     
     /// Toggle surface plot on plane
@@ -88,8 +102,8 @@ namespace vtkfig
     void RTBuildVTKPipeline() override final;
     
     
-    void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator) override final;
-    void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator) override final;
+    void ServerMPSend(vtkSmartPointer<internals::Communicator> communicator) override final;
+    void ClientMPReceive(vtkSmartPointer<internals::Communicator> communicator) override final;
     
     
     template <class GRIDFUNC, class FILTER>

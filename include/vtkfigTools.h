@@ -1,3 +1,9 @@
+/**
+    \file vtkfigTools.h
+
+    Various helper tools and API functions not bound to classes.
+*/
+
 #ifndef VTKFIG_TOOLS_H
 #define VTKFIG_TOOLS_H
 
@@ -16,38 +22,51 @@
 #include <vtkLookupTable.h>
 #include <vtkScalarBarActor.h>
 
-#include "vtkfigCommunicator.h"
 
 namespace vtkfig
 {
+
+  /// Print Open GL info to screen.
+  ///
+  /// Invoked by vtkfig-exec executable.
   void PrintOpenGLInfo(void);
 
-  /// RGB point for color tables
+  ///  Return content of environment variable VTKFIG_NSPIN or large value.
+  ///
+  /// Helper function for examples.
+  size_t NSpin();
+  
+  /// RGB point struct for color tables.
   struct RGBPoint { double x,r,g,b;};
 
+  /// Color table.
   typedef std::vector<RGBPoint> RGBTable;
 
-  void SendRGBTable(vtkSmartPointer<internals::Communicator> communicator, RGBTable & rgbtab);
-  
-  void ReceiveRGBTable(vtkSmartPointer<internals::Communicator> communicator, RGBTable & rgbtab);
-  
-  size_t NSpin();
 
-  vtkSmartPointer<vtkLookupTable>  BuildLookupTable(RGBTable & xrgb, size_t size);
-  
-  vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper, int irank=0);
-
+  /// Create a 2D Delaunay triangulation from point set
   template <class V, class IV> inline  void Delaunay2D(const V & points_in,  V & points, IV & cells);
 
+  /// Create a 3D Delaunay triangulation from point set
   template <class V, class IV> inline  void Delaunay3D(const V & points_in,  V & points, IV & cells);
 
-  void PrintPoints(vtkSmartPointer<vtkPoints> pts, std::ostream & os);
-
-  void PrintArray(vtkSmartPointer<vtkDataArray> data, std::ostream & os);
-
-
-
-
+  
+  namespace  internal
+  {
+    
+    /// Build lookup table.
+    vtkSmartPointer<vtkLookupTable>  BuildLookupTable(RGBTable & xrgb, size_t size);
+    
+    /// Build  colorbar
+    vtkSmartPointer<vtkScalarBarActor> BuildColorBar(vtkSmartPointer<vtkPolyDataMapper> mapper, int irank=0);
+    
+    /// Print vtkPoints
+    void PrintPoints(vtkSmartPointer<vtkPoints> pts, std::ostream & os);
+    
+    /// Print vtkDataArray
+    void PrintArray(vtkSmartPointer<vtkDataArray> data, std::ostream & os);
+    
+  }
+  
   template <class V, class IV> inline void Delaunay2D(const V & points_in,  V & points, IV & cells)
   {
     assert(points.size()==0);

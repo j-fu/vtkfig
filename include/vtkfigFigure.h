@@ -1,3 +1,9 @@
+/**
+    \file vtkfigFigure.h
+
+    Provide user API base class vtkfig::Figure for figures with API to rendering pipelines.
+*/
+
 #ifndef VTKFIG_FIGURE_H
 #define VTKFIG_FIGURE_H
 
@@ -43,12 +49,15 @@ namespace vtkfig
   /// Base class for all figures.
   ///
   /// It justs consists of a set of instances of vtkActor which
-  /// contains the data  used by vtk.
+  /// contains the data  used by vtk. In order to ease coding (?), derived
+  /// class data are defined here as well
   /// 
   /// Derived classes just should fill these actors by calling Figure::AddActor
   ///
   /// In this way, any vtk rendering pipeline can be used. 
   /// 
+  /// All methods prefixed with "RT" shall be  called only from render thread.
+  /// All methods prefixed with "MP" shall be  called from multiprocessing rendering client.
   class Figure
   {
 
@@ -141,6 +150,40 @@ namespace vtkfig
     void ShowDomainBoundary(bool b) { state.show_domain_boundary=b;}
 
     
+    /// Add vtk Actor to renderer showing figure.
+    ///
+    /// Intended for custom pipeline.
+    void AddContextActor(vtkSmartPointer<vtkContextActor> prop) {RTAddContextActor(prop);}
+
+    /// Add vtk Actor to renderer showing figure
+    ///
+    /// Intended for custom pipeline.
+    void AddActor(vtkSmartPointer<vtkActor> prop) {RTAddActor(prop);};
+
+    /// Add vtk Actor to renderer showing figure
+    ///
+    /// Intended for custom pipeline.
+    void AddActor2D(vtkSmartPointer<vtkActor2D> prop) {RTAddActor2D(prop);};
+
+    /// Show string in message field
+    ///
+    /// Intended for custom pipeline.
+    void Message(std::string msg) {RTMessage(msg);}
+
+    /// Add annotations
+    ///
+    /// Intended for custom pipeline.
+    void AddAnnotations(){RTAddAnnotations();}
+
+    
+  protected:
+    friend class Frame;
+    friend class internals::MainThread;
+    friend class internals::Client;
+    friend class internals::MyInteractorStyle;
+    friend class internals::MyTimerCallback;
+    friend class internals::MySliderCallback;
+
     /// Add vtk Actor to renderer showing figure
     ///
     /// Usually, this is called from the render thread, it
@@ -177,141 +220,24 @@ namespace vtkfig
     void RTInitAnnotations();
 
 
-    
-  protected:
-
-    friend class Frame;
-    friend class internals::MainThread;
-    friend class internals::Client;
-    friend class internals::MyInteractorStyle;
-    friend class internals::MyTimerCallback;
-    friend class internals::MySliderCallback;
 
     /// Send rgb table to client
-    static void SendRGBTable(vtkSmartPointer<internals::Communicator> communicator, RGBTable & rgbtab);
+    static void MPSendRGBTable(vtkSmartPointer<internals::Communicator> communicator, RGBTable & rgbtab);
 
     /// Receive rgb table from client.
-    static void ReceiveRGBTable(vtkSmartPointer<internals::Communicator> communicator, RGBTable & rgbtab);
-
-
-    /// The following items are declared in the base
-    /// class in order to allow easy coding of interaction
+    static void MPReceiveRGBTable(vtkSmartPointer<internals::Communicator> communicator, RGBTable & rgbtab);
     
-    /// Title+message text fields
-    vtkSmartPointer<vtkCornerAnnotation> annot;
-    vtkSmartPointer<vtkTransform> transform=0;
-
-    /// Cutters for plane sections
-    vtkSmartPointer<vtkCutter> planecutX;
-    vtkSmartPointer<vtkCutter> planecutY;
-    vtkSmartPointer<vtkCutter> planecutZ;
-
-    /// Plane equations for plane sections
-    vtkSmartPointer<vtkPlane> planeX;
-    vtkSmartPointer<vtkPlane> planeY;
-    vtkSmartPointer<vtkPlane> planeZ;
-
-    /// Arrow glyph source
-    vtkSmartPointer<vtkGlyphSource2D> arrow2d;    
-    vtkSmartPointer<vtkTransformPolyDataFilter> arrow3d;    
-    vtkSmartPointer<vtkTransform> arrow3dt;
-    vtkSmartPointer<vtkArrowSource> arrow3ds;
-
-    /// Items for isosurface plot
-    vtkSmartPointer<vtkActor>     isosurface_plot;
-    vtkSmartPointer<vtkContourFilter> isosurface_filter;
-
-    /// Items for isoline plot
-    vtkSmartPointer<vtkActor>     isoline_plot;
-    vtkSmartPointer<vtkContourFilter> isoline_filter;
-
-    /// Items for elevation plot
-    vtkSmartPointer<vtkActor>     elevation_plot;
-
-    /// Items for surface plot
-    vtkSmartPointer<vtkActor>     surface_plot;
-
-    /// Items for elevation plot
-    vtkSmartPointer<vtkTransform> warp_transform;
-
-
-    vtkSmartPointer<vtkCubeAxesActor2D> axes;
-    vtkSmartPointer<vtkActor> outline;
-    vtkSmartPointer<vtkActor> splot;
-
-
     /// Calculate transformation to unit cube
     /// This shall be applied to all data. Camera is fixed.
     void RTCalcTransform();
 
 
-    /// Data producer for grid dataset
-    vtkSmartPointer<vtkTrivialProducer> data_producer=NULL;
 
-    /// Data producer for boundary grid dataset
-    vtkSmartPointer<vtkTrivialProducer> boundary_data_producer=NULL;
-
-    /// coordinate scale
-    double coordinate_scale_factor;
-
-    /// Name of data item in data set 
-    std::string dataname;
-
-    /// Cell mask
-    vtkSmartPointer<vtkIdList> celllist=0;
-
-    /// Title of figure
-    std::string title;
-
-    /// Color lookup table for surface plots
-    vtkSmartPointer<vtkLookupTable> surface_lut;
-    RGBTable surface_rgbtab{{0,0,0,1},{1,1,0,0}};
-    
-    vtkSmartPointer<vtkLookupTable> quiver_lut;
-    RGBTable quiver_rgbtab{{0,0,0,0},{1,0,0,0}};
-
-    vtkSmartPointer<vtkLookupTable> stream_lut;
-    RGBTable stream_rgbtab{{0,0,0,1},{1,1,0,0}};
-
-
-    vtkSmartPointer<vtkLookupTable> cell_lut;
-    vtkSmartPointer<vtkLookupTable> bface_lut;
-    RGBTable cell_rgbtab{
-      {0.00, 1.0, 0.5, 0.5},
-      {0.25, 1.0, 1.0, 0.5},
-      {0.50, 0.5, 1.0, 0.5},
-      {0.75, 0.5, 1.0, 1.0},
-      {1.00, 0.5, 0.5, 1.0}};
-    int cell_rgbtab_size=65;
-
-    RGBTable bface_rgbtab{
-      {0.00, 0.8, 0.0, 0.0},
-      {0.25, 0.8, 0.8, 0.0},
-      {0.50, 0.0, 0.8, 0.0},
-      {0.75, 0.0, 0.8, 0.8},
-      {1.00, 0.0, 0.0, 0.8}};
-    int bface_rgbtab_size=65;
-
-    vtkSmartPointer<vtkScalarBarActor> cbar=NULL;
-    vtkSmartPointer<vtkScalarBarActor> bcbar=NULL;
-
-
-
-    /// Color lookup table for contour plots
-    ///vtkSmartPointer<vtkLookupTable> contour_lut;
-    /// RGBTable contour_rgbtab{{0,0,0,0},{1,0,0,0}};
-    
-    /// Color lookup table for elevation plots
-    vtkSmartPointer<vtkLookupTable> elevation_lut;
-    RGBTable elevation_rgbtab{{0.0,0.9,0.9,0.9},{1.0,0.9,0.9,0.9}};
-    
     /// Set minmax values from data
     void SetVMinMax();
 
     /// Generate isolevels after minmax data known
     void GenIsolevels();
-
-    /// All functions prefixed with "RT" shall be  called only from render thread.
 
 
     /// Subclasses re-implement this in order to build
@@ -338,30 +264,42 @@ namespace vtkfig
     /// Pre-Render actions
     virtual void RTPreRender() {};
 
-    /// Send data to client
-    virtual void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator){} 
+    /// Send subclass data to client.
+    /// Called from rendering thread.
+    virtual void ServerMPSend(vtkSmartPointer<internals::Communicator> communicator){} 
+
+    /// Receive subclass data from server
+    virtual void ClientMPReceive(vtkSmartPointer<internals::Communicator> communicator) {};
+    
+    /// Send data to client.
+    /// Called from rendering thread.
+    void ServerMPSendData(vtkSmartPointer<internals::Communicator> communicator);
 
     /// Receive data from server
-    virtual void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator) {};
-    
-    void ServerRTSendData(vtkSmartPointer<internals::Communicator> communicator);
-    void ClientMTReceiveData(vtkSmartPointer<internals::Communicator> communicator);
+    void ClientMPReceiveData(vtkSmartPointer<internals::Communicator> communicator);
 
 
 
-    /// Process keyboard and mouse move events
+    /// Process keyboard event
     virtual void RTProcessKey(const std::string key);
+
+    /// Process mouse  event
     virtual void RTProcessMove(int dx, int dy);
     
     /// Process keyboard and mouse move events for plane section editing
     int RTProcessPlaneKey(const std::string plane,int idim, const std::string key, bool & edit, vtkSmartPointer<vtkCutter> planecut);
+    /// Process keyboard and mouse move events for plane section editing
     int RTProcessPlaneMove(const std::string plane,int idim, int dx, int dy, bool & edit, vtkSmartPointer<vtkCutter> planecut );
+    /// Process keyboard and mouse move events for plane section editing
     void RTShowPlanePos(vtkSmartPointer<vtkCutter> planecut,const std::string plane,  int idim);
 
     /// Process keyboard and mouse move events for isolevel editing
     int RTProcessIsoKey(const std::string key, bool & edit);
+    /// Process keyboard and mouse move events for isolevel editing
     int RTProcessIsoMove(int dx, int dy, bool & edit);
+    /// Process keyboard and mouse move events for isolevel editing
     void RTShowIsolevel();
+    /// Process keyboard and mouse move events for isolevel editing
     void RTUpdateIsoSurfaceFilter();
 
     /// Process keyboard events for quiver arrow editing etc
@@ -391,6 +329,140 @@ namespace vtkfig
     /// Obtain the data range from the relevant dataset.
     void SetRange();
 
+    /// Title+message text fields
+    vtkSmartPointer<vtkCornerAnnotation> annot;
+
+    /// Transformation
+    vtkSmartPointer<vtkTransform> transform=0;
+
+    /// Cutter for plane sections
+    vtkSmartPointer<vtkCutter> planecutX;
+    /// Cutter for plane sections
+    vtkSmartPointer<vtkCutter> planecutY;
+    /// Cutter for plane sections
+    vtkSmartPointer<vtkCutter> planecutZ;
+
+    /// Plane equation for plane sections
+    vtkSmartPointer<vtkPlane> planeX;
+    /// Plane equation for plane sections
+    vtkSmartPointer<vtkPlane> planeY;
+    /// Plane equation for plane sections
+    vtkSmartPointer<vtkPlane> planeZ;
+
+    /// Arrow glyph source
+    vtkSmartPointer<vtkGlyphSource2D> arrow2d;    
+    /// Arrow glyph source
+    vtkSmartPointer<vtkTransformPolyDataFilter> arrow3d;    
+    /// Arrow glyph source
+    vtkSmartPointer<vtkTransform> arrow3dt;
+    /// Arrow glyph source
+    vtkSmartPointer<vtkArrowSource> arrow3ds;
+
+    /// Isosurface plot actor
+    vtkSmartPointer<vtkActor>     isosurface_plot;
+    /// Isosurface plot filter
+    vtkSmartPointer<vtkContourFilter> isosurface_filter;
+
+    /// Isoline plot actor
+    vtkSmartPointer<vtkActor>     isoline_plot;
+    /// Isoline plot filter
+    vtkSmartPointer<vtkContourFilter> isoline_filter;
+
+    /// Items for elevation plot
+    vtkSmartPointer<vtkActor>     elevation_plot;
+
+    /// Items for surface plot
+    vtkSmartPointer<vtkActor>     surface_plot;
+
+    /// Items for elevation plot
+    vtkSmartPointer<vtkTransform> warp_transform;
+
+    /// Axes actor
+    vtkSmartPointer<vtkCubeAxesActor2D> axes;
+    /// Outline actor
+    vtkSmartPointer<vtkActor> outline;
+    /// Surface plot actor
+    vtkSmartPointer<vtkActor> splot;
+
+
+
+
+    /// Data producer for grid dataset
+    vtkSmartPointer<vtkTrivialProducer> data_producer=NULL;
+
+    /// Data producer for boundary grid dataset
+    vtkSmartPointer<vtkTrivialProducer> boundary_data_producer=NULL;
+
+    /// coordinate scale
+    double coordinate_scale_factor;
+
+    /// Name of data item in data set 
+    std::string dataname;
+
+    /// Cell mask
+    vtkSmartPointer<vtkIdList> celllist=0;
+
+    /// Title of figure
+    std::string title;
+
+    /// Color lookup table for surface plots
+    vtkSmartPointer<vtkLookupTable> surface_lut;
+
+    /// Color table for surface plots
+    RGBTable surface_rgbtab{{0,0,0,1},{1,1,0,0}};
+
+    /// Color lookup table for quiver plots
+    vtkSmartPointer<vtkLookupTable> quiver_lut;
+
+    /// Color table for quiver plots
+    RGBTable quiver_rgbtab{{0,0,0,0},{1,0,0,0}};
+
+    /// Color lookup table for stream plots
+    vtkSmartPointer<vtkLookupTable> stream_lut;
+
+    /// Color table for stream plots
+    RGBTable stream_rgbtab{{0,0,0,1},{1,1,0,0}};
+
+
+    /// Color lookup table for elevation plots
+    vtkSmartPointer<vtkLookupTable> elevation_lut;
+
+    
+    /// Color table for elevation plots
+    RGBTable elevation_rgbtab{{0.0,0.9,0.9,0.9},{1.0,0.9,0.9,0.9}};
+
+    
+    /// Color lookup table for grid plot cell colors
+    vtkSmartPointer<vtkLookupTable> cell_lut;
+
+    
+    /// Color table for grid plot cell colors
+    RGBTable cell_rgbtab{
+      {0.00, 1.0, 0.5, 0.5},
+      {0.25, 1.0, 1.0, 0.5},
+      {0.50, 0.5, 1.0, 0.5},
+      {0.75, 0.5, 1.0, 1.0},
+      {1.00, 0.5, 0.5, 1.0}};
+    int cell_rgbtab_size=65;
+
+
+    /// Color lookup table for grid plot boundary colors
+    vtkSmartPointer<vtkLookupTable> bface_lut;
+
+    /// Color table for grid plot boundary colors
+    RGBTable bface_rgbtab{
+      {0.00, 0.8, 0.0, 0.0},
+      {0.25, 0.8, 0.8, 0.0},
+      {0.50, 0.0, 0.8, 0.0},
+      {0.75, 0.0, 0.8, 0.8},
+      {1.00, 0.0, 0.0, 0.8}};
+    int bface_rgbtab_size=65;
+
+    /// Cell color bar for grid plots.
+    vtkSmartPointer<vtkScalarBarActor> cbar=NULL;
+
+    /// Boundary color bar for grid plots.
+    vtkSmartPointer<vtkScalarBarActor> bcbar=NULL;
 
     
     /// figure state

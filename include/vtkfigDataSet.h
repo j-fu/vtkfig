@@ -1,3 +1,9 @@
+/**
+    \file vtkfigDataSet.h
+
+    Provide user API class vtkfig::DataSet  intended to hold all data to be rendered.
+*/
+
 #ifndef VTKFIG_DATASET_H
 #define VTKFIG_DATASET_H
 
@@ -36,9 +42,11 @@ namespace vtkfig
     /// Constructor
     DataSet();
 
-    /// Static constructor of an empty instance
+    /// Static constructor of smart pointer to an empty instance
     static std::shared_ptr<DataSet> New() { return std::make_shared<DataSet>(); }
 
+    /// Destructor
+    ~DataSet(){};
 
 
     ///

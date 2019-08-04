@@ -15,7 +15,7 @@ namespace vtkfig
   Surf2D::Surf2D(): Figure()
   {
     RGBTable surface_rgb={{0,0,0,1},{1,1,0,0}};
-    lut=BuildLookupTable(surface_rgb,255);
+    lut=internal::BuildLookupTable(surface_rgb,255);
     warp = vtkSmartPointer<vtkWarpScalar>::New();
     gridfunc= vtkSmartPointer<vtkStructuredGrid>::New();
   }
@@ -90,7 +90,7 @@ namespace vtkfig
 	Figure::RTAddActor(outline);
 //    if (draw_axes)	Figure::AddActor(axes);
     if (show_colorbar)
-      Figure::RTAddActor2D(BuildColorBar(mapper));
+      Figure::RTAddActor2D(internal::BuildColorBar(mapper));
     
   }
 

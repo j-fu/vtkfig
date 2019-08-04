@@ -22,7 +22,7 @@ namespace vtkfig
       CloseConnection();
     }
   
-    int Communicator::ServerConnect(const int port)
+    int Communicator::ServerMPConnect(const int port)
     {
     
       ssocket=vtkSmartPointer<vtkServerSocket>::New();
@@ -51,7 +51,7 @@ namespace vtkfig
       return rc;
     }
   
-    int Communicator::ClientConnect(const char * server, const int port)
+    int Communicator::ClientMPConnect(const char * server, const int port)
     {
       int rc=0;
       int iretry=0;
@@ -169,7 +169,19 @@ namespace vtkfig
       return Receive(buf,ndata,remoteHandle,tag);
     }
 
-
+    void Communicator::SendRGBTable(RGBTable & rgbtab)
+    {
+      SendInt(rgbtab.size());
+      SendDoubleBuffer((double*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(double));
+    }
+    
+    void Communicator::ReceiveRGBTable(RGBTable & rgbtab)
+    {
+      int tabsize;
+      ReceiveInt(tabsize);
+      rgbtab.resize(tabsize);
+      ReceiveDoubleBuffer((double*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(double));
+    }
   
   }
   

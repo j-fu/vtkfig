@@ -44,12 +44,12 @@ int main(int argc, const char * argv[])
     snprintf(command,256,"%s -c -p %d&",argv[0],port);
     std::system(command);
     
-    sccomm->ServerConnect(port);
+    sccomm->ServerMPConnect(port);
     cout << "Server connect ok\n";
   }
   else
   {
-    sccomm->ClientConnect("localhost",port);
+    sccomm->ClientMPConnect("localhost",port);
     cout << "Client connect ok\n";
   }
 

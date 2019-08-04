@@ -18,6 +18,7 @@ add_library(vtkfig SHARED
   vtkfigVectorView.cxx  
   vtkfigXYPlot.cxx
   vtkfigCAPI.cxx
+  vtkfigClient.cxx
   
   vtkfigChartXY.cxx
   vtkfigSurf2D.cxx

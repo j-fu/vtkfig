@@ -277,7 +277,7 @@ namespace vtkfig
 
       if (cr && state.show_grid_colorbar)
       {
-        cbar=BuildColorBar(cells);
+        cbar=internal::BuildColorBar(cells);
         cbar->SetTitle("C    ");
         cbar->SetLabelFormat(" %-2.0f     ");
         double range[2];
@@ -322,7 +322,7 @@ namespace vtkfig
         
         if( state.show_grid_colorbar)
         {
-          bcbar=BuildColorBar(bcells,1);
+          bcbar=internal::BuildColorBar(bcells,1);
           bcbar->SetTitle("B    ");
           bcbar->SetLabelFormat(" %-2.0f     ");
           double brange[2];
@@ -426,7 +426,7 @@ namespace vtkfig
 
       if ( cr)
       {
-        cbar=BuildColorBar(cells);
+        cbar=internal::BuildColorBar(cells);
         cbar->SetLabelFormat(" %-2.0f     ");
         cbar->SetNumberOfLabels((int)(range[1]-range[0]+1));
         cbar->SetTitle("c    ");
@@ -489,7 +489,7 @@ namespace vtkfig
         Figure::RTAddActor(bedgeplot);
 
         
-        bcbar=BuildColorBar(bcells,1);
+        bcbar=internal::BuildColorBar(bcells,1);
         bcbar->SetTitle("b    ");
         bcbar->SetLabelFormat(" %-2.0f     ");
         bcbar->SetNumberOfLabels((int)(brange[1]-brange[0]+1));

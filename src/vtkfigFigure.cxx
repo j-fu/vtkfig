@@ -25,14 +25,14 @@ namespace vtkfig
     data_producer=vtkSmartPointer<vtkTrivialProducer>::New();
     boundary_data_producer=vtkSmartPointer<vtkTrivialProducer>::New();
 
-    surface_lut=BuildLookupTable(surface_rgbtab,state.surface_rgbtab_size);
+    surface_lut=internal::BuildLookupTable(surface_rgbtab,state.surface_rgbtab_size);
     //contour_lut=BuildLookupTable(contour_rgbtab,state.contour_rgbtab_size);
-    elevation_lut=BuildLookupTable(elevation_rgbtab,state.elevation_rgbtab_size);
-    quiver_lut=BuildLookupTable(quiver_rgbtab,state.quiver_rgbtab_size);
-    stream_lut=BuildLookupTable(stream_rgbtab,state.stream_rgbtab_size);
+    elevation_lut=internal::BuildLookupTable(elevation_rgbtab,state.elevation_rgbtab_size);
+    quiver_lut=internal::BuildLookupTable(quiver_rgbtab,state.quiver_rgbtab_size);
+    stream_lut=internal::BuildLookupTable(stream_rgbtab,state.stream_rgbtab_size);
 
-    cell_lut=BuildLookupTable(cell_rgbtab,cell_rgbtab_size);
-    bface_lut=BuildLookupTable(bface_rgbtab,bface_rgbtab_size);
+    cell_lut=internal::BuildLookupTable(cell_rgbtab,cell_rgbtab_size);
+    bface_lut=internal::BuildLookupTable(bface_rgbtab,bface_rgbtab_size);
 
 
 
@@ -203,20 +203,6 @@ namespace vtkfig
     SetMaskedData(*vtkfig_data,name,maskname);
   }
 
-
-  void Figure::SendRGBTable(vtkSmartPointer<internals::Communicator> communicator, RGBTable & rgbtab)
-  {
-    communicator->SendInt(rgbtab.size());
-    communicator->SendDoubleBuffer((double*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(double));
-  }
-  
-  void Figure::ReceiveRGBTable(vtkSmartPointer<internals::Communicator> communicator, RGBTable & rgbtab)
-  {
-    int tabsize;
-    communicator->ReceiveInt(tabsize);
-    rgbtab.resize(tabsize);
-    communicator->ReceiveDoubleBuffer((double*)rgbtab.data(),rgbtab.size()*sizeof(RGBPoint)/sizeof(double));
-  }
 
 
 
@@ -789,7 +775,7 @@ namespace vtkfig
   }
 
 
-  void Figure::ServerRTSendData(vtkSmartPointer<internals::Communicator> communicator) 
+  void Figure::ServerMPSendData(vtkSmartPointer<internals::Communicator> communicator) 
   {
     auto data=vtkDataSet::SafeDownCast(data_producer->GetOutputDataObject(0));
 
@@ -799,10 +785,10 @@ namespace vtkfig
       communicator->SendString(dataname);
       communicator->Send(data,internals::Communicator::remoteHandle,static_cast<int>(internals::Communicator::Tag::DataSet));
     }
-    ServerRTSend(communicator);
+    ServerMPSend(communicator);
   };
 
-  void Figure::ClientMTReceiveData(vtkSmartPointer<internals::Communicator> communicator)
+  void Figure::ClientMPReceiveData(vtkSmartPointer<internals::Communicator> communicator)
   {
     //auto data=vtkDataSet::SafeDownCast(data_producer->GetOutputDataObject(0));
     
@@ -819,7 +805,7 @@ namespace vtkfig
       communicator->Receive(data,internals::Communicator::remoteHandle,static_cast<int>(internals::Communicator::Tag::DataSet));
       data_producer->SetOutput(data);
     }
-    ClientMTReceive(communicator);
+    ClientMPReceive(communicator);
         
   }
   

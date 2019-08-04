@@ -1,3 +1,10 @@
+/**
+    \file vtkfigGridView.h
+
+    Provide user API  class vtkfig::GridView derived from vtkfig::Figure for visualizing 2D/3D discretization grids.
+    
+*/
+
 #ifndef VTKFIG_GRID_VIEW_H
 #define VTKFIG_GRID_VIEW_H
 
@@ -16,22 +23,41 @@
 namespace vtkfig
 {
   
-  /// 
-  /// Grid visualization.
-  /// 
-  /// This uses only the grid data from the DataSet. Optionally,
-  /// the "cellregions" are used.
+  /**
+     Grid visualization.
+     
+     This uses only the grid data from the DataSet. Optionally,
+     the "cellregions" are used.
+     
+  */
   class GridView: public Figure
   {
+    
+
+
   public:
+    
+    /// GridView constructor.
     GridView();
+
+    /// GridView destructor.
+    ~GridView(){};
+
+    /// GridView smart pointer constructor.
     static std::shared_ptr<GridView> New() { return std::make_shared<GridView>();}
+
     std::string SubClassName() override final {return std::string("GridView");}
 
-
+    /// Toggle visibility of grid colorbar
     void ShowGridColorbar(bool b) { Figure::state.show_grid_colorbar=b;}
+
+    /// Toggle visibility of grid edges
     void ShowGridEdges(bool b) { Figure::state.show_grid_edges=b;}
 
+  private:
+    friend class Client;
+    friend class MainThread;
+    
     /// Process keyboard and mouse move events
     void RTProcessKey(const std::string key) override final;
     void RTProcessMove(int dx, int dy) override final;
@@ -49,8 +75,7 @@ namespace vtkfig
                                    vtkSmartPointer<vtkPlane> planeXYZ );
 
     
-  private:
-    friend class Client;
+
     
     void RTBuildVTKPipeline() override final;
     vtkSmartPointer<vtkExtractGeometry> cutgeometry;
@@ -69,9 +94,12 @@ namespace vtkfig
     
     template <class GRIDFUNC, class FILTER>
       void RTBuildVTKPipeline3D();
-    
+
   };
-  
+
 }
 
+
+
 #endif
+

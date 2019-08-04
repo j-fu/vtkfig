@@ -952,7 +952,7 @@ namespace vtkfig
       communicator=vtkSmartPointer<Communicator>::New();
       communicator->server_listen_num_retry=1;
       communicator->server_listen_waiting_time=1000*wtime;
-      int rc=communicator->ServerConnect(port);
+      int rc=communicator->ServerMPConnect(port);
       if (rc)  
         cout << "vtkfig: Server connected" << endl;
       else
@@ -1027,7 +1027,7 @@ namespace vtkfig
             for (auto & figure: framepair.second->figures)
             {
               figure->SetRange();
-              figure->ServerRTSendData(mainthread->communicator);
+              figure->ServerMPSendData(mainthread->communicator);
             }
         }
         break;

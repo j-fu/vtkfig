@@ -1,3 +1,9 @@
+/**
+    \file vtkfigMainThread.h
+
+    Namespace vtkfig::internals: Tools for server-client communication.
+*/
+
 #include <memory>
 #include <mutex>
 #include <thread>

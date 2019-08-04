@@ -46,7 +46,7 @@ namespace vtkfig
     state.surface_rgbtab_size=tabsize;
     state.surface_rgbtab_modified=true;
     surface_rgbtab=tab;
-    surface_lut=BuildLookupTable(tab,tabsize);
+    surface_lut=internal::BuildLookupTable(tab,tabsize);
   }
 
   void ScalarView::SetElevationZShift(double val)
@@ -155,7 +155,7 @@ namespace vtkfig
       
       if (state.show_surface_colorbar)
         {
-          auto cbar=BuildColorBar(mapper);
+          auto cbar=internal::BuildColorBar(mapper);
           cbar->SetLabelFormat(state.surface_colorbar_label_format);
           cbar->SetNumberOfLabels(state.surface_colorbar_num_labels);
           Figure::RTAddActor2D(cbar);
@@ -313,7 +313,7 @@ namespace vtkfig
     surface_plot->SetMapper(mapper);
     Figure::RTAddActor(surface_plot);
     
-    Figure::RTAddActor2D(BuildColorBar(mapper));
+    Figure::RTAddActor2D(internal::BuildColorBar(mapper));
 
     
     
@@ -386,22 +386,22 @@ namespace vtkfig
   /////////////////////////////////////////////////////////////////////
   /// Client-Server communication
 
-  void ScalarView::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator)
+  void ScalarView::ServerMPSend(vtkSmartPointer<internals::Communicator> communicator)
   {
     if (state.surface_rgbtab_modified)
     {
-      SendRGBTable(communicator, surface_rgbtab);
+      communicator->SendRGBTable(surface_rgbtab);
       state.surface_rgbtab_modified=false;
     }
   }
 
-  void ScalarView::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator)
+  void ScalarView::ClientMPReceive(vtkSmartPointer<internals::Communicator> communicator)
   {
     
     if (state.surface_rgbtab_modified)
     {
       RGBTable new_rgbtab;
-      ReceiveRGBTable(communicator, new_rgbtab);
+      communicator->ReceiveRGBTable(new_rgbtab);
       SetSurfaceRGBTable(new_rgbtab,state.surface_rgbtab_size);
     }
 

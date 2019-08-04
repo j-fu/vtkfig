@@ -35,7 +35,7 @@ namespace vtkfig
     state.quiver_rgbtab_size=tabsize;
     state.quiver_rgbtab_modified=true;
     quiver_rgbtab=tab;
-    quiver_lut=BuildLookupTable(tab,tabsize);
+    quiver_lut=internal::BuildLookupTable(tab,tabsize);
   }
 
   void VectorView::SetStreamLineRGBTable(RGBTable & tab, int tabsize)
@@ -43,7 +43,7 @@ namespace vtkfig
     state.stream_rgbtab_size=tabsize;
     state.stream_rgbtab_modified=true;
     stream_rgbtab=tab;
-    stream_lut=BuildLookupTable(tab,tabsize);
+    stream_lut=internal::BuildLookupTable(tab,tabsize);
   }
 
 
@@ -178,7 +178,7 @@ namespace vtkfig
       
       
       if (state.show_quiver_colorbar)
-        Figure::RTAddActor2D(BuildColorBar(mapper));
+        Figure::RTAddActor2D(internal::BuildColorBar(mapper));
       
       // add actors to renderer
       Figure::RTAddActor(quiver_actor);
@@ -286,7 +286,7 @@ namespace vtkfig
       // add actors to renderer
       Figure::RTAddActor(stream_actor);
       if (state.show_stream_colorbar)
-        Figure::RTAddActor2D(BuildColorBar(mapper));
+        Figure::RTAddActor2D(internal::BuildColorBar(mapper));
       
     }
 
@@ -312,14 +312,14 @@ namespace vtkfig
   /////////////////////////////////////////////////////////////////////
   /// Client-Server communication
 
-  void VectorView::ServerRTSend(vtkSmartPointer<internals::Communicator> communicator)
+  void VectorView::ServerMPSend(vtkSmartPointer<internals::Communicator> communicator)
   {
         cout <<"ServerRTSend" << endl;
     communicator->Send(probePolyData,1,1);
     communicator->Send(seedPolyData,1,1);
   }
 
-  void VectorView::ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator)
+  void VectorView::ClientMPReceive(vtkSmartPointer<internals::Communicator> communicator)
   {
         cout <<"ClientMTReceive" << endl;
 

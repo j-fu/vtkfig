@@ -11,7 +11,7 @@ PROJECT(VTKFIG C CXX)
 
 set(VTKFIG_MAJOR_VERSION 0)
 set(VTKFIG_MINOR_VERSION 20)
-set(VTKFIG_PATCH_VERSION 20181114)
+set(VTKFIG_PATCH_VERSION 20190805)
 set(VTKFIG_VERSION    ${VTKFIG_MAJOR_VERSION}.${VTKFIG_MINOR_VERSION}.${VTKFIG_PATCH_VERSION})
 
 # Allow to specify -DVTKFIG_CONFIG=xxx  at cmake time on the 
@@ -169,7 +169,7 @@ configure_file(cmake/VTKFIGConfigVersion.cmake.in  "${PROJECT_BINARY_DIR}/${VTKF
 #
 # Installation magic, still to be fully understod
 # 
-# Relevant only or make install. 
+# Relevant only for make install. 
 #
 # Relocatable according to 
 # https://cmake.org/Wiki/CMake/Tutorials/How_to_create_a_ProjectConfig.cmake_file

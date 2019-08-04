@@ -1,3 +1,12 @@
+/**
+    \file vtkfigCommunicator.h
+
+     Namespace vtkfig::internals: Tools for server-client communication.
+
+
+*/
+
+
 #ifndef VTKFIG_COMMUNICATOR_H
 #define VTKFIG_COMMUNICATOR_H
 
@@ -6,15 +15,18 @@
 #include <vtkServerSocket.h>
 #include <vtkSocketCommunicator.h>
 
+#include "vtkfigTools.h"
+
 
 namespace vtkfig
 {
 
   namespace internals
   {
+
+    
     ///
-    /// Derived class from  vtkSocketCommunicator
-    /// providing framework for server-client communication
+    /// Derived class from  vtkSocketCommunicator providing framework for server-client communication.
     ///
     class Communicator: public vtkSocketCommunicator
     {
@@ -57,9 +69,9 @@ namespace vtkfig
 
       ~Communicator();
 
-      int ServerConnect(const int port);
+      int ServerMPConnect(const int port);
 
-      int ClientConnect(const char * server, const int port);
+      int ClientMPConnect(const char * server, const int port);
 
       int SendCommand(Command  cmd, int tag=static_cast<int>(Tag::Command));
 
@@ -93,6 +105,12 @@ namespace vtkfig
 
       int ReceiveDoubleBuffer(double *buf, int ndata, int tag= static_cast<int>(Tag::DoubleBuffer));
 
+      /// Send RGB table to client.
+      void SendRGBTable(RGBTable & rgbtab);
+      
+      /// Receive RGB table.
+      void ReceiveRGBTable(RGBTable & rgbtab);
+    
 
 
       enum class Tag : int

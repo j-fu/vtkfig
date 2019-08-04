@@ -140,9 +140,9 @@ int main(void)
   
 
   // renderer
-  figure->RTAddActor(surfplot);
-  figure->RTAddActor(outline);
-  figure->RTAddActor2D(vtkfig::internal::BuildColorBar(mapper));
+  figure->AddActor(surfplot);
+  figure->AddActor(outline);
+  figure->AddActor2D(vtkfig::internal::BuildColorBar(mapper));
   frame->AddFigure(figure);
   
   

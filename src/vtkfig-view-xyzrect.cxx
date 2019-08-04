@@ -1,9 +1,3 @@
-///
-///   \example   examples/example-rectcontour3d.cxx
-///
-///  Scalar function on 3D rectilinear grid
-///
-
 #include <fstream>
 #include <iostream>
 #include <stdio.h>

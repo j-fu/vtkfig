@@ -1,3 +1,8 @@
+/**
+    \file vtkfigSurf2D.h
+
+    Experimental class for 2D elevation plot - don't use!
+*/
 #ifndef VTKFIG_SURF2D_H
 #define VTKFIG_SURF2D_H
 
@@ -37,28 +42,28 @@ namespace vtkfig
         state.rgbtab_size=tabsize;
         state.rgbtab_modified=true;
         rgbtab=tab;
-        lut=BuildLookupTable(tab,tabsize);
+        lut=internal::BuildLookupTable(tab,tabsize);
       }
       void ShowColorbar(bool b) {show_colorbar=b;}
 
-      void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator) 
+      void ServerMPSend(vtkSmartPointer<internals::Communicator> communicator) 
       {
         communicator->SendCharBuffer((char*)&state,sizeof(state));
         if (state.rgbtab_modified)
         {
-          SendRGBTable(communicator, rgbtab);
+          communicator->SendRGBTable(rgbtab);
         }
         communicator->Send(gridfunc,1,1);
         state.rgbtab_modified=false;
       };
 
-      void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator) 
+      void ClientMPReceive(vtkSmartPointer<internals::Communicator> communicator) 
       {
         communicator->ReceiveCharBuffer((char*)&state,sizeof(state));
         if (state.rgbtab_modified)
         {
           RGBTable new_rgbtab;
-          ReceiveRGBTable(communicator, new_rgbtab);
+          communicator->ReceiveRGBTable(new_rgbtab);
           SetRGBTable(new_rgbtab,state.rgbtab_size);
         }
         communicator->Receive(gridfunc,1,1);

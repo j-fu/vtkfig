@@ -1,7 +1,7 @@
 ///
 /// \file vtkfigFrame.h
 ///
-/// Define Frame class  providing a window for rendering.
+/// Define vtkfig::Frame class  providing a window for rendering.
 /// 
 #ifndef VTKFIG_FRAME_H
 #define VTKFIG_FRAME_H
@@ -42,24 +42,27 @@ namespace vtkfig
 
 
     ///
-    /// Create frame
+    /// Create frame.
     ///
     Frame();
     
     
     ///
-    /// Create frame with multiple subframes 
+    /// Create smart pointer to frame.
     ///
     /// \return Smart pointer to frame object
     static std::shared_ptr<Frame> New()  { return std::make_shared<Frame>();}
 
+    ///
+    /// Destroy frame.
+    ///
     ~Frame();
 
     ///
-    /// Set layout of subframes
+    /// Set layout of subframe grid
     ///
-    /// \param nvpx  number of viewport columns
-    /// \param nvpx  number of viewport rows
+    /// \param nvpx  number of  rows
+    /// \param nvpy  number of  columns
     void SetLayout(int nvpx, int nvpy);
 
     

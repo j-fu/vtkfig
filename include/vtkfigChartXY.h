@@ -1,3 +1,9 @@
+/**
+    \file vtkfigChartXY.h
+
+    Experimental class trying to use the chartxy widget - don't use!
+*/
+
 #ifndef VTKFIG_CHARTXY_H
 #define VTKFIG_CHARTXY_H
 
@@ -49,9 +55,9 @@ namespace vtkfig
     
 
     int num_plot=0;
-    void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator) override final;
+    void ServerMPSend(vtkSmartPointer<internals::Communicator> communicator) override final;
 
-    void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator) override final; 
+    void ClientMPReceive(vtkSmartPointer<internals::Communicator> communicator) override final; 
 
 
     void AddPlot();

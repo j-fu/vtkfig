@@ -1,3 +1,8 @@
+/**
+    \file vtkfigXYPlot.h
+
+    Provide user API  class vtkfig::XYPlot derived from vtkfig::Figure for XY plots for 1D data.
+*/
 #ifndef VTKFIG_XYPLOT_H
 #define VTKFIG_XYPLOT_H
 
@@ -26,7 +31,14 @@ namespace vtkfig
   {
     
   public:
+
+    /// Constructor.
     XYPlot();
+
+    /// Destructor.
+    ~XYPlot(){};
+
+    /// Smartpointer construtor.
     static std::shared_ptr<XYPlot> New();
 
     
@@ -148,10 +160,10 @@ namespace vtkfig
     void PlotGrid(); 
 
     /// Server-Client send
-    void ServerRTSend(vtkSmartPointer<internals::Communicator> communicator) override final;
+    void ServerMPSend(vtkSmartPointer<internals::Communicator> communicator) override final;
 
     /// Server-Client receive
-    void ClientMTReceive(vtkSmartPointer<internals::Communicator> communicator) override final; 
+    void ClientMPReceive(vtkSmartPointer<internals::Communicator> communicator) override final; 
 
     /// Build vtk 
     void RTBuildAllVTKPipelines(vtkSmartPointer<vtkRenderer> renderer) override final;
