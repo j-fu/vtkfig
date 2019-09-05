@@ -364,13 +364,13 @@ namespace vtkfig
     
     if (this->spacedim==2)
     {
-      for (int icell=0;icell<cells.size(); icell+=3)
+      for (size_t icell=0;icell<cells.size(); icell+=3)
       {
         vtkIdType 	 c[3]={cells[icell+0],cells[icell+1],cells[icell+2]};
         udata->InsertNextCell(VTK_TRIANGLE,3,c);
       }
       
-      for (int ipoint=0;ipoint<points.size(); ipoint+=2)
+      for (size_t ipoint=0;ipoint<points.size(); ipoint+=2)
       {
         gridpoints->InsertNextPoint(
           points[ipoint+0]*coordinate_scale_factor*coordinate_scale_factor_xyz[0],
@@ -380,13 +380,13 @@ namespace vtkfig
     }
     else
     {
-      for (int icell=0;icell<cells.size(); icell+=4)
+      for (size_t icell=0;icell<cells.size(); icell+=4)
       {
         vtkIdType 	 c[4]={cells[icell+0],cells[icell+1],cells[icell+2],cells[icell+3]};
         udata->InsertNextCell(VTK_TETRA,4,c);
       }
       
-      for (int ipoint=0;ipoint<points.size(); ipoint+=3)
+      for (size_t ipoint=0;ipoint<points.size(); ipoint+=3)
       {
         gridpoints->InsertNextPoint(points[ipoint+0]*coordinate_scale_factor*coordinate_scale_factor_xyz[0],
 				    points[ipoint+1]*coordinate_scale_factor*coordinate_scale_factor_xyz[1],
@@ -692,7 +692,7 @@ namespace vtkfig
     void DataSet::SetPointScalar(const V&values, const std::string name)
   {
     assert(this->data!=NULL);
-    int npoints=this->data->GetNumberOfPoints();
+    size_t npoints=this->data->GetNumberOfPoints();
     assert(npoints==values.size());
     vtkSmartPointer<vtkDoubleArray>gridvalues;
     
@@ -707,7 +707,7 @@ namespace vtkfig
       this->data->GetPointData()->AddArray(gridvalues);
     }
 
-    for (int i=0;i<npoints; i++)
+    for (size_t i=0;i<npoints; i++)
       gridvalues->InsertComponent(i,0,values[i]);
     gridvalues->Modified();
   }
@@ -718,7 +718,7 @@ namespace vtkfig
   {
     assert(this->spacedim==2);
     assert(this->data!=NULL);
-    int npoints=this->data->GetNumberOfPoints();
+    size_t npoints=this->data->GetNumberOfPoints();
     assert(npoints==u.size());
     assert(npoints==v.size());
     vtkSmartPointer<vtkDoubleArray>gridvalues;
@@ -734,7 +734,7 @@ namespace vtkfig
       this->data->GetPointData()->AddArray(gridvalues);
     }
     
-    for (int i=0;i<npoints; i++)
+    for (size_t i=0;i<npoints; i++)
       gridvalues->InsertTuple3(i,u[i],v[i],0);
     
     
@@ -749,7 +749,7 @@ namespace vtkfig
   {
     assert(this->spacedim==3);
     assert(this->data!=NULL);
-    int npoints=this->data->GetNumberOfPoints();
+    size_t npoints=this->data->GetNumberOfPoints();
     assert(npoints==u.size());
     assert(npoints==v.size());
     assert(npoints==w.size());
@@ -767,7 +767,7 @@ namespace vtkfig
     }
     
 
-    for (int i=0;i<npoints; i++)
+    for (size_t i=0;i<npoints; i++)
       gridvalues->InsertTuple3(i,u[i],v[i],w[i]);
     gridvalues->Modified();
   }    

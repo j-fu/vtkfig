@@ -22,12 +22,12 @@
 template<typename T>
 class vector_adapter
 {
-  const int n;
   T* d;
+  const size_t n;
 public:
   vector_adapter(T*d, int n): d(d), n(n){};
   T&operator[](int i)const { return d[i];}
-  int size() const { return n;}
+  size_t size() const { return n;}
 };
 
 

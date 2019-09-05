@@ -17,8 +17,6 @@ std::shared_ptr<std::vector<double>>  read_file(std::string name)
 {
   auto pX= std::make_shared<std::vector<double>>();
   std::string line;
-  int row,col;
-
 
   std::ifstream pFile(name);
   if (pFile.is_open())

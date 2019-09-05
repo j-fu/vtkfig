@@ -46,7 +46,7 @@ namespace vtkfig
       }
       void ShowColorbar(bool b) {show_colorbar=b;}
 
-      void ServerMPSend(vtkSmartPointer<internals::Communicator> communicator) 
+      void ServerMPSend(vtkSmartPointer<internals::Communicator> communicator) override
       {
         communicator->SendCharBuffer((char*)&state,sizeof(state));
         if (state.rgbtab_modified)
@@ -57,7 +57,7 @@ namespace vtkfig
         state.rgbtab_modified=false;
       };
 
-      void ClientMPReceive(vtkSmartPointer<internals::Communicator> communicator) 
+      void ClientMPReceive(vtkSmartPointer<internals::Communicator> communicator)  override
       {
         communicator->ReceiveCharBuffer((char*)&state,sizeof(state));
         if (state.rgbtab_modified)

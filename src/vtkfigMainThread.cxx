@@ -531,7 +531,7 @@ namespace vtkfig
         else if (key=="asterisk")
         {
           if (!frame->single_subframe_view)
-            for(int i=0;i<this->frame->subframes.size();i++)
+            for(size_t i=0;i<this->frame->subframes.size();i++)
             {
               if (this->frame->subframes[i].renderer==this->CurrentRenderer)
                 this->frame->active_subframe=i;

@@ -302,7 +302,7 @@ namespace vtkfig
     for (int ivpy=0;ivpy<xnvpy;ivpy++)
       for (int ivpx=0 ;ivpx<xnvpx;ivpx++)
       {
-        int ipos=pos(ivpx,ivpy);
+        size_t ipos=pos(ivpx,ivpy);
         auto & subframe=subframes[ipos];
         subframe.viewport[0]=0;
         subframe.viewport[1]=0;
@@ -385,14 +385,14 @@ namespace vtkfig
     if (single_view)
     {
      this->RTSetSingleViewport(this->nvpx, this->nvpy);
-      for (int i=0;i<this->subframes.size();i++)
+      for (size_t i=0;i<this->subframes.size();i++)
         if (i!=this->active_subframe)
           this->RTHideSubframe(this->subframes[i]);
     }
     else
     {
       this->RTCalculateViewports(this->nvpx, this->nvpy);
-      for (int i=0;i<this->subframes.size();i++)
+      for (size_t i=0;i<this->subframes.size();i++)
         this->RTUnHideSubframe(this->subframes[i]);
     }
     this->RTResetRenderers(false);

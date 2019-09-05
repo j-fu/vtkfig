@@ -171,7 +171,7 @@ namespace vtkfig
         while (1)
         {
           Communicator::Command cmd;
-          Frame* frame;
+          Frame* frame=nullptr;
           int framenum=-1;        
         
 //          std::this_thread::sleep_for(std::chrono::milliseconds(1000));

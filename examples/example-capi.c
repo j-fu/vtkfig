@@ -16,10 +16,14 @@ double G(double x,double y, double t)
 
 int main(int argc, char *argv[])
 {
+  vtkfigFrame* frame=vtkfigCreateFrame();
+  vtkfigDataSet* griddata=vtkfigCreateDataSet();
+  vtkfigScalarView*contour=vtkfigCreateScalarView();
+
   int nspin=100;
   int Nx = 200;
   int Ny = 250;
-
+  
   double *x=malloc(Nx*sizeof(double));
   double *y=malloc(Ny*sizeof(double));
   double *z=malloc(Nx*Ny*sizeof(double));
@@ -32,6 +36,11 @@ int main(int argc, char *argv[])
   double dx = (x_upp-x_low)/(Nx-1);
   double dy = (y_upp-y_low)/(Ny-1);
   int i,j;
+
+  int ii=0;
+  double t=0;
+  double dt=0.1;
+
   
   for (i=0; i<Nx; i++)
     x[i] = x_low+i*dx;
@@ -47,17 +56,12 @@ int main(int argc, char *argv[])
     
 
   
-  vtkfigFrame* frame=vtkfigCreateFrame();
-  vtkfigDataSet* griddata=vtkfigCreateDataSet();
+
   vtkfigSetRectilinearGrid(griddata,x,Nx,y,Ny);
   vtkfigSetPointScalar(griddata,z,Nx*Ny,"V");
-  vtkfigScalarView*contour=vtkfigCreateScalarView();
   vtkfigSetData(contour,griddata,"V");
   vtkfigAddScalarView(frame,contour);
 
-  int ii=0;
-  double t=0;
-  double dt=0.1;
   while (ii<nspin)
   {
     for (i=0; i<Nx; i++)
@@ -82,5 +86,7 @@ int main(int argc, char *argv[])
   free(x);
   free(y);
   free(z);
+
+  return 0;
 }
 

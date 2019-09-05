@@ -69,7 +69,7 @@ namespace vtkfig
     /// Construct smartpointer to empty figure
     static std::shared_ptr<Figure> New() { return std::make_shared<Figure>(); }
 
-    ~Figure(){}
+    virtual ~Figure(){}
 
     /// Set background color;
     void SetBackground(double r, double g, double b) { bgcolor[0]=r; bgcolor[1]=g; bgcolor[2]=b;}
@@ -80,7 +80,7 @@ namespace vtkfig
       void SetIsoLevels(V&v)
     {
       isoline_filter->SetNumberOfContours(v.size());
-      for (int i=0;i<v.size(); i++)
+      for (size_t i=0;i<v.size(); i++)
         isoline_filter->SetValue(i,v[i]);
       isoline_filter->Modified();
       state.isolevels_locked=true;

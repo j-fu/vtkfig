@@ -74,7 +74,7 @@ namespace vtkfig
     
     auto inpoints =vtkSmartPointer<vtkPoints>::New();
     
-    for (int i=0; i<points_in.size(); i+=2)
+    for (size_t i=0; i<points_in.size(); i+=2)
       inpoints->InsertNextPoint(points_in[i], points_in[i+1],0);
     
     
@@ -122,7 +122,7 @@ namespace vtkfig
     
     auto inpoints =  vtkSmartPointer<vtkPoints>::New();
     
-    for (int i=0; i<points_in.size(); i+=3)
+    for (size_t i=0; i<points_in.size(); i+=3)
       inpoints->InsertNextPoint(points_in[i], points_in[i+1], points_in[i+2]);
     
     

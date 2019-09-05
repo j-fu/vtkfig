@@ -359,7 +359,7 @@ Figures must be first clicked on before editing works.
       bool hidden=false;
     };
     bool single_subframe_view=false;
-    int active_subframe=0;
+    size_t active_subframe=0;
     
     /// List of subframes
     std::vector<SubFrame> subframes;

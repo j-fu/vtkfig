@@ -203,11 +203,11 @@ namespace vtkfig
 
     auto seedPoints =  vtkSmartPointer<vtkPoints>::New();
     if (state.spacedim==2)
-      for (int i=0;i<p.size();i+=2)
+      for (size_t i=0;i<p.size();i+=2)
         seedPoints->InsertNextPoint (p[i+0]*coordinate_scale_factor,p[i+1]*coordinate_scale_factor,0);
     
     if (state.spacedim==3)
-      for (int i=0;i<p.size();i+=3)
+      for (size_t i=0;i<p.size();i+=3)
         seedPoints->InsertNextPoint (p[i+0]*coordinate_scale_factor,
                                      p[i+1]*coordinate_scale_factor,
                                      p[i+2]*coordinate_scale_factor);

@@ -76,7 +76,7 @@ namespace vtkfig
     /// should react on elevation view
     //renderer->GetActiveCamera()->SetParallelProjection(1);
 
-    auto values=vtkDoubleArray::SafeDownCast(DATA::SafeDownCast(data_producer->GetOutputDataObject(0))->GetPointData()->GetAbstractArray(dataname.c_str()));
+    // auto values=vtkDoubleArray::SafeDownCast(DATA::SafeDownCast(data_producer->GetOutputDataObject(0))->GetPointData()->GetAbstractArray(dataname.c_str()));
 
     vtkSmartPointer<vtkExtractCells> subgrid;
     if (celllist)

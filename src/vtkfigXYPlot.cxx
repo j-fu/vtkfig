@@ -91,13 +91,13 @@ namespace vtkfig
   
   void XYPlot::SetXAxisLabelFormat(const std::string fmt) 
   { 
-    strncpy(PlotState.xlabel_format,fmt.c_str(),desclen);
+    strncpy(PlotState.xlabel_format,fmt.c_str(),desclen-1);
   }
   
 
   void XYPlot::SetYAxisLabelFormat(const std::string fmt) 
   {
-    strncpy(PlotState.ylabel_format,fmt.c_str(),desclen);
+    strncpy(PlotState.ylabel_format,fmt.c_str(),desclen-1);
   }
   
   void XYPlot::AdjustLabels(bool b ) 
@@ -146,12 +146,12 @@ namespace vtkfig
   
   void XYPlot::SetPlotLineType(const std::string type) 
   {
-    strncpy(NextPlotInfo.line_type,type.c_str(),desclen);
+    strncpy(NextPlotInfo.line_type,type.c_str(),desclen-1);
   }
 
   void XYPlot::SetPlotLegend(const std::string legend) 
   {
-    strncpy(NextPlotInfo.legend,legend.c_str(),desclen);
+    strncpy(NextPlotInfo.legend,legend.c_str(),desclen-1);
   }
   
   void XYPlot::SetPlotColor(double r, double g, double b)     
@@ -174,7 +174,7 @@ namespace vtkfig
   
   void XYPlot::SetPlotMarkerType(const std::string type)
   {
-    strncpy(NextPlotInfo.marker_type,type.c_str(),desclen);
+    strncpy(NextPlotInfo.marker_type,type.c_str(),desclen-1);
   }
   
 
@@ -365,7 +365,7 @@ namespace vtkfig
         XGridLines[i].SetXLine(yrange,x);
         XYPlotActor->SetPlotLines(XGridLines[i].GetDataSetNumber(), 1);
       }
-      for (int i=mynxlabels;i<XGridLines.size();i++)
+      for (size_t i=mynxlabels;i<XGridLines.size();i++)
       {
         XYPlotActor->SetPlotLines(XGridLines[i].GetDataSetNumber(), 0);
       }
@@ -378,7 +378,7 @@ namespace vtkfig
         YGridLines[i].SetYLine(xrange,y);
         XYPlotActor->SetPlotLines(YGridLines[i].GetDataSetNumber(), 1);
       }
-      for (int i=mynylabels;i<XGridLines.size();i++)
+      for (size_t i=mynylabels;i<XGridLines.size();i++)
       {
         XYPlotActor->SetPlotLines(YGridLines[i].GetDataSetNumber(), 0);
       }
@@ -530,7 +530,7 @@ namespace vtkfig
     {
       this->LegendActor->SetNumberOfEntries(num_plots);
       this->LegendActor->SetPadding(2);
-      for (int iplot=0;iplot<num_plots;iplot++)
+      for (size_t iplot=0;iplot<num_plots;iplot++)
       {
         int ds_num=AllPlotData[iplot].GetDataSetNumber();
         this->LegendActor->SetEntryString(iplot,XYPlotActor->GetPlotLabel(ds_num));
@@ -561,7 +561,7 @@ namespace vtkfig
     communicator->SendCharBuffer((char*)AllPlotInfo.data(),ndata);
 
 
-    for (int i=0;i<num_plots;i++)
+    for (size_t i=0;i<num_plots;i++)
     {
       auto &plot=AllPlotData[i];
       communicator->Send(plot.X,1,1);
