@@ -65,35 +65,36 @@ int main(void)
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
 
+  auto frame=vtkfig::Frame::New();
+  auto dataset=vtkfig::DataSet::New();
 
-  vtkfig::Frame frame;
-  frame.SetLayout(2,2);
-  frame.LinkCamera(1,frame,0);
+  frame->SetLayout(2,2);
+  frame->LinkCamera(1,frame,0);
 
-  frame.SetSize(800,400);
-  frame.SetWindowTitle("vtkfig");
-  frame.SetFrameTitle("Multiple figures in one frame");
+  frame->SetSize(800,400);
+  frame->SetWindowTitle("vtkfig");
+  frame->SetFrameTitle("Multiple figures in one frame");
 
-  vtkfig::DataSet griddata;
-  griddata.SetRectilinearGrid(x,y);
-  griddata.SetPointScalar(u ,"u");
-  griddata.SetPointScalar(v ,"v");
+  dataset->SetRectilinearGrid(x,y);
+  dataset->SetPointScalar(u ,"u");
+  dataset->SetPointScalar(v ,"v");
 
 
 
-  vtkfig::ScalarView contour_u;
-  contour_u.SetData(griddata,"u");
-  contour_u.SetSurfaceRGBTable(colors,255);
-  frame.AddFigure(contour_u,0);
+  auto contour_u=vtkfig::ScalarView::New();
+  contour_u->SetData(dataset,"u");
+  contour_u->SetSurfaceRGBTable(colors,255);
+  frame->AddFigure(contour_u,0);
 
-  vtkfig::ScalarView contour_v;
-  contour_v.SetData(griddata,"v");
-  contour_v.SetSurfaceRGBTable(colors,255);
-  frame.AddFigure(contour_v,1);
+  auto contour_v=vtkfig::ScalarView::New();
+  contour_v->SetData(dataset,"v");
+  contour_v->SetSurfaceRGBTable(colors,255);
+  frame->AddFigure(contour_v,1);
 
-  vtkfig::XYPlot xyplot;
-  xyplot.SetYRange(-0.5,0.5);
-  frame.AddFigure(xyplot,2);
+  
+  auto xyplot=vtkfig::XYPlot::New();
+  xyplot->SetYRange(-0.5,0.5);
+  frame->AddFigure(xyplot,2);
 
   while (ii<nspin)
   {
@@ -109,22 +110,22 @@ int main(void)
         v[j*Nx+i] = f;
       }
 
-    griddata.SetPointScalar(u ,"u");
-    griddata.SetPointScalar(v ,"v");
+    dataset->SetPointScalar(u ,"u");
+    dataset->SetPointScalar(v ,"v");
 
-    xyplot.Clear();
-    xyplot.SetPlotColor(0,0,1);
-    xyplot.SetPlotLineType("-");
-    xyplot.SetPlotLegend("y=0.5");
-    xyplot.AddPlot(x, fx);
-    xyplot.SetPlotColor(1,0,0);
-    xyplot.SetPlotLineType("-");
-    xyplot.SetPlotLegend("x=0.5");
-    xyplot.AddPlot(y, fy);
-    frame.Show();
+    xyplot->Clear();
+    xyplot->SetPlotColor(0,0,1);
+    xyplot->SetPlotLineType("-");
+    xyplot->SetPlotLegend("y=0.5");
+    xyplot->AddPlot(x, fx);
+    xyplot->SetPlotColor(1,0,0);
+    xyplot->SetPlotLineType("-");
+    xyplot->SetPlotLegend("x=0.5");
+    xyplot->AddPlot(y, fy);
+    frame->Show();
 
     if (ii==3) 
-      frame.WritePNG("example-multifig.png");
+      frame->WritePNG("example-multifig.png");
 
     t+=dt;
     auto t1=std::chrono::system_clock::now();

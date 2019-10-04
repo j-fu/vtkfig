@@ -64,18 +64,18 @@ int main(void)
   double i0=ii;
 
   for(auto &x: points) x*=scalefac;
+  auto frame=vtkfig::Frame::New();
+  auto dataset=vtkfig::DataSet::New();
 
-  vtkfig::DataSet griddata;
-  griddata.SetSimplexGrid(2,points,cells);
+  dataset->SetSimplexGrid(2,points,cells);
 
-  vtkfig::Frame frame;
-  vtkfig::ScalarView contour;
-  contour.SetData(griddata,"v");
-  contour.SetSurfaceRGBTable(colors,255);
-  contour.SetValueRange(-1,1);
+  auto contour=vtkfig::ScalarView::New();
+  contour->SetData(dataset,"v");
+  contour->SetSurfaceRGBTable(colors,255);
+  contour->SetValueRange(-1,1);
   std::vector<double> isolines{-0.5,0,0.5};
-  contour.SetIsoLevels(isolines);
-  frame.AddFigure(contour);
+  contour->SetIsoLevels(isolines);
+  frame->AddFigure(contour);
 
 
 
@@ -84,11 +84,11 @@ int main(void)
     for (size_t ipoint=0, ival=0;ipoint<points.size(); ipoint+=2,ival++)
       values[ival]=G(points[ipoint+0],points[ipoint+1],t);
 
-    griddata.SetPointScalar(values,"v");
+    dataset->SetPointScalar(values,"v");
 
-    frame.Show();
+    frame->Show();
      if (ii==3) 
-      frame.WritePNG("example-simplexcontour2d.png");
+      frame->WritePNG("example-simplexcontour2d.png");
    
     t+=dt;
     auto t1=std::chrono::system_clock::now();

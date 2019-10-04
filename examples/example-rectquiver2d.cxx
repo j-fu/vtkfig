@@ -73,29 +73,27 @@ int main(void)
   size_t ii=0;
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
+  auto frame=vtkfig::Frame::New();
+  auto dataset=vtkfig::DataSet::New();
 
-  vtkfig::Frame frame;
+  dataset->SetRectilinearGrid(x,y);
+  dataset->SetPointScalar(z ,"v");
+  dataset->SetPointVector(u,v ,"grad");
 
-
-  vtkfig::DataSet griddata;
-  griddata.SetRectilinearGrid(x,y);
-  griddata.SetPointScalar(z ,"v");
-  griddata.SetPointVector(u,v ,"grad");
-
-  vtkfig::ScalarView contour;
-  contour.SetData(griddata,"v");
-  contour.SetSurfaceRGBTable(colors,255);
-  contour.ShowIsolines(false);
+  auto contour=vtkfig::ScalarView::New();
+  contour->SetData(dataset,"v");
+  contour->SetSurfaceRGBTable(colors,255);
+  contour->ShowIsolines(false);
   
-  vtkfig::VectorView quiver;
-  quiver.SetData(griddata,"grad");
-  quiver.SetQuiverGrid(10,10);
+  auto quiver=vtkfig::VectorView::New();
+  quiver->SetData(dataset,"grad");
+  quiver->SetQuiverGrid(10,10);
 
 
 
 
-  frame.AddFigure(contour);
-  frame.AddFigure(quiver);
+  frame->AddFigure(contour);
+  frame->AddFigure(quiver);
 
 
   while (ii<nspin)
@@ -109,13 +107,13 @@ int main(void)
         v[j*Nx+i] = dGdy(x[i],y[j],t);
       }
 
-    griddata.SetPointScalar(z ,"v");
-    griddata.SetPointVector(u,v ,"grad");
+    dataset->SetPointScalar(z ,"v");
+    dataset->SetPointVector(u,v ,"grad");
 
-    frame.Show();
+    frame->Show();
 
     if (ii==3) 
-      frame.WritePNG("example-quiver2d.png");
+      frame->WritePNG("example-quiver2d.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

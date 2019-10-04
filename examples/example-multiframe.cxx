@@ -70,37 +70,37 @@ int main(void)
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
 
-  vtkfig::Frame frame1;
-  vtkfig::Frame frame2;
-  vtkfig::Frame frame3;
+  auto frame1=vtkfig::Frame::New() ;
+  auto frame2=vtkfig::Frame::New() ;
+  auto frame3=vtkfig::Frame::New() ;
 
-  frame1.SetSize(400,400);
-  frame2.SetSize(400,400);
-  frame2.SetPosition(500,0);
-  frame3.SetSize(400,400);
-  frame3.SetPosition(1000,0);
-  frame2.LinkCamera(frame1);
-
-
-  vtkfig::DataSet griddata;
-  griddata.SetRectilinearGrid(x,y);
-  griddata.SetPointScalar(u ,"u");
-  griddata.SetPointScalar(v ,"v");
+  frame1->SetSize(400,400);
+  frame2->SetSize(400,400);
+  frame2->SetPosition(500,0);
+  frame3->SetSize(400,400);
+  frame3->SetPosition(1000,0);
+  frame2->LinkCamera(frame1);
 
 
-  vtkfig::ScalarView contour_u;
-  contour_u.SetData(griddata,"u");
-  contour_u.SetSurfaceRGBTable(colors,255);
-  frame1.AddFigure(contour_u);
+  auto dataset=vtkfig::DataSet::New();
+  dataset->SetRectilinearGrid(x,y);
+  dataset->SetPointScalar(u ,"u");
+  dataset->SetPointScalar(v ,"v");
 
-  vtkfig::ScalarView contour_v;
-  contour_v.SetData(griddata,"v");
-  contour_v.SetSurfaceRGBTable(colors,255);
-  frame2.AddFigure(contour_v);
 
-  vtkfig::XYPlot xyplot;
-  xyplot.SetYRange(-0.5,0.5);
-  frame3.AddFigure(xyplot);
+  auto contour_u=vtkfig::ScalarView::New();
+  contour_u->SetData(dataset,"u");
+  contour_u->SetSurfaceRGBTable(colors,255);
+  frame1->AddFigure(contour_u);
+
+  auto contour_v=vtkfig::ScalarView::New();
+  contour_v->SetData(dataset,"v");
+  contour_v->SetSurfaceRGBTable(colors,255);
+  frame2->AddFigure(contour_v);
+
+  auto xyplot=vtkfig::XYPlot::New();
+  xyplot->SetYRange(-0.5,0.5);
+  frame3->AddFigure(xyplot);
 
   while (ii<nspin)
   {
@@ -116,21 +116,21 @@ int main(void)
         v[j*Nx+i] = f;
       }
 
-    griddata.SetPointScalar(u ,"u");
-    griddata.SetPointScalar(v ,"v");
+    dataset->SetPointScalar(u ,"u");
+    dataset->SetPointScalar(v ,"v");
 
-    xyplot.Clear();
-    xyplot.SetPlotColor(0,0,1);
-    xyplot.SetPlotLineType("-");
-    xyplot.SetPlotLegend("y=0.5");
-    xyplot.AddPlot(x, fx);
-    xyplot.SetPlotColor(1,0,0);
-    xyplot.SetPlotLineType("-");
-    xyplot.SetPlotLegend("x=0.5");
-    xyplot.AddPlot(y, fy);
-    frame1.Show();
-    frame2.Show();
-    frame3.Show();
+    xyplot->Clear();
+    xyplot->SetPlotColor(0,0,1);
+    xyplot->SetPlotLineType("-");
+    xyplot->SetPlotLegend("y=0.5");
+    xyplot->AddPlot(x, fx);
+    xyplot->SetPlotColor(1,0,0);
+    xyplot->SetPlotLineType("-");
+    xyplot->SetPlotLegend("x=0.5");
+    xyplot->AddPlot(y, fy);
+    frame1->Show();
+    frame2->Show();
+    frame3->Show();
 
 
     t+=dt;

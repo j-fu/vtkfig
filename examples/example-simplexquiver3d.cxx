@@ -77,26 +77,25 @@ int main(void)
       {1.0, 0.0, 0.0, 0.0}
     };
   
-  vtkfig::Frame frame;
+  auto frame=vtkfig::Frame::New();
+  auto dataset=vtkfig::DataSet::New();
+  dataset->SetSimplexGrid(3,points,cells);
+  dataset->SetPointScalar(val ,"val");
+  dataset->SetPointVector(u,v,w ,"grad");
   
-  vtkfig::DataSet  griddata;
-  griddata.SetSimplexGrid(3,points,cells);
-  griddata.SetPointScalar(val ,"val");
-  griddata.SetPointVector(u,v,w ,"grad");
+  auto contour=vtkfig::ScalarView::New();
+  contour->SetData(dataset,"val");
+  contour->SetSurfaceRGBTable(colors,255);
+  contour->ShowIsolines(false);
+  contour->SetValueRange(-1,1);
   
-  vtkfig::ScalarView contour;
-  contour.SetData(griddata,"val");
-  contour.SetSurfaceRGBTable(colors,255);
-  contour.ShowIsolines(false);
-  contour.SetValueRange(-1,1);
-  
-  vtkfig::VectorView quiver;
-  quiver.SetData(griddata,"grad");
-  quiver.SetQuiverGrid(10,10,10);
+  auto quiver=vtkfig::VectorView::New();
+  quiver->SetData(dataset,"grad");
+  quiver->SetQuiverGrid(10,10,10);
 
   
-  frame.AddFigure(contour);
-  frame.AddFigure(quiver);
+  frame->AddFigure(contour);
+  frame->AddFigure(quiver);
 
 
   
@@ -115,13 +114,13 @@ int main(void)
       v[ival]=dGdy(points[ipoint+0],points[ipoint+1],points[ipoint+2],t);
       w[ival]=dGdz(points[ipoint+0],points[ipoint+1],points[ipoint+2],t);
     }
-    griddata.SetPointScalar(val ,"val");
-    griddata.SetPointVector(u,v ,w,"grad");
+    dataset->SetPointScalar(val ,"val");
+    dataset->SetPointVector(u,v ,w,"grad");
 
-    frame.Show();
+    frame->Show();
 
     if (ii==3) 
-      frame.WritePNG("example-simplexquiver3d.png");
+      frame->WritePNG("example-simplexquiver3d.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

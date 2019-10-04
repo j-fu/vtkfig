@@ -87,6 +87,7 @@ int main(int argc, char *argv[])
   free(y);
   free(z);
 
+  printf("Ist alles weg ?\n");
   return 0;
 }
 

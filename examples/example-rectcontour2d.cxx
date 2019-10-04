@@ -55,17 +55,16 @@ int main(void)
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
 
-  
-  vtkfig::DataSet griddata;
-  griddata.SetRectilinearGrid(x,y);
-  griddata.SetPointScalar(z ,"V");
-  vtkfig::ScalarView contour;
-  contour.SetData(griddata,"V");
-  contour.SetSurfaceRGBTable(colors,255);
+  auto frame=vtkfig::Frame::New();
+  auto dataset=vtkfig::DataSet::New();
+  dataset->SetRectilinearGrid(x,y);
+  dataset->SetPointScalar(z ,"V");
+  auto contour=vtkfig::ScalarView::New();
+  contour->SetData(dataset,"V");
+  contour->SetSurfaceRGBTable(colors,255);
 
-  vtkfig::Frame frame;
 
-  frame.AddFigure(contour);
+  frame->AddFigure(contour);
 
   while (ii<nspin)
   {
@@ -75,12 +74,12 @@ int main(void)
         z[j*Nx+i] = G(x[i],y[j],t);
       }
 
-    griddata.SetPointScalar(z ,"V");
+    dataset->SetPointScalar(z ,"V");
 
-    frame.Show();
+    frame->Show();
 
     if (ii==3) 
-      frame.WritePNG("example-rectcontour2d.png");
+      frame->WritePNG("example-rectcontour2d.png");
 
     t+=dt;
     auto t1=std::chrono::system_clock::now();
@@ -95,5 +94,4 @@ int main(void)
     }
     ii++;
   }
-  frame.Interact();
 }

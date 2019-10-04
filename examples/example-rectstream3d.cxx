@@ -79,11 +79,11 @@ int main(void)
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
 
-  vtkfig::Frame frame;
+  auto frame=vtkfig::Frame::New();
+  auto dataset=vtkfig::DataSet::New();
 
-  vtkfig::DataSet griddata;
-  griddata.SetRectilinearGrid(x,y,z);
-  griddata.SetPointVector(u,v ,w ,"flow");
+  dataset->SetRectilinearGrid(x,y,z);
+  dataset->SetPointVector(u,v ,w ,"flow");
   std::vector<double> seeds=
   {
     0,0.1,0,
@@ -96,15 +96,15 @@ int main(void)
 
 
   
-  vtkfig::VectorView  vview;
-  vview.SetData(griddata,"flow");
-  vview.SetQuiverGrid(5,5,15);
-  vview.SetStreamLineSeedPoints(seeds);
-  vview.ShowStreamLines(true);
-  vview.SetValueRange(0,3);
+  auto vview=vtkfig::VectorView::New();
+  vview->SetData(dataset,"flow");
+  vview->SetQuiverGrid(5,5,15);
+  vview->SetStreamLineSeedPoints(seeds);
+  vview->ShowStreamLines(true);
+  vview->SetValueRange(0,3);
 
 
-  frame.AddFigure(vview);
+  frame->AddFigure(vview);
 
 
   while (ii<nspin)
@@ -119,12 +119,12 @@ int main(void)
           w[k*Nx*Ny+j*Nx+i] = UZ(x[i],y[j],z[k],t);
         }
     
-    griddata.SetPointVector(u,v,w,"flow");
+    dataset->SetPointVector(u,v,w,"flow");
 
-    frame.Show();
+    frame->Show();
 
     if (ii==3) 
-      frame.WritePNG("example-rectstream3.png");
+      frame->WritePNG("example-rectstream3.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

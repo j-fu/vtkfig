@@ -60,7 +60,7 @@ int main(void)
   
   
   int npoints=points.size()/2;
-
+  
   std::vector<double>values(npoints);
 
 
@@ -89,27 +89,28 @@ int main(void)
   double t0=(double)clock()/(double)CLOCKS_PER_SEC;
   double i0=ii;
   
-  vtkfig::Frame frame;
-  vtkfig::DataSet griddata;
-  griddata.SetSimplexGrid(2,points,cells);
-  griddata.SetPointScalar(z ,"v");
-  griddata.SetPointVector(u,v ,"grad");
-  
-  vtkfig::ScalarView contour;
-  contour.SetData(griddata,"v");
-  contour.SetSurfaceRGBTable(colors,255);
-  contour.ShowIsolines(false);
-  
-  vtkfig::VectorView quiver;
-  quiver.SetData(griddata,"grad");
-  quiver.SetQuiverGrid(15,15);
+  auto frame=vtkfig::Frame::New();
+  auto dataset=vtkfig::DataSet::New();
 
-  contour.KeepXYAspect(false);
-  quiver.KeepXYAspect(false);
+  dataset->SetSimplexGrid(2,points,cells);
+  dataset->SetPointScalar(z ,"v");
+  dataset->SetPointVector(u,v ,"grad");
+  
+  auto contour=vtkfig::ScalarView::New();
+  contour->SetData(dataset,"v");
+  contour->SetSurfaceRGBTable(colors,255);
+  contour->ShowIsolines(false);
+  
+  auto quiver=vtkfig::VectorView::New();
+  quiver->SetData(dataset,"grad");
+  quiver->SetQuiverGrid(15,15);
+
+  contour->KeepXYAspect(false);
+  quiver->KeepXYAspect(false);
 
   
-  frame.AddFigure(contour);
-  frame.AddFigure(quiver);
+  frame->AddFigure(contour);
+  frame->AddFigure(quiver);
   
   while (ii<nspin)
   {
@@ -120,13 +121,13 @@ int main(void)
       u[ival]=dGdx(points[ipoint+0],points[ipoint+1],t);
       v[ival]=dGdy(points[ipoint+0],points[ipoint+1],t);
     }
-    griddata.SetPointScalar(z ,"v");
-    griddata.SetPointVector(u,v ,"grad");
+    dataset->SetPointScalar(z ,"v");
+    dataset->SetPointVector(u,v ,"grad");
 
-    frame.Show();
+    frame->Show();
 
     if (ii==3) 
-      frame.WritePNG("example-simplexquiver2d.png");
+      frame->WritePNG("example-simplexquiver2d.png");
 
     t+=dt;
     double t1=(double)clock()/(double)CLOCKS_PER_SEC;

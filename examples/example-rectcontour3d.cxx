@@ -66,18 +66,17 @@ int main(void)
     };
 
 
-  vtkfig::Frame frame;
+  auto frame=vtkfig::Frame::New();
+  auto dataset=vtkfig::DataSet::New();
 
-  
-  vtkfig::DataSet griddata;
-  griddata.SetRectilinearGrid(x,y,z);
-  griddata.SetPointScalar(v ,"V");
+  dataset->SetRectilinearGrid(x,y,z);
+  dataset->SetPointScalar(v ,"V");
 
-  vtkfig::ScalarView contour;
-  contour.SetData(griddata,"V");
-  contour.SetSurfaceRGBTable(colors,255);
-  contour.SetValueRange(-1,1);
-  frame.AddFigure(contour);
+  auto  contour=vtkfig::ScalarView::New();
+  contour->SetData(dataset,"V");
+  contour->SetSurfaceRGBTable(colors,255);
+  contour->SetValueRange(-1,1);
+  frame->AddFigure(contour);
 
 
 
@@ -97,12 +96,12 @@ int main(void)
         v[k*Nx*Ny+j*Nx+i] = G(x[i],y[j],z[k],t);
       }
 
-    griddata.SetPointScalar(v ,"V");
+    dataset->SetPointScalar(v ,"V");
 
-    frame.Show();
+    frame->Show();
 
     if (ii==3) 
-      frame.WritePNG("example-rectcontour3d.png");
+      frame->WritePNG("example-rectcontour3d.png");
 
     t+=dt;
     auto t1=std::chrono::system_clock::now();
@@ -117,5 +116,4 @@ int main(void)
     }
     ii++;
   }
-  frame.Interact();
 }
