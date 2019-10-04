@@ -216,6 +216,7 @@ namespace vtkfig
       SendCommand(-1,"Terminate",Communicator::Command::MainThreadTerminate);
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////
     ///
     ///  vtkfig specific keybord and mouse interaction
     ///
@@ -237,7 +238,6 @@ namespace vtkfig
       /// Last mouse  y position
       int lasty=0;
       
-
       /// Current frame
       Frame* frame;
 
@@ -346,10 +346,14 @@ namespace vtkfig
         // disable some standard vtk keys
         if(key== "f")  {}
 
-        // q -> exit
+        // ctrl-q -> exit
         else if(key == "q")
         {
-          exit(0);
+          if (this->Interactor->GetControlKey())
+          {
+            this->Interactor->TerminateApp();
+            std::terminate();
+          }
         }
 
         // Reset Camera
@@ -585,33 +589,27 @@ namespace vtkfig
       static MyTimerCallback *New()    {return new MyTimerCallback();};
     
       
-      virtual void Execute(
-        vtkObject *vtkNotUsed(caller),
-        unsigned long eventId,
-        void *vtkNotUsed(callData)
-        )
+      virtual void Execute( vtkObject *vtkNotUsed(caller), unsigned long eventId, void *vtkNotUsed(callData))
       {
-      
+        
         
         if (this->mainthread->communication_blocked) return;
-      
+        
         if (
           vtkCommand::TimerEvent == eventId  // Check if timer event
           && this->mainthread->cmd!=Communicator::Command::Empty  // Check if command has been given
           )
         {        
-
-
+          
+          
           // Lock mutex
           if (this->mainthread->running_multithreaded)
             std::unique_lock<std::mutex> lock(this->mainthread->mutex);
-
+          
           // Command dispatch
           switch(mainthread->cmd)
           {
-
-            
-           // Add frame to main thread
+            // Add frame to main thread
           case Communicator::Command::MainThreadAddFrame:
           {
             this->mainthread->RTAddFrame(*mainthread,this->mainthread->iframe);

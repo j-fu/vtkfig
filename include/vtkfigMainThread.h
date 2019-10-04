@@ -110,8 +110,10 @@ namespace vtkfig
       /// Use of double buffering
       bool double_buffering=true;
 
-      /// Timer interval for timer callback
-      double timer_interval=10;
+      /// Timer interval (in ms) for timer callback
+      /// This is a bit critica: if too small, the spinning process will eat lot of CPU.
+      /// If too large, we will observe sluggish reaction.
+      double timer_interval=20;
 
       /// Mutex to organize communication
       std::mutex mutex; 

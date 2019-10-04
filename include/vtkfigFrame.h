@@ -245,7 +245,6 @@ BackSpace Frame    Block/unblock calculation, decrease step number
         h Frame    Print this help to standard output
         l Figure   Start isolevel editing
         p Frame    Write frame to png
-        q Frame    Abort
         r Figure   Reset camera (must left click to see the result)
         x Figure   Start x plane editing (3D only)
         y Figure   Start y plane editing (3D only)
@@ -262,6 +261,7 @@ BackSpace Frame    Block/unblock calculation, decrease step number
         * Frame    Toggle single/multi figure view
         ? Frame    Print this help to standard output
         / Figure   Switch signs of cut plane
+   ctrl-q Frame    Abort (calls std::terminate)
 
 In  edit   mode,  left  mouse,   as  well  as  cursor   keys  increase
 resp. decrease the value of the plane/isolevel/arrowscale, respectively.
