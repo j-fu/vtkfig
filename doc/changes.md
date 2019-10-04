@@ -4,6 +4,7 @@ Changes
 
 ## Changes
 - tip
+  - Moved to github due to Atlassian sunsetting mercurial support on bitbucket
   - Started C language API (mainly for calling from Julia)
   - Fixed a number of smaller bugs
   - Restructured documentation
