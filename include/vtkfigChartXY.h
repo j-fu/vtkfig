@@ -25,9 +25,13 @@ namespace vtkfig
   class ChartXY: public Figure
   {
     
-  public:
     ChartXY();
-    static std::shared_ptr<ChartXY> New() { return std::make_shared<ChartXY>(); }
+  public:
+    static std::shared_ptr<ChartXY> New()
+    { 
+      struct make_shared_enabler : public ChartXY {};
+      return std::make_shared<make_shared_enabler>();
+    }
 
     std::string SubClassName() override final {return std::string("ChartXY");}
 

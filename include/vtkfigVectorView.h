@@ -24,15 +24,19 @@ namespace vtkfig
   ///
   class VectorView: public Figure
     {
+      VectorView();
     public:
 
-      /// Constructor
-      VectorView();
 
       /// Destructor
       ~VectorView(){};
       /// Smart pointer constructor.
-      static std::shared_ptr<VectorView> New() { return std::make_shared<VectorView>(); }
+      static std::shared_ptr<VectorView> New()
+      {
+        struct make_shared_enabler : public VectorView {};
+        return std::make_shared<make_shared_enabler>();
+      }
+
       virtual std::string SubClassName() override final {return std::string("VectorView");}
     
 

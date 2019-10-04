@@ -18,7 +18,8 @@ namespace vtkfig
 
   std::shared_ptr<XYPlot> XYPlot::New() 
   { 
-    return std::make_shared<XYPlot>(); 
+    struct make_shared_enabler : public XYPlot {};
+    return std::make_shared<make_shared_enabler>();
   }
   
   

@@ -27,17 +27,20 @@ namespace vtkfig
   ///
   class ScalarView: public Figure
   {
+    ScalarView();
     
   public:
 
-    /// Constructor.
-    ScalarView();
 
     /// Destructor.
     ~ScalarView(){};
 
     /// Create smart pointer to ScalarView instance
-    static std::shared_ptr<ScalarView> New() { return std::make_shared<ScalarView>();}
+    static std::shared_ptr<ScalarView> New()
+    {
+      struct make_shared_enabler : public ScalarView {};
+      return std::make_shared<make_shared_enabler>();
+    }
 
     virtual std::string SubClassName()  override final {return std::string("ScalarView");}
     

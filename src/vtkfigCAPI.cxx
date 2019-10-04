@@ -53,7 +53,7 @@ extern "C"
   vtkfigDataSet* vtkfigCreateDataSet(void)
   {
     auto dataset=new vtkfigDataSet;
-    dataset->cxxobj=std::make_shared<vtkfig::DataSet>();
+    dataset->cxxobj=vtkfig::DataSet::New();
     return dataset;
   }
   

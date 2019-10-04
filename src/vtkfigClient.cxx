@@ -256,35 +256,35 @@ namespace vtkfig
           
             if (figtype=="Surf2D")
             {
-              auto figure=std::make_shared<vtkfig::Surf2D>();
+              auto figure=vtkfig::Surf2D::New();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
                 cout << " Add Surf2d ipos= " << ipos << endl;
             }
             else if (figtype=="ScalarView")
             {
-              auto figure=std::make_shared<vtkfig::ScalarView>();
+              auto figure=vtkfig::ScalarView::New();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
                 cout << " Add ScalarView ipos= " << ipos  << endl;
             }
             else if (figtype=="VectorView")
             {
-              auto figure=std::make_shared<vtkfig::VectorView>();
+              auto figure=vtkfig::VectorView::New();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
                 cout << " Add VectorView ipos= " << ipos  << endl;
             }
             else if (figtype=="GridView")
             {
-              auto figure=std::make_shared<vtkfig::GridView>();
+              auto figure=vtkfig::GridView::New();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
                 cout << " Add GridView ipos= " << ipos  << endl;
             }
             else if (figtype=="XYPlot")
             {
-              auto figure=std::make_shared<vtkfig::XYPlot>();
+              auto figure=vtkfig::XYPlot::New();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
                 cout << " Add XYPlot  ipos= " << ipos  << endl;

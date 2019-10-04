@@ -37,13 +37,17 @@ namespace vtkfig
   class DataSet
   {
 
-  public:    
-
-    /// Constructor
     DataSet();
 
+  public:    
+
+
     /// Static constructor of smart pointer to an empty instance
-    static std::shared_ptr<DataSet> New() { return std::make_shared<DataSet>(); }
+    static std::shared_ptr<DataSet> New()
+    {
+      struct make_shared_enabler : public DataSet{};
+      return std::make_shared<make_shared_enabler>();
+    }
 
     /// Destructor
     ~DataSet(){};

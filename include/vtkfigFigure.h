@@ -60,14 +60,18 @@ namespace vtkfig
   /// All methods prefixed with "MP" shall be  called from multiprocessing rendering client.
   class Figure
   {
+  protected:
+    Figure();
 
   public:
     
-    /// Construct empty figure
-    Figure();
     
     /// Construct smartpointer to empty figure
-    static std::shared_ptr<Figure> New() { return std::make_shared<Figure>(); }
+    static std::shared_ptr<Figure> New()
+    {
+      struct make_shared_enabler : public Figure {};
+      return std::make_shared<make_shared_enabler>();
+    }
 
     virtual ~Figure(){printf("delete figure\n");}
 

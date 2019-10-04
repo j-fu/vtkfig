@@ -29,11 +29,10 @@ namespace vtkfig
   ///
   class XYPlot: public Figure
   {
+    XYPlot();
     
   public:
 
-    /// Constructor.
-    XYPlot();
 
     /// Destructor.
     ~XYPlot(){};

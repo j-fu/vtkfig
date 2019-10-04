@@ -23,10 +23,16 @@ namespace vtkfig
   /// Experimental class for 2D elevation plot - don't use
   class Surf2D: public Figure
     {
+      Surf2D();
     public:
       
-      Surf2D();
-      static std::shared_ptr<Surf2D> New() { return std::make_shared<Surf2D>(); }
+      static std::shared_ptr<Surf2D> New()
+      {
+        struct make_shared_enabler : public Surf2D {};
+        return std::make_shared<make_shared_enabler>();
+      }
+      
+
       virtual std::string SubClassName() override final {return std::string("Surf2D");}
       
 

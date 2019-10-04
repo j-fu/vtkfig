@@ -35,16 +35,22 @@ namespace vtkfig
     
 
 
+    GridView();
+
   public:
     
-    /// GridView constructor.
-    GridView();
 
     /// GridView destructor.
     ~GridView(){};
 
     /// GridView smart pointer constructor.
-    static std::shared_ptr<GridView> New() { return std::make_shared<GridView>();}
+    static std::shared_ptr<GridView> New()
+    {
+      struct make_shared_enabler : public GridView {};
+      return std::make_shared<make_shared_enabler>();
+    }
+
+
 
     std::string SubClassName() override final {return std::string("GridView");}
 
