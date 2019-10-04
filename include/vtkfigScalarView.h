@@ -27,20 +27,11 @@ namespace vtkfig
   ///
   class ScalarView: public Figure
   {
-    ScalarView();
     
   public:
 
-
-    /// Destructor.
-    ~ScalarView(){};
-
     /// Create smart pointer to ScalarView instance
-    static std::shared_ptr<ScalarView> New()
-    {
-      struct make_shared_enabler : public ScalarView {};
-      return std::make_shared<make_shared_enabler>();
-    }
+    static std::shared_ptr<ScalarView> New();
 
     virtual std::string SubClassName()  override final {return std::string("ScalarView");}
     
@@ -101,7 +92,11 @@ namespace vtkfig
 
     
   private:
-    
+
+    ScalarView();
+
+    ~ScalarView(){};
+
     void RTBuildVTKPipeline() override final;
     
     

@@ -84,13 +84,13 @@ namespace vtkfig
       static void PrepareRenderThread(MainThread& thd);
 
       /// Callback function for render thread
-      static void RenderThread(MainThread* thd);
+      static void RenderThread(MainThread& thd);
 
       /// Prepare comm thread before start
       static void PrepareCommunicatorThread(MainThread& thd);
 
       /// Callback function for communicator thread
-      static void CommunicatorThread(MainThread* thd);
+      static void CommunicatorThread(MainThread& thd);
 
       /// Callback function for communicator thread 
       /// if multithreading is off

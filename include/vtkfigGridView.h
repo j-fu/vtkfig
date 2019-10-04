@@ -35,21 +35,9 @@ namespace vtkfig
     
 
 
-    GridView();
-
   public:
-    
-
-    /// GridView destructor.
-    ~GridView(){};
-
     /// GridView smart pointer constructor.
-    static std::shared_ptr<GridView> New()
-    {
-      struct make_shared_enabler : public GridView {};
-      return std::make_shared<make_shared_enabler>();
-    }
-
+    static std::shared_ptr<GridView> New();
 
 
     std::string SubClassName() override final {return std::string("GridView");}
@@ -61,6 +49,10 @@ namespace vtkfig
     void ShowGridEdges(bool b) { Figure::state.show_grid_edges=b;}
 
   private:
+
+    GridView();
+    ~GridView(){};
+
     friend class Client;
     friend class MainThread;
     

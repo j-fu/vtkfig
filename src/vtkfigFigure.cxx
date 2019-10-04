@@ -83,6 +83,11 @@ namespace vtkfig
 
   };
 
+  std::shared_ptr<Figure> Figure::New()
+  {
+    struct make_shared_enabler : public Figure {};
+    return std::make_shared<make_shared_enabler>();
+  }
 
   void Figure::SetRange()
   {

@@ -4,9 +4,11 @@ Changes
 
 ## Changes
 - tip
-  - Moved to github due to Atlassian sunsetting mercurial support on bitbucket
+  - Removed reference based API as this cannot be handled well together with  the shared_ptr based stuff.
+  - Refactored pointer handling: internally, nearly all interfaces now use shared_ptr or references
+  - Moved to github due to Atlassian sunsetting mercurial support on bitbucket and compatibility
+    to Julia world
   - Started C language API (mainly for calling from Julia)
-  - Fixed a number of smaller bugs
   - Restructured documentation
   - Switched examples to reference based idiom due to better interaction with doxygen
   

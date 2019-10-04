@@ -24,19 +24,12 @@ namespace vtkfig
   ///
   class VectorView: public Figure
     {
-      VectorView();
     public:
 
 
-      /// Destructor
-      ~VectorView(){};
       /// Smart pointer constructor.
-      static std::shared_ptr<VectorView> New()
-      {
-        struct make_shared_enabler : public VectorView {};
-        return std::make_shared<make_shared_enabler>();
-      }
-
+      static std::shared_ptr<VectorView> New();
+      
       virtual std::string SubClassName() override final {return std::string("VectorView");}
     
 
@@ -133,7 +126,9 @@ namespace vtkfig
 
 
     private:
-     
+      VectorView();
+      ~VectorView(){};
+
       void RTBuildVTKPipeline() override final;
       void ServerMPSend(vtkSmartPointer<internals::Communicator> communicator) override final;
       void ClientMPReceive(vtkSmartPointer<internals::Communicator> communicator) override final;

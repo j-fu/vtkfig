@@ -60,20 +60,11 @@ namespace vtkfig
   /// All methods prefixed with "MP" shall be  called from multiprocessing rendering client.
   class Figure
   {
-  protected:
-    Figure();
 
   public:
     
-    
     /// Construct smartpointer to empty figure
-    static std::shared_ptr<Figure> New()
-    {
-      struct make_shared_enabler : public Figure {};
-      return std::make_shared<make_shared_enabler>();
-    }
-
-    virtual ~Figure(){printf("delete figure\n");}
+    static std::shared_ptr<Figure> New();
 
     /// Set background color;
     void SetBackground(double r, double g, double b) { bgcolor[0]=r; bgcolor[1]=g; bgcolor[2]=b;}
@@ -81,7 +72,7 @@ namespace vtkfig
 
 
     template <class V>
-      void SetIsoLevels(V&v)
+    void SetIsoLevels(V&v)
     {
       isoline_filter->SetNumberOfContours(v.size());
       for (size_t i=0;i<v.size(); i++)
@@ -598,6 +589,11 @@ namespace vtkfig
     double trans_bounds[6];
     double trans_center[3];
 
+
+  protected:
+    Figure();
+    virtual ~Figure(){};
+    
   private:
 
     /// The different actor lists

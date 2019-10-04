@@ -25,13 +25,8 @@ namespace vtkfig
   class ChartXY: public Figure
   {
     
-    ChartXY();
   public:
-    static std::shared_ptr<ChartXY> New()
-    { 
-      struct make_shared_enabler : public ChartXY {};
-      return std::make_shared<make_shared_enabler>();
-    }
+    static std::shared_ptr<ChartXY> New();
 
     std::string SubClassName() override final {return std::string("ChartXY");}
 
@@ -57,6 +52,8 @@ namespace vtkfig
 
   private:
     
+    ChartXY();
+    ~ChartXY(){};
 
     int num_plot=0;
     void ServerMPSend(vtkSmartPointer<internals::Communicator> communicator) override final;

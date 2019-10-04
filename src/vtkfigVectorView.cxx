@@ -27,8 +27,14 @@ namespace vtkfig
 {
 
 
-  VectorView::VectorView(): Figure()  {    };
+  VectorView::VectorView(): Figure()  {};
   
+  std::shared_ptr<VectorView> VectorView::New()
+  {
+    struct make_shared_enabler : public VectorView {};
+    return std::make_shared<make_shared_enabler>();
+  }
+
 
   void VectorView::SetQuiverRGBTable(RGBTable & tab, int tabsize)
   {

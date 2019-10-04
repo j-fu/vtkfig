@@ -118,8 +118,8 @@ namespace vtkfig
       //   std::this_thread::sleep_for(std::chrono::milliseconds(10));
       //   Terminate();
       //   std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-      this->thread->join();
+      if (this->thread)
+        this->thread->join();
       // }
       // else
       //   Terminate();
@@ -901,41 +901,41 @@ namespace vtkfig
       mainthread.interactor->CreateRepeatingTimer(mainthread.timer_interval);
     }
   
-    void MainThread::RenderThread(MainThread* mainthread)
+    void MainThread::RenderThread(MainThread& mainthread)
     {
 
-      if (mainthread->debug_level>0)
+      if (mainthread.debug_level>0)
         cout << "vtkfig: RenderThread start" << endl;
 
-      MainThread::PrepareRenderThread(*mainthread);
-      mainthread->running_multithreaded=true;
+      MainThread::PrepareRenderThread(mainthread);
+      mainthread.running_multithreaded=true;
 
-      mainthread->interactor->Start();
-      if (mainthread->debug_level>0)
+      mainthread.interactor->Start();
+      if (mainthread.debug_level>0)
         cout << "vtkfig: RenderThread prepare termination" << endl;
 
-      for (auto&  frame :mainthread->framemap)
+      for (auto&  frame :mainthread.framemap)
       {
         for (auto & subframe: frame.second->subframes)
           subframe.renderer->RemoveAllViewProps();
         frame.second->window->Finalize();
       }
 
-      mainthread->running_multithreaded=false;
+      mainthread.running_multithreaded=false;
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
-      mainthread->condition_variable.notify_all();
+      mainthread.condition_variable.notify_all();
 
 
-      if (mainthread->debug_level>0)
+      if (mainthread.debug_level>0)
         cout << "vtkfig: RenderThread stop" << endl;
     }
 
     void MainThread::Start(void)
     {
       if (connection_open)
-        this->thread=std::make_shared<std::thread>(CommunicatorThread,this);
+        this->thread=std::make_shared<std::thread>(CommunicatorThread,std::ref(*this));
       else
-        this->thread=std::make_shared<std::thread>(RenderThread,this);
+        this->thread=std::make_shared<std::thread>(RenderThread,std::ref(*this));
 
       do
       {
@@ -1146,16 +1146,16 @@ namespace vtkfig
 
     }
 
-    void  MainThread::CommunicatorThread(MainThread* mainthread)
+    void  MainThread::CommunicatorThread(MainThread& mainthread)
     {
-      mainthread->running_multithreaded=true;
-      PrepareCommunicatorThread(*mainthread);
+      mainthread.running_multithreaded=true;
+      PrepareCommunicatorThread(mainthread);
       while(1)
       {
         std::this_thread::sleep_for (std::chrono::milliseconds(5));
-        MainThread::CommunicatorThreadCallback(*mainthread);
+        MainThread::CommunicatorThreadCallback(mainthread);
       }
-      mainthread->running_multithreaded=false;
+      mainthread.running_multithreaded=false;
     }
   
  

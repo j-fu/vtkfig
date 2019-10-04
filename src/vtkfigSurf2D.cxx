@@ -19,7 +19,13 @@ namespace vtkfig
     warp = vtkSmartPointer<vtkWarpScalar>::New();
     gridfunc= vtkSmartPointer<vtkStructuredGrid>::New();
   }
-
+  
+  std::shared_ptr<Surf2D> Surf2D::New()
+  {
+    struct make_shared_enabler : public Surf2D {};
+    return std::make_shared<make_shared_enabler>();
+  }
+      
 
   void Surf2D::RTBuildVTKPipeline()
   {

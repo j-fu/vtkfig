@@ -42,6 +42,13 @@ namespace vtkfig
     bcutgeometry->SetImplicitFunction(planeZ);
   }
 
+  std::shared_ptr<GridView> GridView::New()
+  {
+    struct make_shared_enabler : public GridView {};
+    return std::make_shared<make_shared_enabler>();
+  }
+
+  
   int GridView::RTProcessPlaneMove(const std::string plane,int idim, int dx, int dy, bool & edit, 
                                   vtkSmartPointer<vtkPlane> planeXYZ )
   {

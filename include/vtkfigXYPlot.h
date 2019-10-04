@@ -29,13 +29,9 @@ namespace vtkfig
   ///
   class XYPlot: public Figure
   {
-    XYPlot();
     
   public:
 
-
-    /// Destructor.
-    ~XYPlot(){};
 
     /// Smartpointer construtor.
     static std::shared_ptr<XYPlot> New();
@@ -150,6 +146,8 @@ namespace vtkfig
 
   private:
 
+    XYPlot();
+    ~XYPlot(){};
 
     /// Internal addplot after plot data have
     /// been filled

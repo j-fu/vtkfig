@@ -137,13 +137,18 @@ namespace vtkfig
         communicator=vtkSmartPointer<Communicator>::New();
         communicator->SetReportErrors(0);
         communicator->client_connect_num_retry=2;
-      
+        char* wtime_string=getenv("VTKFIG_WAIT_SECONDS");
+
         int twait=10;
         int tfac=2;
         int iretry=0;
         int nretry=10;
         int rc=0;
-      
+
+        if (wtime_string!=0)
+          twait=1000*atoi(wtime_string);
+
+        
         while (iretry<nretry)
         {
           cout << "vtkfig-exec: Client connecting to "<< hostname << ":" << port << "..." << endl;

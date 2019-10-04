@@ -36,10 +36,13 @@ namespace vtkfig
 
   /////////////////////////////////////////////////////////////////////
   /// Constructor
-  ScalarView::ScalarView(): Figure()
-  {
-  }
+  ScalarView::ScalarView(): Figure() {}
   
+  std::shared_ptr<ScalarView> ScalarView::New()
+  {
+    struct make_shared_enabler : public ScalarView {};
+    return std::make_shared<make_shared_enabler>();
+  }
 
   void ScalarView::SetSurfaceRGBTable(RGBTable & tab, int tabsize)
   {

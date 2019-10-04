@@ -25,6 +25,11 @@ Use vtkfigXYPlot instead...
 
   }
 
+  std::shared_ptr<ChartXY> ChartXY::New()
+  { 
+    struct make_shared_enabler : public ChartXY {};
+    return std::make_shared<make_shared_enabler>();
+  }
 
   void ChartXY::RTBuildAllVTKPipelines(vtkSmartPointer<vtkRenderer> renderer) 
   {

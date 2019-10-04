@@ -8,7 +8,12 @@ namespace vtkfig
 {
 
   DataSet::DataSet(){};
-    
+  
+  std::shared_ptr<DataSet> DataSet::New()
+  {
+    struct make_shared_enabler : public DataSet {};
+    return std::make_shared<make_shared_enabler>();
+  }
   
   DataSet::DataType  DataSet::GetDataType()
   {

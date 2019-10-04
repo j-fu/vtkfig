@@ -47,7 +47,7 @@ namespace vtkfig
     cout << "VTK was not configured with OpenGL" << endl;
 #endif
     
-    
+    interactor->TerminateApp();
   }
 
   size_t NSpin()
