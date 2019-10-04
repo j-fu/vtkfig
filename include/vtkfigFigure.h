@@ -69,7 +69,7 @@ namespace vtkfig
     /// Construct smartpointer to empty figure
     static std::shared_ptr<Figure> New() { return std::make_shared<Figure>(); }
 
-    virtual ~Figure(){}
+    virtual ~Figure(){printf("delete figure\n");}
 
     /// Set background color;
     void SetBackground(double r, double g, double b) { bgcolor[0]=r; bgcolor[1]=g; bgcolor[2]=b;}
@@ -96,18 +96,6 @@ namespace vtkfig
     ///
     /// \param name Name of scalar or vector to be shown
     void SetMaskedData(std::shared_ptr<DataSet> data, const std::string name, const std::string maskname);
-
-    /// Add Dataset to figure
-    ///
-    /// \param name Name of scalar or vector to be shown
-    void SetData(DataSet &data, const std::string name="");    
-
-  
-    /// Add Dataset with mask to figure
-    ///
-    /// \param name Name of scalar or vector to be shown
-    void SetMaskedData(DataSet &data, const std::string name, const std::string maskname);
-
 
     ///
     /// Set contour RGB table from RGBtable

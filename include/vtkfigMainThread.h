@@ -35,20 +35,21 @@ namespace vtkfig
       friend class MyTimerCallback;
       friend class MyInteractorStyle;
 
-    private:
+    public:
       ~MainThread();
       MainThread();
-      vtkSmartPointer<vtkRenderWindowInteractor> interactor;
+    private:
+       vtkSmartPointer<vtkRenderWindowInteractor> interactor;
 
 
       /// Start thread.
       ///
       /// Create a singleton object. We need only
       /// as vtk is not thread save.
-      static MainThread * CreateMainThread();
+      static std::shared_ptr<MainThread> CreateMainThread();
 
       /// "This" thread
-      static MainThread *mainthread;
+      static std::shared_ptr<MainThread> mainthread;
       
       /// Kill the thread
       static void DeleteMainThread();
@@ -61,10 +62,10 @@ namespace vtkfig
       void Interact();
       
       /// Add frame to be handeled by thread
-      void AddFrame(Frame *frame);
+      void AddFrame(std::shared_ptr<Frame> frame);
       
       /// Remove frame from thread
-      void RemoveFrame(Frame *frame);
+      void RemoveFrame(int number_in_framelist);
 
       /// Spawn parallel thread
       /// for rendering or communication
@@ -77,27 +78,27 @@ namespace vtkfig
       void Terminate(void);
 
       /// Map of all frames handeled by thread
-      std::map<int,Frame*> framemap;
+      std::map<int,std::shared_ptr<Frame>> framemap;
 
       /// Prepare render thread before start
-      static void PrepareRenderThread(MainThread*);
+      static void PrepareRenderThread(MainThread& thd);
 
       /// Callback function for render thread
-      static void RenderThread(MainThread*);
+      static void RenderThread(MainThread* thd);
 
       /// Prepare comm thread before start
-      static void PrepareCommunicatorThread(MainThread*);
+      static void PrepareCommunicatorThread(MainThread& thd);
 
       /// Callback function for communicator thread
-      static void CommunicatorThread(MainThread*);
+      static void CommunicatorThread(MainThread* thd);
 
       /// Callback function for communicator thread 
       /// if multithreading is off
-      static void CommunicatorThreadCallback(MainThread*);
+      static void CommunicatorThreadCallback(MainThread& thd);
 
       
       /// Add frame, to be called from render thread
-      static void RTAddFrame(MainThread* mt, int iframe);
+      static void RTAddFrame(MainThread& mt, int iframe);
 
       /// Number of last frame created
       int lastframenum=0;

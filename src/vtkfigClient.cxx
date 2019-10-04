@@ -171,7 +171,7 @@ namespace vtkfig
         while (1)
         {
           Communicator::Command cmd;
-          Frame* frame=nullptr;
+          std::shared_ptr<Frame> frame=nullptr;
           int framenum=-1;        
         
 //          std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -219,7 +219,7 @@ namespace vtkfig
           
           case Communicator::Command::MainThreadAddFrame:
           {
-            frame=new vtkfig::Frame();
+            frame=vtkfig::Frame::New();
             
             if (debug_level>0)
               cout << " New frame" << endl;
@@ -240,7 +240,7 @@ namespace vtkfig
 
           case Communicator::Command::MainThreadRemoveFrame:
           {
-            MainThread::mainthread->RemoveFrame(MainThread::mainthread->framemap[framenum]);
+            MainThread::mainthread->RemoveFrame(framenum);
             if (debug_level>0)
               cout << " Remove Frame" << endl;
             
@@ -256,35 +256,35 @@ namespace vtkfig
           
             if (figtype=="Surf2D")
             {
-              auto figure=new vtkfig::Surf2D();
+              auto figure=std::make_shared<vtkfig::Surf2D>();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
                 cout << " Add Surf2d ipos= " << ipos << endl;
             }
             else if (figtype=="ScalarView")
             {
-              auto figure=new vtkfig::ScalarView();
+              auto figure=std::make_shared<vtkfig::ScalarView>();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
                 cout << " Add ScalarView ipos= " << ipos  << endl;
             }
             else if (figtype=="VectorView")
             {
-              auto figure=new vtkfig::VectorView();
+              auto figure=std::make_shared<vtkfig::VectorView>();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
                 cout << " Add VectorView ipos= " << ipos  << endl;
             }
             else if (figtype=="GridView")
             {
-              auto figure=new vtkfig::GridView();
+              auto figure=std::make_shared<vtkfig::GridView>();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
                 cout << " Add GridView ipos= " << ipos  << endl;
             }
             else if (figtype=="XYPlot")
             {
-              auto figure=new vtkfig::XYPlot();
+              auto figure=std::make_shared<vtkfig::XYPlot>();
               frame->AddFigure(figure,ipos);
               if (debug_level>0)
                 cout << " Add XYPlot  ipos= " << ipos  << endl;

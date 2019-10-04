@@ -7,15 +7,6 @@
 #include "vtkfigGridView.h"
 #include "vtkfigXYPlot.h"
 
-
-#include <vtkSmartPointer.h>
-#include <vtkRenderingOpenGLConfigure.h>
-#include <vtkOpenGLRenderWindow.h>
-#include <vtkRenderWindow.h>
-#include <vtkRenderWindowInteractor.h>
-#include <vtkRenderer.h>
-#include <vtkVersion.h>
-
 #include "config.h"
 
 
@@ -36,52 +27,52 @@ extern "C"
   ////////////////////////////////////////////////////////////////////////
   struct vtkfigFrame_struct 
   {
-     vtkfig::Frame *cxxobj;
+    std::shared_ptr<vtkfig::Frame> cxxobj;
   };
   
   vtkfigFrame* vtkfigCreateFrame(void)
   {
-    vtkfigFrame* frame=reinterpret_cast<vtkfigFrame*>(malloc(sizeof(vtkfigFrame)));
-    frame->cxxobj=new vtkfig::Frame();
+    auto frame =new vtkfigFrame;
+    frame->cxxobj=vtkfig::Frame::New();
     return frame;
   }
-  
+
   void vtkfigDestroyFrame(vtkfigFrame *frame)
   {
-    delete frame->cxxobj;
-    free(frame);
+    frame->cxxobj=nullptr;
+    delete frame;
   }
 
 
   ////////////////////////////////////////////////////////////////////////
   struct vtkfigDataSet_struct 
   {
-    vtkfig::DataSet* cxxobj;
+    std::shared_ptr<vtkfig::DataSet> cxxobj;
   };
   
   vtkfigDataSet* vtkfigCreateDataSet(void)
   {
-    vtkfigDataSet* dataset=reinterpret_cast<vtkfigDataSet*>(malloc(sizeof(vtkfigDataSet)));
-    dataset->cxxobj=new vtkfig::DataSet();
+    auto dataset=new vtkfigDataSet;
+    dataset->cxxobj=std::make_shared<vtkfig::DataSet>();
     return dataset;
   }
   
   void vtkfigDestroyDataSet(vtkfigDataSet *dataset)
   {
-    delete dataset->cxxobj;
-    free(dataset);
+    dataset->cxxobj=nullptr;
+    delete dataset;
   }
 
   ////////////////////////////////////////////////////////////////////////
   struct vtkfigScalarView_struct 
   {
-    vtkfig::ScalarView* cxxobj;
+    std::shared_ptr<vtkfig::ScalarView> cxxobj;
   };
   
   vtkfigScalarView* vtkfigCreateScalarView(void)
   {
-    vtkfigScalarView* scalarview=reinterpret_cast<vtkfigScalarView*>(malloc(sizeof(vtkfigScalarView)));
-    scalarview->cxxobj=new vtkfig::ScalarView();
+    auto scalarview=new vtkfigScalarView;
+    scalarview->cxxobj=vtkfig::ScalarView::New();
     
     auto colors=vtkfig::RGBTable
       { 
@@ -95,130 +86,135 @@ extern "C"
   
   void vtkfigDestroyScalarView(vtkfigScalarView *scalarview)
   {
-    delete scalarview->cxxobj;
-    free(scalarview);
+    scalarview->cxxobj=nullptr;
+    delete scalarview;
   }
   
 ////////////////////////////////////////////////////////////////////////
   struct vtkfigGridView_struct 
   {
-    vtkfig::GridView* cxxobj;
+    std::shared_ptr<vtkfig::GridView> cxxobj;
   };
   
   vtkfigGridView* vtkfigCreateGridView(void)
   {
-    vtkfigGridView* gridview=reinterpret_cast<vtkfigGridView*>(malloc(sizeof(vtkfigGridView)));
-    gridview->cxxobj=new vtkfig::GridView();
+    auto gridview=new vtkfigGridView;
+    gridview->cxxobj=vtkfig::GridView::New();
     return gridview;
   }
   
   void vtkfigDestroyGridView(vtkfigGridView *gridview)
   {
-    delete gridview->cxxobj;
-    free(gridview);
+    gridview->cxxobj=nullptr;
+    delete gridview;
   }
 
 
 ////////////////////////////////////////////////////////////////////////
   struct vtkfigVectorView_struct 
   {
-    vtkfig::VectorView* cxxobj;
+    std::shared_ptr<vtkfig::VectorView> cxxobj;
   };
   
   vtkfigVectorView* vtkfigCreateVectorView(void)
   {
-    vtkfigVectorView* vectorview=reinterpret_cast<vtkfigVectorView*>(malloc(sizeof(vtkfigVectorView)));
-    vectorview->cxxobj=new vtkfig::VectorView();
+    auto vectorview=new vtkfigVectorView;
+    vectorview->cxxobj=vtkfig::VectorView::New();
     return vectorview;
   }
   
   void vtkfigDestroyVectorView(vtkfigVectorView *vectorview)
   {
-    delete vectorview->cxxobj;
-    free(vectorview);
+    vectorview->cxxobj=nullptr;
+    delete vectorview;
   }
 
 ////////////////////////////////////////////////////////////////////////
   struct vtkfigXYPlot_struct 
   {
-    vtkfig::XYPlot* cxxobj;
+    std::shared_ptr<vtkfig::XYPlot> cxxobj;
   };
   
   vtkfigXYPlot* vtkfigCreateXYPlot(void)
   {
-    vtkfigXYPlot* xyplot=reinterpret_cast<vtkfigXYPlot*>(malloc(sizeof(vtkfigXYPlot)));
-    xyplot->cxxobj=new vtkfig::XYPlot();
+    auto xyplot=new  vtkfigXYPlot;
+    xyplot->cxxobj=vtkfig::XYPlot::New();
     return xyplot;
   }
   
   void vtkfigDestroyXYPlot(vtkfigXYPlot *xyplot)
   {
-    delete xyplot->cxxobj;
-    free(xyplot);
+    xyplot->cxxobj=nullptr;
+    delete xyplot;
   }
 
   ////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////
 
+  void vtkfigClearFrame(vtkfigFrame *frame)
+  {
+    frame->cxxobj->Clear();
+  }
+  
   void vtkfigAddScalarView(vtkfigFrame*frame, vtkfigScalarView *scalarview)
   {
-    frame->cxxobj->AddFigure(*(scalarview->cxxobj));
+    frame->cxxobj->AddFigure(scalarview->cxxobj);
   }
 
   void vtkfigRemoveScalarView(vtkfigFrame*frame, vtkfigScalarView *scalarview)
   {
-    frame->cxxobj->RemoveFigure(*(scalarview->cxxobj));
+    frame->cxxobj->RemoveFigure(scalarview->cxxobj);
   }
 
   void vtkfigAddScalarViewAt(vtkfigFrame*frame, vtkfigScalarView *scalarview, int ipos)
   {
-    frame->cxxobj->AddFigure(*(scalarview->cxxobj),ipos);
+    frame->cxxobj->AddFigure(scalarview->cxxobj,ipos);
   }
 
   void vtkfigAddVectorView(vtkfigFrame*frame, vtkfigVectorView *vectorview)
   {
-    frame->cxxobj->AddFigure(*(vectorview->cxxobj));
+    frame->cxxobj->AddFigure(vectorview->cxxobj);
   }
   void vtkfigRemoveVectorView(vtkfigFrame*frame, vtkfigVectorView *vectorview)
   {
-    frame->cxxobj->RemoveFigure(*(vectorview->cxxobj));
+    frame->cxxobj->RemoveFigure(vectorview->cxxobj);
   }
 
   void vtkfigAddVectorViewAt(vtkfigFrame*frame, vtkfigVectorView *vectorview, int ipos)
   {
-    frame->cxxobj->AddFigure(*(vectorview->cxxobj),ipos);
+    frame->cxxobj->AddFigure(vectorview->cxxobj,ipos);
   }
 
 
   void vtkfigAddGridView(vtkfigFrame*frame, vtkfigGridView *gridview)
   {
-    frame->cxxobj->AddFigure(*(gridview->cxxobj));
+    frame->cxxobj->AddFigure(gridview->cxxobj);
   }
 
   void vtkfigRemoveGridView(vtkfigFrame*frame, vtkfigGridView *gridview)
   {
-    frame->cxxobj->RemoveFigure(*(gridview->cxxobj));
+    frame->cxxobj->RemoveFigure(gridview->cxxobj);
   }
 
   void vtkfigAddGridViewAt(vtkfigFrame*frame, vtkfigGridView *gridview, int ipos)
   {
-    frame->cxxobj->AddFigure(*(gridview->cxxobj),ipos);
+    frame->cxxobj->AddFigure(gridview->cxxobj,ipos);
   }
 
   void vtkfigAddXYPlot(vtkfigFrame*frame, vtkfigXYPlot *xyplot)
   {
-    frame->cxxobj->AddFigure(*(xyplot->cxxobj));
+    frame->cxxobj->AddFigure(xyplot->cxxobj);
   }
 
   void vtkfigRemoveXYPlot(vtkfigFrame*frame, vtkfigXYPlot *xyplot)
   {
-    frame->cxxobj->RemoveFigure(*(xyplot->cxxobj));
+    frame->cxxobj->RemoveFigure(xyplot->cxxobj);
   }
 
   void vtkfigAddXYPlotAt(vtkfigFrame*frame, vtkfigXYPlot *xyplot, int ipos)
   {
-    frame->cxxobj->AddFigure(*(xyplot->cxxobj),ipos);
+    frame->cxxobj->AddFigure(xyplot->cxxobj,ipos);
   }
 
 
@@ -294,7 +290,7 @@ extern "C"
   
   void vtkfigSetData(vtkfigScalarView*scalarview, vtkfigDataSet*dataset, char *name)
   {
-    scalarview->cxxobj->SetData(*(dataset->cxxobj),"V");
+    scalarview->cxxobj->SetData(dataset->cxxobj,"V");
   }
 
 

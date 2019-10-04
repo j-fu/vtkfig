@@ -15,22 +15,29 @@ namespace vtkfig
 
   /////////////////////////////////////
   /// Public API 
- 
   Frame::Frame()
-  {
-    mainthread=internals::MainThread::CreateMainThread();
-    this->nvpx=1;
-    this->nvpy=1;
-    figures.clear();
-    subframes.resize(nvpx*nvpy);
-    RTCalculateViewports(nvpx, nvpy);
+    {
+      this->nvpx=1;
+      this->nvpy=1;
+      figures.clear();
+      subframes.resize(nvpx*nvpy);
+      RTCalculateViewports(nvpx, nvpy);
+      
+      title_subframe.viewport[0]=0;
+      title_subframe.viewport[1]=0.925;
+      title_subframe.viewport[2]=1.0;
+      title_subframe.viewport[3]=1.0;
+    }
 
-    title_subframe.viewport[0]=0;
-    title_subframe.viewport[1]=0.925;
-    title_subframe.viewport[2]=1.0;
-    title_subframe.viewport[3]=1.0;
-    mainthread->AddFrame(this);
-    SetActiveSubFrame(0);
+  std::shared_ptr<Frame> Frame::New()
+  {
+    // Trick from:  https://stackoverflow.com/a/25069711
+    struct make_shared_enabler : public Frame {};
+    auto frame= std::make_shared<make_shared_enabler>();
+    frame->mainthread=internals::MainThread::CreateMainThread();
+    frame->mainthread->AddFrame(frame);
+    frame->SetActiveSubFrame(0);
+    return frame;
   }
 
   
@@ -68,7 +75,7 @@ namespace vtkfig
   }
 
 
-  void Frame::AddFigure(Figure* fig, int ipos)
+  void Frame::AddFigure(std::shared_ptr<Figure> fig, int ipos)
   {
     if (ipos>=nvpx*nvpy)
       SetAutoLayout(ipos+1);
@@ -79,7 +86,12 @@ namespace vtkfig
     SendCommand("AddFigure", internals::Communicator::Command::FrameAddFigure);
   }
 
-  void Frame::RemoveFigure(Figure* fig)
+  void Frame::AddFigure(std::shared_ptr<Figure> figure)
+  {
+    this->AddFigure(figure, 0);
+  };
+
+  void Frame::RemoveFigure(std::shared_ptr<Figure> fig)
   {
     this->figures.erase(fig);
     parameter.current_figure=fig;
@@ -205,17 +217,19 @@ namespace vtkfig
 
   Frame::~Frame()
   {
-    mainthread->RemoveFrame(this);
+    mainthread->RemoveFrame(number_in_frame_list);
+    number_in_frame_list=-1;
+    printf("delete frame\n");
   }
   
   
-  // void Frame::Clear(void)
-  // {
-  //   this->figures.clear();
-  //   SendCommand(Communicator::Command::Clear;
-  //   std::unique_lock<std::mutex> lock(this->mtx);
-  //   this->cv.wait(lock);
-  // }
+  void Frame::Clear(void)
+  {
+    auto figures=this->figures;
+    for (auto figure: figures)
+      this->RemoveFigure(figure);
+//    SendCommand("Clear", internals::Communicator::Command::FrameClear);
+  }
 
 
   /// part of frame init from render thread
@@ -399,31 +413,29 @@ namespace vtkfig
     RTAddFigures();
   }
   
-  void Frame::RTRemoveFigure(Figure *figure)
+  void Frame::RTRemoveFigure(std::shared_ptr<Figure> figure)
   {
-
+    if (figure==nullptr) return;
     auto &subframe=this->subframes[figure->framepos];
     auto &renderer=subframe.renderer;
-
-    if (
-      !figure->IsEmpty()  
-      && renderer->GetActors()->GetNumberOfItems()>0
-      )
-
-
+    printf("a\n");
     for (auto & actor: figure->actors) 
       renderer->RemoveActor(actor);
-    
+    printf("b\n");
+
     for (auto & actor: figure->ctxactors) 
       renderer->RemoveActor(actor);
     
+    printf("c\n");
     for (auto & actor: figure->actors2d) 
       renderer->RemoveActor(actor);
     
-    RTResetCamera(subframe);
-        
-  }
+    printf("d\n");
 
+    RTResetCamera(subframe);
+    printf("e\n");
+  }
+  
 
   void Frame::RTAddFigures()
   {
@@ -464,10 +476,10 @@ namespace vtkfig
 
 
 
-  vtkSmartPointer<vtkRenderer> Frame::GetRenderer(Figure & fig)
+  vtkSmartPointer<vtkRenderer> Frame::GetRenderer(std::shared_ptr<Figure> fig)
     {
       
-     return this->subframes[fig.framepos].renderer;
+     return this->subframes[fig->framepos].renderer;
     }
 
 

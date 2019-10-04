@@ -111,29 +111,29 @@ namespace vtkfig
   }
 
 
-  void Figure::SetData(DataSet& vtkfig_data, const std::string name)
+  void Figure::SetData(std::shared_ptr<DataSet> vtkfig_data, const std::string name)
   {
 
-    this->state.spacedim=vtkfig_data.GetSpaceDimension();
+    this->state.spacedim=vtkfig_data->GetSpaceDimension();
 
     this->data_producer->SetOutput(0);
-    this->data_producer->SetOutput(vtkfig_data.GetVTKDataSet());
+    this->data_producer->SetOutput(vtkfig_data->GetVTKDataSet());
     this->data_producer->Modified();
 
     this->boundary_data_producer->SetOutput(0);
-    this->boundary_data_producer->SetOutput(vtkfig_data.GetVTKBoundaryDataSet());
+    this->boundary_data_producer->SetOutput(vtkfig_data->GetVTKBoundaryDataSet());
     this->boundary_data_producer->Modified();
 
-    this->coordinate_scale_factor=vtkfig_data.coordinate_scale_factor;
+    this->coordinate_scale_factor=vtkfig_data->coordinate_scale_factor;
 
-    state.datatype=vtkfig_data.GetDataType();
+    state.datatype=vtkfig_data->GetDataType();
 
     this->dataname=name;
     this->celllist=0;
     this->title=name;
-    this->state.coordinate_scale_factor_xyz[0]=vtkfig_data.coordinate_scale_factor*vtkfig_data.coordinate_scale_factor_xyz[0];
-    this->state.coordinate_scale_factor_xyz[1]=vtkfig_data.coordinate_scale_factor*vtkfig_data.coordinate_scale_factor_xyz[1];
-    this->state.coordinate_scale_factor_xyz[2]=vtkfig_data.coordinate_scale_factor*vtkfig_data.coordinate_scale_factor_xyz[2];
+    this->state.coordinate_scale_factor_xyz[0]=vtkfig_data->coordinate_scale_factor*vtkfig_data->coordinate_scale_factor_xyz[0];
+    this->state.coordinate_scale_factor_xyz[1]=vtkfig_data->coordinate_scale_factor*vtkfig_data->coordinate_scale_factor_xyz[1];
+    this->state.coordinate_scale_factor_xyz[2]=vtkfig_data->coordinate_scale_factor*vtkfig_data->coordinate_scale_factor_xyz[2];
 
     // We have to inquire properties of data (ranges etc.) here because
     // in the rendering pipelines they can be used only once
@@ -145,7 +145,7 @@ namespace vtkfig
     SetVMinMax();
 
     // Data for grid visualization
-    auto cr=vtkDoubleArray::SafeDownCast(vtkfig_data.GetVTKDataSet()->GetCellData()->GetAbstractArray("cellregions"));
+    auto cr=vtkDoubleArray::SafeDownCast(vtkfig_data->GetVTKDataSet()->GetCellData()->GetAbstractArray("cellregions"));
     if (cr)
     {
       double range[2];
@@ -160,7 +160,7 @@ namespace vtkfig
     }
     
     // Data for grid visualization
-    auto boundary_data=vtkfig_data.GetVTKBoundaryDataSet();
+    auto boundary_data=vtkfig_data->GetVTKBoundaryDataSet();
     if  (boundary_data)
     {
       auto bcr=vtkDoubleArray::SafeDownCast(boundary_data->GetCellData()->GetAbstractArray("boundarycellregions"));
@@ -185,25 +185,11 @@ namespace vtkfig
     this->transform_dirty=true;
   }
 
-  void Figure::SetMaskedData(DataSet& vtkfig_data, const std::string name,const std::string maskname)
-  {
-    SetData(vtkfig_data,name);
-    celllist=vtkfig_data.GetCellList(maskname);
-  }
-
-  void Figure::SetData(std::shared_ptr<DataSet> vtkfig_data, const std::string name)
-  {
-    SetData(*vtkfig_data,name);
-  }
-  
-  
-
   void Figure::SetMaskedData(std::shared_ptr<DataSet> vtkfig_data, const std::string name,const std::string maskname)
   {
-    SetMaskedData(*vtkfig_data,name,maskname);
+    SetData(vtkfig_data,name);
+    celllist=vtkfig_data->GetCellList(maskname);
   }
-
-
 
 
 

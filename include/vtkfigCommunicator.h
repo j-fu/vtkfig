@@ -42,6 +42,7 @@ namespace vtkfig
           MainThreadRemoveFrame,
           FrameAddFigure,
           FrameRemoveFigure,
+          FrameClear,
           FrameSize,
           FramePosition,
           FrameSingleView,

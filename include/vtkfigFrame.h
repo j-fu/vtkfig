@@ -11,6 +11,7 @@
 #include <set>
 
 
+
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
 #include <vtkCornerAnnotation.h>
@@ -37,22 +38,22 @@ namespace vtkfig
   /// several overlapping figures.
   class Frame
   {
-  public:
-
-
-
+    
     ///
     /// Create frame.
     ///
     Frame();
+    friend class std::shared_ptr<Frame>;
+  public:
+    
+
     
     
     ///
     /// Create smart pointer to frame.
     ///
     /// \return Smart pointer to frame object
-    static std::shared_ptr<Frame> New()  { return std::make_shared<Frame>();}
-
+    static std::shared_ptr<Frame> New();
     ///
     /// Destroy frame.
     ///
@@ -85,20 +86,11 @@ namespace vtkfig
     /// 
     void StopVideo();
 
-    /// 
-    /// Add figure at position (0)
-    /// 
-    void AddFigure(Figure *figure) {AddFigure(figure, 0);};
 
     /// 
     /// Add figure at position (0)
     /// 
-    void AddFigure(Figure &figure) {AddFigure(&figure, 0);};
-
-    /// 
-    /// Add figure at position (0)
-    /// 
-    void AddFigure(std::shared_ptr<Figure> figure) {AddFigure(figure.get(),0);}
+    void AddFigure(std::shared_ptr<Figure> figure);
 
 
     /// 
@@ -107,41 +99,20 @@ namespace vtkfig
     /// \param figure Figure to be added
     /// \param ipos Number of position in frame grid
     ///
-    void AddFigure(Figure *figure, int ipos);
+    void AddFigure(std::shared_ptr<Figure> figure, int ipos);
+
 
     /// 
-    /// Add figure at position in frame
-    /// 
-    /// \param figure Figure to be added
-    /// \param ipos Number of position in frame grid
+    /// Remove figure
     ///
-    void AddFigure(Figure &figure, int ipos) {AddFigure(&figure,ipos);};
+    void RemoveFigure(std::shared_ptr<Figure> figure);
 
-    /// 
-    /// Add figure at position in frame
-    /// 
-    /// \param figure Figure to be added
-    /// \param ipos Number of position in frame grid
     ///
-    void AddFigure(std::shared_ptr<Figure> figure, int ipos){AddFigure(figure.get(),ipos);};
+    /// Remove all figures
+    ///
+    void Clear(void);
 
-
-    /// 
-    /// Remove figure
-    /// 
-    void RemoveFigure(Figure *figure);
-
-    /// 
-    /// Remove figure
-    /// 
-    void RemoveFigure(Figure &figure) {RemoveFigure(&figure);};
-
-    /// 
-    /// Remove figure
-    /// 
-    void RemoveFigure(std::shared_ptr<Figure> figure) {RemoveFigure(figure.get());}
-
-
+    
 
     /// Link camera to other camera
     ///
@@ -230,7 +201,6 @@ namespace vtkfig
     ///
     void SetActiveSubFrameCameraPosition(double x, double y, double z);
 
-    
     ///
     /// Show frame content and continue 
     ///
@@ -247,11 +217,13 @@ namespace vtkfig
     ///
     void Interact();
 
+
+
     int GetStepNumber() { return step_number;}
     void SetStepNumber(int n) { step_number=std::max(n,0);}
 
 
-    vtkSmartPointer<vtkRenderer> GetRenderer(Figure & fig);
+    vtkSmartPointer<vtkRenderer> GetRenderer(std::shared_ptr<Figure> fig);
 
 
     ///
@@ -311,7 +283,7 @@ Figures must be first clicked on before editing works.
     int number_in_frame_list=-1;
 
     /// List of all figures in frame
-    std::set<Figure*>figures;
+    std::set<std::shared_ptr<Figure>>figures;
 
     /// Number of viewports in x direction
     int nvpx;
@@ -333,7 +305,7 @@ Figures must be first clicked on before editing works.
 
 
     void RTAddFigures();
-    void RTRemoveFigure(Figure *figure);
+    void RTRemoveFigure(std::shared_ptr<Figure> figure);
     void RTHideSubframe(SubFrame &subframe);
     void RTUnHideSubframe(SubFrame &subframe);
     void RTSetSingleView(bool single_viewport);
@@ -406,10 +378,10 @@ Figures must be first clicked on before editing works.
       int single_subframe_view;
       int active_subframe;
 
-      Figure * current_figure;
+      std::shared_ptr<Figure> current_figure;
     } parameter;
     /// The spinning main thread
-    internals::MainThread *mainthread;
+    std::shared_ptr<internals::MainThread> mainthread;
     
     /// Blocking send of commands to main thread
     void SendCommand(std::string source, internals::Communicator::Command cmd);

@@ -117,6 +117,11 @@ extern "C" {
   void vtkfigInteract(vtkfigFrame*frame);
 
   /**
+     \copybrief vtkfig::Frame::Clear
+   */
+  void vtkfigClearFrame(vtkfigFrame *frame);
+
+  /**
      \copybrief vtkfig::Frame::AddFigure
    */
   void vtkfigAddScalarView(vtkfigFrame*frame, vtkfigScalarView *figure);
