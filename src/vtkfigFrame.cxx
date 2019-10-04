@@ -219,7 +219,8 @@ namespace vtkfig
   {
     mainthread->RemoveFrame(number_in_frame_list);
     number_in_frame_list=-1;
-    printf("delete frame\n");
+    if (mainthread->debug_level>0)
+      std::cout << "vtkfig: delete frame" << std::endl;
   }
   
   
@@ -228,7 +229,6 @@ namespace vtkfig
     auto figures=this->figures;
     for (auto figure: figures)
       this->RemoveFigure(figure);
-//    SendCommand("Clear", internals::Communicator::Command::FrameClear);
   }
 
 
@@ -418,22 +418,17 @@ namespace vtkfig
     if (figure==nullptr) return;
     auto &subframe=this->subframes[figure->framepos];
     auto &renderer=subframe.renderer;
-    printf("a\n");
+
     for (auto & actor: figure->actors) 
       renderer->RemoveActor(actor);
-    printf("b\n");
 
     for (auto & actor: figure->ctxactors) 
       renderer->RemoveActor(actor);
     
-    printf("c\n");
     for (auto & actor: figure->actors2d) 
       renderer->RemoveActor(actor);
     
-    printf("d\n");
-
     RTResetCamera(subframe);
-    printf("e\n");
   }
   
 

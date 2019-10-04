@@ -25,21 +25,18 @@ namespace vtkfig
   {
     std::shared_ptr<MainThread> MainThread::mainthread;
 
+
     void MainThread::DeleteMainThread()
     {
-
-      if (mainthread==0)        return;
-      for (auto&  frame :mainthread->framemap)
-      {
-        for (auto & subframe: frame.second->subframes)
-          subframe.renderer->RemoveAllViewProps();
-        frame.second->window->Finalize();
-            
-      }
-      mainthread->framemap.clear();
-      mainthread->interactor->TerminateApp();
+      
+      if (mainthread==nullptr)        return;
+      mainthread->Terminate();
+      if (mainthread->debug_level>0)
+        std::cout << "vtkfig: terminated" << std::endl;
+      mainthread=nullptr;
     }
 
+    
 
     std::shared_ptr<MainThread> MainThread::CreateMainThread()
     {
@@ -115,17 +112,19 @@ namespace vtkfig
     {
       if (debug_level>0)
         cout << "vtkfig: ~MainThread"  << endl;
-      if (this->running_multithreaded)
-      {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        Terminate();
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        this->thread->join();
-      }
-      else
-        Terminate();
 
-      framemap.clear();
+      // if (this->running_multithreaded)
+      // {
+      //   std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      //   Terminate();
+      //   std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+      this->thread->join();
+      // }
+      // else
+      //   Terminate();
+
+      // framemap.clear();
     }
 
 
@@ -170,6 +169,7 @@ namespace vtkfig
     void MainThread::RemoveFrame(int number_in_framelist)
     {
       SendCommand(number_in_framelist, "RemoveFrame", Communicator::Command::MainThreadRemoveFrame);
+      std::this_thread::sleep_for (std::chrono::milliseconds(10));
     }
 
     void MainThread::Show()
@@ -216,8 +216,6 @@ namespace vtkfig
       SendCommand(-1,"Terminate",Communicator::Command::MainThreadTerminate);
     }
 
-  
-    
     ///
     ///  vtkfig specific keybord and mouse interaction
     ///
@@ -611,7 +609,8 @@ namespace vtkfig
           // Command dispatch
           switch(mainthread->cmd)
           {
-          
+
+            
            // Add frame to main thread
           case Communicator::Command::MainThreadAddFrame:
           {
@@ -630,7 +629,6 @@ namespace vtkfig
             frame.window->Finalize();
             std::unique_lock<std::mutex> lock(this->mainthread->mutex);
             mainthread->framemap.erase(frame.number_in_frame_list);
-
           }
           break;
 
@@ -831,17 +829,10 @@ namespace vtkfig
           case Communicator::Command::MainThreadTerminate:
           {
 
-            for (auto & framepair: mainthread->framemap)
-              framepair.second->window->Finalize();
-
-            mainthread->framemap.clear();
-
-            this->Interactor->TerminateApp();
-
-            mainthread->running_multithreaded=false;
-
-            mainthread->condition_variable.notify_all();
-
+            if (mainthread->debug_level>0)
+              std::cout << "vtkfig: Start termination" << std::endl;            
+            
+            mainthread->interactor->TerminateApp();
             return;
           }
           break;
@@ -920,18 +911,21 @@ namespace vtkfig
       mainthread->running_multithreaded=true;
 
       mainthread->interactor->Start();
+      if (mainthread->debug_level>0)
+        cout << "vtkfig: RenderThread prepare termination" << endl;
+
+      for (auto&  frame :mainthread->framemap)
+      {
+        for (auto & subframe: frame.second->subframes)
+          subframe.renderer->RemoveAllViewProps();
+        frame.second->window->Finalize();
+      }
+
       mainthread->running_multithreaded=false;
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
       mainthread->condition_variable.notify_all();
-    
-      // No need for this (?) - let TerminateApp()
-      // take care of this... Seems to work
-      // mainthread->interactor->SetRenderWindow(0);
 
-      mainthread->interactor->TerminateApp();
 
-      mainthread->running_multithreaded=false;
-      
-      //window->Finalize();
       if (mainthread->debug_level>0)
         cout << "vtkfig: RenderThread stop" << endl;
     }

@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
   vtkfigDataSet* griddata=vtkfigCreateDataSet();
   vtkfigScalarView*contour=vtkfigCreateScalarView();
 
-  int nspin=100;
+  int nspin=10;
   int Nx = 200;
   int Ny = 250;
   
@@ -75,17 +75,20 @@ int main(int argc, char *argv[])
     t+=dt;
     ii++;
   }
-  vtkfigInteract(frame);
+/*  vtkfigInteract(frame);*/
   
   
-  printf("Hi\n");
+  /* printf("Hi\n"); */
 
-  vtkfigDestroyScalarView(contour);
-  vtkfigDestroyDataSet(griddata);
-  vtkfigDestroyFrame(frame);
-  free(x);
-  free(y);
-  free(z);
+  /* printf("-scalarview:\n"); */
+  /* vtkfigDestroyScalarView(contour); */
+  /* printf("-dataset:\n"); */
+  /* vtkfigDestroyDataSet(griddata); */
+  /* printf("-frame:\n"); */
+  /* vtkfigDestroyFrame(frame); */
+  /* free(x); */
+  /* free(y); */
+  /* free(z); */
 
   printf("Ist alles weg ?\n");
   return 0;
