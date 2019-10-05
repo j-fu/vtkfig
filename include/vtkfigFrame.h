@@ -11,7 +11,6 @@
 #include <set>
 
 
-
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
 #include <vtkCornerAnnotation.h>
@@ -39,11 +38,6 @@ namespace vtkfig
   class Frame
   {
     
-    ///
-    /// Create frame.
-    ///
-    Frame();
-    friend class std::shared_ptr<Frame>;
   public:
     
 
@@ -54,12 +48,9 @@ namespace vtkfig
     ///
     /// \return Smart pointer to frame object
     static std::shared_ptr<Frame> New();
-    ///
-    /// Destroy frame.
-    ///
-    ~Frame();
 
-    ///
+
+///
     /// Set layout of subframe grid
     ///
     /// \param nvpx  number of  rows
@@ -271,6 +262,10 @@ Figures must be first clicked on before editing works.
 )";
 
   private:
+    Frame();
+
+    ~Frame();
+
 
     friend class internals::MainThread;
     friend class internals::MyInteractorStyle;
