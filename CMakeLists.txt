@@ -11,7 +11,7 @@ PROJECT(VTKFIG C CXX)
 
 set(VTKFIG_MAJOR_VERSION 0)
 set(VTKFIG_MINOR_VERSION 20)
-set(VTKFIG_PATCH_VERSION 20190805)
+set(VTKFIG_PATCH_VERSION 20191005)
 set(VTKFIG_VERSION    ${VTKFIG_MAJOR_VERSION}.${VTKFIG_MINOR_VERSION}.${VTKFIG_PATCH_VERSION})
 
 # Allow to specify -DVTKFIG_CONFIG=xxx  at cmake time on the 
@@ -118,7 +118,10 @@ set(ZIP_FILE_NAME_ROOT  "vtkfig-${VTKFIG_VERSION}")
 #
 # What is the easy way to do this with CPack proper ?
 #
-add_custom_target(zip hg archive  ${PROJECT_BINARY_DIR}/${ZIP_FILE_NAME_ROOT}.zip)
+add_custom_target(zip
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  COMMAND   git archive --format=zip -o ${PROJECT_BINARY_DIR}/${ZIP_FILE_NAME_ROOT}.zip HEAD
+  )
 
 
 #
@@ -129,7 +132,7 @@ add_custom_target(upload
                  COMMAND rsync -avu html ${MYWWW}/staging/vtkfig
                  COMMAND cp -rp ${PROJECT_BINARY_DIR}/${ZIP_FILE_NAME_ROOT}.zip ${MYWWW}/staging/vtkfig
                  COMMAND make -C ${MYWWW}/sitesrc upload
-                 DEPENDS dox zip
+                 DEPENDS dox
                  )
 
 
@@ -228,16 +231,3 @@ install(EXPORT ${VTKFIG_EXPORT_NAME}
 # .. and define an uninstall target.
 add_custom_target(uninstall cat ${PROJECT_BINARY_DIR}/install_manifest.txt | xargs rm -fv)
 
-
-add_custom_target(update 
-    COMMAND hg pull
-    COMMAND hg update
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    COMMENT "Updating source files in repository"
-    VERBATIM )
-
-add_custom_target(revert
-    COMMAND hg revert --all
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    COMMENT "Revert all changes made to source tree"
-    VERBATIM )

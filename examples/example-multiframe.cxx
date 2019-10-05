@@ -70,9 +70,9 @@ int main(void)
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
 
-  auto frame1=vtkfig::Frame::New() ;
-  auto frame2=vtkfig::Frame::New() ;
-  auto frame3=vtkfig::Frame::New() ;
+  std::shared_ptr<vtkfig::Frame> frame1=vtkfig::Frame::New() ;
+  std::shared_ptr<vtkfig::Frame> frame2=vtkfig::Frame::New() ;
+  std::shared_ptr<vtkfig::Frame> frame3=vtkfig::Frame::New() ;
 
   frame1->SetSize(400,400);
   frame2->SetSize(400,400);
@@ -82,23 +82,23 @@ int main(void)
   frame2->LinkCamera(frame1);
 
 
-  auto dataset=vtkfig::DataSet::New();
+  std::shared_ptr<vtkfig::DataSet> dataset=vtkfig::DataSet::New();
   dataset->SetRectilinearGrid(x,y);
   dataset->SetPointScalar(u ,"u");
   dataset->SetPointScalar(v ,"v");
 
 
-  auto contour_u=vtkfig::ScalarView::New();
+  std::shared_ptr<vtkfig::ScalarView> contour_u=vtkfig::ScalarView::New();
   contour_u->SetData(dataset,"u");
   contour_u->SetSurfaceRGBTable(colors,255);
   frame1->AddFigure(contour_u);
 
-  auto contour_v=vtkfig::ScalarView::New();
+  std::shared_ptr<vtkfig::ScalarView> contour_v=vtkfig::ScalarView::New();
   contour_v->SetData(dataset,"v");
   contour_v->SetSurfaceRGBTable(colors,255);
   frame2->AddFigure(contour_v);
 
-  auto xyplot=vtkfig::XYPlot::New();
+  std::shared_ptr<vtkfig::XYPlot> xyplot=vtkfig::XYPlot::New();
   xyplot->SetYRange(-0.5,0.5);
   frame3->AddFigure(xyplot);
 

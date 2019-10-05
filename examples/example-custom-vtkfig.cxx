@@ -46,7 +46,7 @@ int main(void)
   const double dx = (x_upp-x_low)/(Nx-1);
   const double dy = (y_upp-y_low)/(Ny-1);
 
-  auto frame=vtkfig::Frame::New();
+  std::shared_ptr<vtkfig::Frame> frame=vtkfig::Frame::New();
     
 
 
@@ -65,7 +65,7 @@ int main(void)
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
 
-  auto figure=vtkfig::Figure::New();
+  std::shared_ptr<vtkfig::Figure> figure=vtkfig::Figure::New();
   figure->SetViewVolume(0,1,0,1,0,1);
   int i,j,k;
   

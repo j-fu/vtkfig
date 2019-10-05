@@ -68,7 +68,6 @@ int main(void)
   const double dx = (x_upp-x_low)/(Nx-1);
   const double dy = (y_upp-y_low)/(Ny-1);
 
-//  auto frame=vtkfig::Frame::New();
     
 
 

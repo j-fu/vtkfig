@@ -13,7 +13,6 @@ target_link_libraries(example-capi vtkfig ${VTK_LIBRARIES})
 
 add_vtkfig_example(example-xyplot)
 add_vtkfig_example(example-simplexcontour2d)
-add_vtkfig_example(example-simplexcontour2d-smartpointer)
 add_vtkfig_example(example-simplexcontour3d)
 add_vtkfig_example(example-rectcontour2d)
 add_vtkfig_example(example-rectcontour3d)

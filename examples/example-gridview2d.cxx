@@ -61,8 +61,8 @@ int main(void)
   int npoints=points.size()/2;
   std::vector<double>values(npoints);
 
-  auto frame=vtkfig::Frame::New();
-  auto ugriddata=vtkfig::DataSet::New();
+  std::shared_ptr<vtkfig::Frame> frame=vtkfig::Frame::New();
+  std::shared_ptr<vtkfig::DataSet> ugriddata=vtkfig::DataSet::New();
 
 
   frame->SetSize(800,400);
@@ -70,11 +70,11 @@ int main(void)
   ugriddata->SetSimplexGrid(2,points,cells);
 
 
-  auto rgriddata=vtkfig::DataSet::New();
+  std::shared_ptr<vtkfig::DataSet> rgriddata=vtkfig::DataSet::New();
   rgriddata->SetRectilinearGrid(x,y);
-  auto rgview=vtkfig::GridView::New();
+  std::shared_ptr<vtkfig::GridView> rgview=vtkfig::GridView::New();
   rgview->SetData(rgriddata);
-  auto ugview=vtkfig::GridView::New();
+  std::shared_ptr<vtkfig::GridView> ugview=vtkfig::GridView::New();
   ugview->SetData(ugriddata);
   ugview->SetTitle("Unstructured Grid");
   rgview->SetTitle("Rectilinear Grid");

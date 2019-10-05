@@ -65,8 +65,8 @@ int main(void)
   auto t0=std::chrono::system_clock::now();
   double i0=ii;
 
-  auto frame=vtkfig::Frame::New();
-  auto dataset=vtkfig::DataSet::New();
+  std::shared_ptr<vtkfig::Frame> frame=vtkfig::Frame::New();
+  std::shared_ptr<vtkfig::DataSet> dataset=vtkfig::DataSet::New();
 
   frame->SetLayout(2,2);
   frame->LinkCamera(1,frame,0);
@@ -81,18 +81,18 @@ int main(void)
 
 
 
-  auto contour_u=vtkfig::ScalarView::New();
+  std::shared_ptr<vtkfig::ScalarView> contour_u=vtkfig::ScalarView::New();
   contour_u->SetData(dataset,"u");
   contour_u->SetSurfaceRGBTable(colors,255);
   frame->AddFigure(contour_u,0);
 
-  auto contour_v=vtkfig::ScalarView::New();
+  std::shared_ptr<vtkfig::ScalarView> contour_v=vtkfig::ScalarView::New();
   contour_v->SetData(dataset,"v");
   contour_v->SetSurfaceRGBTable(colors,255);
   frame->AddFigure(contour_v,1);
 
   
-  auto xyplot=vtkfig::XYPlot::New();
+  std::shared_ptr<vtkfig::XYPlot> xyplot=vtkfig::XYPlot::New();
   xyplot->SetYRange(-0.5,0.5);
   frame->AddFigure(xyplot,2);
 
