@@ -37,7 +37,7 @@ namespace vtkfig
     }
 
     
-
+    
     std::shared_ptr<MainThread> MainThread::CreateMainThread()
     {
       if (mainthread==0)
@@ -352,7 +352,7 @@ namespace vtkfig
           if (this->Interactor->GetControlKey())
           {
             this->Interactor->TerminateApp();
-            std::terminate();
+            std::quick_exit(0);
           }
         }
 
@@ -595,19 +595,17 @@ namespace vtkfig
         
         if (this->mainthread->communication_blocked) return;
         
-        if (
-          vtkCommand::TimerEvent == eventId  // Check if timer event
-          && this->mainthread->cmd!=Communicator::Command::Empty  // Check if command has been given
-          )
-        {        
-          
+        if (eventId ==  vtkCommand::TimerEvent)
+        {
+          if (this->mainthread->cmd==Communicator::Command::Empty)
+            return;
           
           // Lock mutex
           if (this->mainthread->running_multithreaded)
             std::unique_lock<std::mutex> lock(this->mainthread->mutex);
           
           // Command dispatch
-          switch(mainthread->cmd)
+          switch(this->mainthread->cmd)
           {
             // Add frame to main thread
           case Communicator::Command::MainThreadAddFrame:
@@ -850,10 +848,10 @@ namespace vtkfig
             // hopefully works if multitreading does not
             mainthread->interactor->TerminateApp();
         
-        }
-      }
+        } // if eventid
+      } // Execute
     };
-
+    
 
     void MainThread::RTAddFrame(MainThread& mainthread, int iframe)
     {
@@ -923,9 +921,14 @@ namespace vtkfig
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
       mainthread.condition_variable.notify_all();
 
-
+      for (auto &frame: mainthread.framemap)
+        frame.second->window=0;
+      
+      mainthread.interactor=0;
+      
       if (mainthread.debug_level>0)
         cout << "vtkfig: RenderThread stop" << endl;
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     void MainThread::Start(void)
