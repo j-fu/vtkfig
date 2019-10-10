@@ -143,11 +143,12 @@ namespace vtkfig
     template<typename V>  void AddPlot(const V &x,  const V &y);
 
 
-
-  private:
-
+  protected:
     XYPlot();
     ~XYPlot(){};
+
+    
+  private:
 
     /// Internal addplot after plot data have
     /// been filled

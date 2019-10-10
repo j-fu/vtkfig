@@ -71,10 +71,11 @@ namespace vtkfig
         gridfunc->Modified();
       };
 
-
-    private:
+    protected:
       Surf2D();
       ~Surf2D(){};
+
+    private:
       
       void RTBuildVTKPipeline() override final;
       

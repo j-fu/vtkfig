@@ -123,11 +123,11 @@ namespace vtkfig
       void SetStreamLineRGBTable(RGBTable & tab, int lutsize);
       
 
-
-
-    private:
+    protected:
       VectorView();
       ~VectorView(){};
+
+    private:
 
       void RTBuildVTKPipeline() override final;
       void ServerMPSend(vtkSmartPointer<internals::Communicator> communicator) override final;

@@ -89,13 +89,12 @@ namespace vtkfig
     /// \param lutsize  Size of lookup table created.
     void SetSurfaceRGBTable(RGBTable & tab, int lutsize);
     
-
+  protected:
+    ScalarView();
+    ~ScalarView(){};
     
   private:
 
-    ScalarView();
-
-    ~ScalarView(){};
 
     void RTBuildVTKPipeline() override final;
     

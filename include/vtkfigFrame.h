@@ -261,10 +261,11 @@ Figures must be first clicked on before editing works.
 --------------------------------------
 )";
 
-  private:
+  protected:
     Frame();
-
     ~Frame();
+
+  private:
 
 
     friend class internals::MainThread;

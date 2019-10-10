@@ -49,12 +49,12 @@ namespace vtkfig
     void Clear();
 
 
-
-  private:
-    
+  protected:
     ChartXY();
     ~ChartXY(){};
-
+    
+  private:
+    
     int num_plot=0;
     void ServerMPSend(vtkSmartPointer<internals::Communicator> communicator) override final;
 

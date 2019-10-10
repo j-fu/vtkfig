@@ -323,10 +323,10 @@ namespace vtkfig
   protected:
     int spacedim=0;
 
-
-  private:
     DataSet();
     ~DataSet(){};
+
+  private:
 
     friend class Figure;
     vtkSmartPointer<vtkDataSet> data=NULL;

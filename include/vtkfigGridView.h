@@ -48,10 +48,12 @@ namespace vtkfig
     /// Toggle visibility of grid edges
     void ShowGridEdges(bool b) { Figure::state.show_grid_edges=b;}
 
-  private:
-
+  protected:
     GridView();
     ~GridView(){};
+
+  private:
+
 
     friend class Client;
     friend class MainThread;
