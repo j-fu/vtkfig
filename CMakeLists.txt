@@ -132,7 +132,7 @@ add_custom_target(upload
                  COMMAND rsync -avu html ${MYWWW}/staging/vtkfig
                  COMMAND cp -rp ${PROJECT_BINARY_DIR}/${ZIP_FILE_NAME_ROOT}.zip ${MYWWW}/staging/vtkfig
                  COMMAND make -C ${MYWWW}/sitesrc upload
-                 DEPENDS dox
+                 DEPENDS dox zip
                  )
 
 

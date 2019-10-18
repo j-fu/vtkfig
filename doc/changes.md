@@ -11,6 +11,7 @@ Changes
   - Started C language API (mainly for calling from Julia)
   - Restructured documentation
   - Switched examples to reference based idiom due to better interaction with doxygen
+  - dropped vtk6 support
   
 - v0.20
   - Internal restructuring for changing grids: use vtkTrivialDataProducer instead of data object

@@ -20,11 +20,11 @@ vtkfig
 
 - (Emerging) C API
 
-- (Emerging) companion Julia package [VTKFig.jl](https://github.com/j-fu/VTKFig.jl)
+- (Emerging) companion Julia package [VTKFig.jl](https://github.com/j-fu/VTKFig.jl) based on C API and Julia `ccall`
 
 - Experimental client-server communication for remote execution
 
-- 3-Clause BSD License ([same as vtk](http://www.vtk.org/licensing/))
+- 3-Clause BSD License ([same as vtk](https://gitlab.kitware.com/vtk/vtk/blob/master/Copyright.txt))
 
 
 ## Further information

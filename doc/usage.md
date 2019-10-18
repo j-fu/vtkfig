@@ -30,6 +30,7 @@ auto frame=vtkfig::Frame::New();
 frame->AddFigure(contour);
 frame->Interact()
 ~~~
+
 Each frame corresponts to a window on the screen. A vtkfig::Frame can have subframes (similar to [subplots in matplotlib](https://matplotlib.org/examples/pylab_examples/subplot_demo.html)), allowing to have multiple figures in a frame. The implementation for multiple frames has performance issues.
 The `Interact()` method handles blocking interaction.
 
