@@ -13,6 +13,7 @@ add_library(vtkfig SHARED
   vtkfigMainThread.cxx
   vtkfigCommunicator.cxx
   vtkfigTools.cxx
+  vtkfigGLScene.cxx
   vtkfigScalarView.cxx  
   vtkfigGridView.cxx  
   vtkfigVectorView.cxx  

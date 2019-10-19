@@ -7,6 +7,7 @@ install(FILES
   vtkfigTools.h
   vtkfigScalarView.h
   vtkfigGridView.h
+  vtkfigGLScene.h
   vtkfigVectorView.h
   vtkfigXYPlot.h
 DESTINATION include/vtkfig)
