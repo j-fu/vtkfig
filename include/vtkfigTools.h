@@ -166,5 +166,5 @@ namespace vtkfig
 
 
 }
-
+#define ___show(x) std::cout << #x << " = " << x << std::endl;
 #endif
