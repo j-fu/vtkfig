@@ -4,13 +4,15 @@ Changes
 
 ## Changes
 - tip
+
+- v0.21
+  - Started vtkfig::GLScene for "free" drawing without predefined datasets
   - Removed reference based API as this cannot be handled well together with  the shared_ptr based stuff.
-  - Refactored pointer handling: internally, nearly all interfaces now use shared_ptr or references
+  - Refactored pointer handling: internally, nearly all interfaces now use shared_ptr or references.
   - Moved to github due to Atlassian sunsetting mercurial support on bitbucket and compatibility
     to Julia world
   - Started C language API (mainly for calling from Julia)
   - Restructured documentation
-  - Switched examples to reference based idiom due to better interaction with doxygen
   - dropped vtk6 support
   
 - v0.20
