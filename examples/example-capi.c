@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 
   
 
-  vtkfigSetRectilinearGrid(griddata,x,Nx,y,Ny);
+  vtkfigSetRectilinearGrid2D(griddata,x,Nx,y,Ny);
   vtkfigSetPointScalar(griddata,z,Nx*Ny,"V");
   vtkfigSetData(contour,griddata,"V");
   vtkfigAddScalarView(frame,contour);

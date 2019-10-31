@@ -72,7 +72,7 @@ namespace vtkfig
 
 
     template <class V>
-    void SetIsoLevels(V&v)
+    void SetIsolevels(V&v)
     {
       isoline_filter->SetNumberOfContours(v.size());
       for (size_t i=0;i<v.size(); i++)

@@ -270,11 +270,19 @@ extern "C"
 
   
     
-  void vtkfigSetRectilinearGrid(vtkfigDataSet*dataset,double *x, int nx, double *y, int ny)
+  void vtkfigSetRectilinearGrid2D(vtkfigDataSet*dataset,double *x, int nx, double *y, int ny)
   {
     auto X=vector_adapter<double>(x,nx);
     auto Y=vector_adapter<double>(y,ny);
     dataset->cxxobj->SetRectilinearGrid(X,Y);
+  }
+
+  void vtkfigSetRectilinearGrid3D(vtkfigDataSet*dataset,double *x, int nx, double *y, int ny, double *z, int nz)
+  {
+    auto X=vector_adapter<double>(x,nx);
+    auto Y=vector_adapter<double>(y,ny);
+    auto Z=vector_adapter<double>(z,nz);
+    dataset->cxxobj->SetRectilinearGrid(X,Y,Z);
   }
 
   void vtkfigSetPointScalar(vtkfigDataSet*dataset,double *x, int nx, char *name)
@@ -293,10 +301,20 @@ extern "C"
     scalarview->cxxobj->SetData(dataset->cxxobj,"V");
   }
 
-
   void vtkfigPrintOpenGLInfo()
   {
     vtkfig::PrintOpenGLInfo();
+  }
+
+  void vtkfigSetIsolevels(vtkfigScalarView *scalarview,double *v, int nv)
+  {
+    auto V=vector_adapter<double>(v,nv);
+    scalarview->cxxobj->SetIsolevels(V);
+  }
+
+  void vtkfigShowIsosurfaces(vtkfigScalarView *scalarview, int show)
+  {
+    scalarview->cxxobj->ShowIsosurfaces(bool(show));
   }
   
   ///////////////////////////////////////////////////////////////////
@@ -395,7 +413,5 @@ extern "C"
   {
     xyplot->cxxobj->SetNumberOfYLabels(n);
   }
-
-
 
 }

@@ -98,7 +98,11 @@ extern "C" {
   /**
      \copybrief vtkfig::DataSet::SetRectilinearGrid
    */
-  void vtkfigSetRectilinearGrid(vtkfigDataSet*dataset,double *x, int nx, double *y, int ny);
+  void vtkfigSetRectilinearGrid2D(vtkfigDataSet*dataset,double *x, int nx, double *y, int ny);
+  /**
+     \copybrief vtkfig::DataSet::SetRectilinearGrid
+   */
+  void vtkfigSetRectilinearGrid3D(vtkfigDataSet*dataset,double *x, int nx, double *y, int ny, double *z, int nz);
   /**
      \copybrief vtkfig::DataSet::SetPointScalar
    */
@@ -209,7 +213,17 @@ extern "C" {
      \copybrief vtkfig::DataSet::WriteVTK
    */
   void vtkfigWriteVTK(vtkfigDataSet*dataset,char* filename, char* filetype);
-  
+
+  /**
+     \copybrief vtkfig::Figure::SetIsolevels
+   */
+  void vtkfigSetIsolevels(vtkfigScalarView *scalarview,double *v, int nv);
+
+  /**
+     \copybrief vtkfig::ScalarView::ShowIsoSurfaces
+   */
+  void vtkfigShowIsosurfaces(vtkfigScalarView *scalarview, int show);
+
   /**
      \copybrief vtkfig::XYPlot::AddPlot
    */
