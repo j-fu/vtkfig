@@ -27,7 +27,7 @@ SET(VTKFIG_CONFIG "" CACHE STRING "VTKFIG  Config name")
 
 set(VTKFIG_EXPORT_NAME "VTKFIG${VTKFIG_CONFIG}")
 
-SET(VTKFIG_DEVEL False CACHE BOOLEAN "VTKFIG  Devlopment configuration")
+SET(VTKFIG_DEVEL False CACHE BOOL "VTKFIG  Devlopment configuration")
 
 
 
