@@ -1,5 +1,8 @@
 #include <stdexcept>
 #include <chrono>
+#ifdef __APPLE__
+#include <unistd.h>
+#endif
 
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
@@ -352,7 +355,11 @@ namespace vtkfig
           if (this->Interactor->GetControlKey())
           {
             this->Interactor->TerminateApp();
+#ifdef __APPLE__
+            _exit(0);
+#else
             std::quick_exit(0);
+#endif
           }
         }
 

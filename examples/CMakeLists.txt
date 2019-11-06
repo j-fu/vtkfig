@@ -2,6 +2,7 @@ function (add_vtkfig_example  EXAMPLE)
   add_executable(${EXAMPLE} ${EXAMPLE}.cxx)
   add_dependencies(${EXAMPLE} vtkfig)
   target_link_libraries(${EXAMPLE} vtkfig ${VTK_LIBRARIES})
+  set_property(TARGET ${EXAMPLE} PROPERTY CXX_STANDARD 11)
 endfunction()
 
 

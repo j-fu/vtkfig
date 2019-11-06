@@ -1,6 +1,7 @@
 function (add_vtkfig_binary  BINARY)
   add_executable(${BINARY} ${BINARY}.cxx)
   target_link_libraries(${BINARY} vtkfig ${VTK_LIBRARIES})
+  target_include_directories(vtkfig SYSTEM PUBLIC ${VTK_INCLUDE_DIRS})
   set_property(TARGET ${BINARY} PROPERTY CXX_STANDARD 11)
   install(TARGETS ${BINARY} DESTINATION bin EXPORT ${VTKFIG_EXPORT_NAME})
 endfunction()
@@ -25,7 +26,7 @@ add_library(vtkfig SHARED
   vtkfigSurf2D.cxx
   )
 target_link_libraries(vtkfig ${VTK_LIBRARIES})
-
+target_include_directories(vtkfig SYSTEM PUBLIC ${VTK_INCLUDE_DIRS})
 
 ###### target_link_libraries(vtkfig PUBLIC ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 #target_link_libraries(vtkfig vtklib)
