@@ -342,6 +342,8 @@ namespace vtkfig
 //    subframe.renderer->GetActiveCamera()->SetObliqueAngles(45,90);
 //    subframe.renderer->GetActiveCamera()->Zoom(subframe.default_camera_zoom);
     subframe.renderer->GetActiveCamera()->SetViewAngle(this->default_camera_view_angle);
+    subframe.renderer->ResetCamera(); // without this, we get an empty fig and need to click in
+    // it calculates some bounding box etc.
   }
 
   void Frame::RTSetActiveSubFrameCameraViewAngle(SubFrame & subframe, double a)
@@ -417,6 +419,12 @@ namespace vtkfig
   {
     if (figure==nullptr) return;
     auto &subframe=this->subframes[figure->framepos];
+
+    // It needs to be called here. We need to see how this can
+    // be handled in an intuitive way.
+    // RTResetCamera(subframe);
+
+
     auto &renderer=subframe.renderer;
 
     for (auto & actor: figure->actors) 
@@ -428,7 +436,6 @@ namespace vtkfig
     for (auto & actor: figure->actors2d) 
       renderer->RemoveActor(actor);
     
-    RTResetCamera(subframe);
   }
   
 
