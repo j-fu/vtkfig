@@ -21,9 +21,8 @@ add_library(vtkfig SHARED
   vtkfigXYPlot.cxx
   vtkfigCAPI.cxx
   vtkfigClient.cxx
-  
-  vtkfigChartXY.cxx
   vtkfigSurf2D.cxx
+#  vtkfigChartXY.cxx
   )
 target_link_libraries(vtkfig ${VTK_LIBRARIES})
 target_include_directories(vtkfig SYSTEM PUBLIC ${VTK_INCLUDE_DIRS})
