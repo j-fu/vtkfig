@@ -16,7 +16,7 @@ vtkfig doesn't use the full functionality of vtk, and it is possible to work wit
 - reduced  compile time for vtk
 - less transient linking clashes with other system libraris, notably mpi and hdf5
 
-Here is the cmake command which builds just enough  of vtk for a working vtkfig:
+Here is the cmake command which allows to build just enough  of vtk for a working vtkfig:
 ````
 cmake ..\
  -GNinja\
@@ -53,9 +53,9 @@ cmake ..\
  -DModule_vtkInteractionStyle:BOOL=ON
 ````
 
-- This script assumes working in a subdirectory `build` of the to level directory of the vtk source tree (otherwise, replace the `..` accordingly).
-- It uses `ninja` instead of `make` which performs much faster parallel build. After configuring just invoke `ninja && ninja install`.
+- This script assumes working in a subdirectory named e.g. `build` of the top level directory of the vtk source tree (otherwise, replace the `..` accordingly).
+- It uses `ninja` instead of `make` which performs a much faster parallel build. After configuring just invoke `ninja && ninja install`.
 - Install prefix is `$HOME/local`, this can be changed to any other directory on the `CMAKE_PREFIX_PATH` where the vtkfig `CMakeListe.txt` can find stuff.
 - Build no shared libraries, this helps to link everything into one `libvtkfig.so`. Just change this setting if you feel it is inconvenient (this setting also responsible for the -fPIC linker flags).
-- We try to use system libraries for png  etc. Usually, these libraries are available, ans using them may avoid some transient linking clashes.
-- All the other stuff is just the heuristic selection of a subset of vtk which keeps vtkfig working. Fear not, this are still >1700 sources.
+- We try to use system libraries for png  etc. Usually, these libraries are available, and using them may avoid some transient linking clashes.
+- All the other stuff is just the heuristic selection of a subset of vtk which keeps vtkfig working. Fear not, it is still >1700 source files large.
