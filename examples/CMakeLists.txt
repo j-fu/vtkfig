@@ -1,14 +1,14 @@
 function (add_vtkfig_example  EXAMPLE)
   add_executable(${EXAMPLE} ${EXAMPLE}.cxx)
   add_dependencies(${EXAMPLE} vtkfig)
-  target_link_libraries(${EXAMPLE} vtkfig ${VTK_LIBRARIES})
+  target_link_libraries(${EXAMPLE} vtkfig ${VTK_LIBRARIES} m)
   set_property(TARGET ${EXAMPLE} PROPERTY CXX_STANDARD 11)
 endfunction()
 
 
 add_executable(example-capi example-capi.c)
 add_dependencies(example-capi vtkfig)
-target_link_libraries(example-capi vtkfig ${VTK_LIBRARIES})
+target_link_libraries(example-capi vtkfig ${VTK_LIBRARIES} m)
 
 
 
