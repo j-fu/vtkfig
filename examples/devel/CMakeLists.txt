@@ -1,0 +1,5 @@
+add_vtkfig_example(example-context2d)
+add_vtkfig_example(example-chartxy)
+add_vtkfig_example(example-surf2d)
+add_vtkfig_example(example-axis)
+add_vtkfig_example(example-draw)
