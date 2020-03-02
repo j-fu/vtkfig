@@ -20,7 +20,7 @@ vtkfig
 
 - (Emerging) C API
 
-- (Emerging) companion Julia package [VTKFig.jl](https://github.com/j-fu/VTKFig.jl) based on C API and Julia `ccall`
+- (Emerging) companion Julia package [JuliaVTKFig.jl](https://github.com/j-fu/JuliaVTKFig.jl) based on C API and Julia `ccall`
 
 - Experimental client-server communication for remote execution
 
