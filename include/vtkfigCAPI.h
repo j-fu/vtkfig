@@ -102,6 +102,12 @@ extern "C" {
   /**
      \copybrief vtkfig::DataSet::SetRectilinearGrid
    */
+
+  void vtkfigSetSimplexGrid(vtkfigDataSet*dataset,int dim, double *points, int npoints, int  *cells, int ncells);
+  /**
+     \copybrief vtkfig::DataSet::SetSimplexGrid
+   */
+  
   void vtkfigSetRectilinearGrid3D(vtkfigDataSet*dataset,double *x, int nx, double *y, int ny, double *z, int nz);
   /**
      \copybrief vtkfig::DataSet::SetPointScalar
