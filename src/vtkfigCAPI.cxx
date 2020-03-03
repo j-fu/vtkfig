@@ -6,6 +6,7 @@
 #include "vtkfigVectorView.h"
 #include "vtkfigGridView.h"
 #include "vtkfigXYPlot.h"
+#include "vtkfigTools.h"
 
 #include "config.h"
 
@@ -141,13 +142,59 @@ extern "C"
     xyplot->cxxobj=vtkfig::XYPlot::New();
     return xyplot;
   }
-  
+    
   void vtkfigDestroyXYPlot(vtkfigXYPlot *xyplot)
   {
     xyplot->cxxobj=nullptr;
     delete xyplot;
   }
 
+////////////////////////////////////////////////////////////////////////
+  struct vtkfigSimplexGrid_struct 
+  {
+    int npoints;
+    int ncells;
+    int dim;
+    double *points;
+    int *cells;
+  };
+
+  void Delaunay2D(double *inpoints, int n_inpoints, vtkfigSimplexGrid *g)
+  {
+    auto InPoints=vector_adapter<double>(inpoints,2*n_inpoints);
+    std::vector<double>points;
+    std::vector<int>cells;
+    
+    vtkfig::Delaunay2D(InPoints,points,cells);
+    g->dim=2;
+    g->npoints=points.size()/2;
+    g->ncells=cells.size()/3;
+    g->points=(double*)malloc(sizeof(double)*points.size());
+    for (int i=0;i<points.size(); i++)
+      g->points[i]=points[i];
+    g->cells=(int*)malloc(sizeof(int)*cells.size());
+    for (int i=0;i<cells.size(); i++)
+      g->cells[i]=cells[i];
+  }
+  
+  void Delaunay3D(double *inpoints, int n_inpoints, vtkfigSimplexGrid *g)
+  {
+    auto InPoints=vector_adapter<double>(inpoints,2*n_inpoints);
+    std::vector<double>points;
+    std::vector<int>cells;
+    
+    vtkfig::Delaunay2D(InPoints,points,cells);
+    g->dim=3;
+    g->npoints=points.size()/3;
+    g->ncells=cells.size()/4;
+    g->points=(double*)malloc(sizeof(double)*points.size());
+    for (int i=0;i<points.size(); i++)
+      g->points[i]=points[i];
+    g->cells=(int*)malloc(sizeof(int)*cells.size());
+    for (int i=0;i<cells.size(); i++)
+      g->cells[i]=cells[i];
+  }
+  
   ////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////

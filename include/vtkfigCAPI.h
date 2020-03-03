@@ -323,7 +323,11 @@ extern "C" {
    */
   void vtkfigSetNumberOfYLabels(vtkfigXYPlot*xyplot,int n);
 
-  
+
+  typedef struct vtkfigSimplexGrid_struct vtkfigSimplexGrid;
+  void Delaunay2D(double *inpoints, int n_inpoints, vtkfigSimplexGrid *g);
+  void Delaunay3D(double *inpoints, int n_inpoints, vtkfigSimplexGrid *g);
+
 #ifdef __cplusplus
 }
 #endif

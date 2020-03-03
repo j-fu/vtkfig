@@ -44,10 +44,10 @@ namespace vtkfig
 
 
   /// Create a 2D Delaunay triangulation from point set
-  template <class V, class IV> inline  void Delaunay2D(const V & points_in,  V & points, IV & cells);
+  template <class V0, class V, class IV> inline  void Delaunay2D(const V0 & points_in,  V & points, IV & cells);
 
   /// Create a 3D Delaunay triangulation from point set
-  template <class V, class IV> inline  void Delaunay3D(const V & points_in,  V & points, IV & cells);
+  template <class V0, class V, class IV> inline  void Delaunay3D(const V0 & points_in,  V & points, IV & cells);
 
   
   namespace  internal
@@ -67,7 +67,7 @@ namespace vtkfig
     
   }
   
-  template <class V, class IV> inline void Delaunay2D(const V & points_in,  V & points, IV & cells)
+  template <class V0, class V, class IV> inline void Delaunay2D(const V0 & points_in,  V & points, IV & cells)
   {
     assert(points.size()==0);
     assert(cells.size()==0);
@@ -110,12 +110,9 @@ namespace vtkfig
       cells.push_back(pts->GetId(2));
     }
     
-    
   }
 
-
-  template <class V, class IV>
-    inline void Delaunay3D(const V & points_in,  V & points, IV & cells)
+  template <class V0, class V, class IV> inline void Delaunay3D(const V0 & points_in,  V & points, IV & cells)
   {
     assert(points.size()==0);
     assert(cells.size()==0);
