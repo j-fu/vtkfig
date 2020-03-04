@@ -152,23 +152,26 @@ extern "C"
 ////////////////////////////////////////////////////////////////////////
   struct vtkfigSimplexGrid_struct 
   {
+    int dim;
     int npoints;
     int ncells;
-    int dim;
     double *points;
     int *cells;
   };
 
-  void Delaunay2D(double *inpoints, int n_inpoints, vtkfigSimplexGrid *g)
+  void vtkfigDelaunay(vtkfigSimplexGrid *g, double *inpoints, int dim, int n_inpoints)
   {
     auto InPoints=vector_adapter<double>(inpoints,2*n_inpoints);
     std::vector<double>points;
     std::vector<int>cells;
-    
-    vtkfig::Delaunay2D(InPoints,points,cells);
-    g->dim=2;
-    g->npoints=points.size()/2;
-    g->ncells=cells.size()/3;
+    if (dim==2)
+      vtkfig::Delaunay2D(InPoints,points,cells);
+    else
+      vtkfig::Delaunay3D(InPoints,points,cells);
+      
+    g->dim=dim;
+    g->npoints=points.size()/dim;
+    g->ncells=cells.size()/(dim+1);
     g->points=(double*)malloc(sizeof(double)*points.size());
     for (int i=0;i<points.size(); i++)
       g->points[i]=points[i];
@@ -177,23 +180,6 @@ extern "C"
       g->cells[i]=cells[i];
   }
   
-  void Delaunay3D(double *inpoints, int n_inpoints, vtkfigSimplexGrid *g)
-  {
-    auto InPoints=vector_adapter<double>(inpoints,2*n_inpoints);
-    std::vector<double>points;
-    std::vector<int>cells;
-    
-    vtkfig::Delaunay2D(InPoints,points,cells);
-    g->dim=3;
-    g->npoints=points.size()/3;
-    g->ncells=cells.size()/4;
-    g->points=(double*)malloc(sizeof(double)*points.size());
-    for (int i=0;i<points.size(); i++)
-      g->points[i]=points[i];
-    g->cells=(int*)malloc(sizeof(int)*cells.size());
-    for (int i=0;i<cells.size(); i++)
-      g->cells[i]=cells[i];
-  }
   
   ////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////
@@ -332,6 +318,13 @@ extern "C"
     dataset->cxxobj->SetRectilinearGrid(X,Y,Z);
   }
 
+  void vtkfigSetSimplexGrid(vtkfigDataSet*dataset,int dim, double *points, int npoints, int  *cells, int ncells)
+  {
+    auto P=vector_adapter<double>(points,dim*npoints);
+    auto C=vector_adapter<int>(cells,(dim+1)*ncells);
+    dataset->cxxobj->SetSimplexGrid(dim,P,C);
+  }
+  
   void vtkfigSetPointScalar(vtkfigDataSet*dataset,double *x, int nx, char *name)
   {
     auto X=vector_adapter<double>(x,nx);
@@ -343,9 +336,14 @@ extern "C"
     dataset->cxxobj->WriteVTK(filename,filetype);
   }
   
-  void vtkfigSetData(vtkfigScalarView*scalarview, vtkfigDataSet*dataset, char *name)
+  void vtkfigSetScalarViewData(vtkfigScalarView*scalarview, vtkfigDataSet*dataset, char *name)
   {
-    scalarview->cxxobj->SetData(dataset->cxxobj,"V");
+    scalarview->cxxobj->SetData(dataset->cxxobj,name);
+  }
+
+  void vtkfigSetGridViewData(vtkfigGridView*gridview, vtkfigDataSet*dataset)
+  {
+    gridview->cxxobj->SetData(dataset->cxxobj);
   }
 
   void vtkfigPrintOpenGLInfo()

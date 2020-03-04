@@ -116,9 +116,15 @@ extern "C" {
   /**
      \copybrief vtkfig::ScalarView::SetData
    */
-  void vtkfigSetData(vtkfigScalarView*scalarview, vtkfigDataSet*dataset, char *name);
+
+  void vtkfigSetGridViewData(vtkfigGridView*gridview, vtkfigDataSet*dataset);
   /**
-     \copybrief vtkfig::Frame::Show
+     \copybrief vtkfig::GridView::SetData
+  */
+  
+  void vtkfigSetScalarViewData(vtkfigScalarView*scalarview, vtkfigDataSet*dataset, char *name);
+  /**
+     \copybrief vtkfig::ScalarView::SetData
    */
   void vtkfigShow(vtkfigFrame*frame);
   /**
@@ -325,9 +331,8 @@ extern "C" {
 
 
   typedef struct vtkfigSimplexGrid_struct vtkfigSimplexGrid;
-  void Delaunay2D(double *inpoints, int n_inpoints, vtkfigSimplexGrid *g);
-  void Delaunay3D(double *inpoints, int n_inpoints, vtkfigSimplexGrid *g);
-
+  void vtkfigDelaunay(vtkfigSimplexGrid *g, double *inpoints, int dim, int n_inpoints);
+  
 #ifdef __cplusplus
 }
 #endif
