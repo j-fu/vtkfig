@@ -14,7 +14,7 @@ For the compilation of VTK, consult the [corresponding page](https://vtk.org/Wik
 vtkfig doesn't use the full functionality of vtk, and it is possible to work with a subset. This has two advantages:
 
 - reduced  compile time for vtk
-- less transient linking clashes with other system libraris, notably mpi and hdf5
+- fewer transient linking clashes with other system libraries, notably mpi and hdf5
 
 Here is the cmake command which allows to build just enough  of vtk for a working vtkfig:
 ````
@@ -31,6 +31,8 @@ cmake ..\
  -DVTK_USE_SYSTEM_THEORA:BOOL=ON\
  -DVTK_USE_SYSTEM_TIFF:BOOL=ON\
  -DVTK_USE_SYSTEM_ZLIB:BOOL=ON\
+ -DVTK_USE_SYSTEM_EIGEN:BOOL=OFF\
+ -DVTK_USE_SYSTEM_DOUBLECONVERSION:BOOL=OFF\
  -DVTK_Group_Rendering:BOOL=OFF\
  -DVTK_Group_StandAlone:BOOL=OFF\
  -DModule_vtkCommonCore:BOOL=ON\

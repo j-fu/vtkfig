@@ -28,6 +28,7 @@ SET(VTKFIG_CONFIG "" CACHE STRING "VTKFIG  Config name")
 set(VTKFIG_EXPORT_NAME "VTKFIG${VTKFIG_CONFIG}")
 
 SET(VTKFIG_DEVEL False CACHE BOOL "VTKFIG  Devlopment configuration")
+SET(VTKFIG_WITH_EXAMPLES True CACHE BOOL "Compile with examples")
 
 
 
@@ -85,7 +86,11 @@ set(CMAKE_CXX_STANDARD 11)
 include_directories(include ${PROJECT_BINARY_DIR})
 add_subdirectory(include)
 add_subdirectory(src)
-add_subdirectory(examples)
+
+if("${VTFIG_WITH_EXAMPLES}")
+  add_subdirectory(examples)
+endif()
+
 
 
 if (APPLE)
