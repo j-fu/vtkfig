@@ -10,25 +10,25 @@ cmake_policy(SET CMP0037 OLD)
 PROJECT(VTKFIG C CXX)
 
 set(VTKFIG_MAJOR_VERSION 0)
-set(VTKFIG_MINOR_VERSION 21)
-set(VTKFIG_PATCH_VERSION 20191106)
+set(VTKFIG_MINOR_VERSION 22)
+set(VTKFIG_PATCH_VERSION 0)
 set(VTKFIG_VERSION    ${VTKFIG_MAJOR_VERSION}.${VTKFIG_MINOR_VERSION}.${VTKFIG_PATCH_VERSION})
 
-# Allow to specify -DVTKFIG_CONFIG=xxx  at cmake time on the 
-# command line of cmake.
-SET(VTKFIG_CONFIG "" CACHE STRING "VTKFIG  Config name")
+
+SET(VTKFIG_BUILD_EXAMPLES True CACHE BOOL "Compile with examples")
+
+SET(VTKFIG_BUILD_DEVEL False CACHE BOOL "Compile with development examples")
+
 
 # Define an export name. It seems to be a good idea 
-# to that the default is just the pakage name.
+# to that the default is just the package name.
 # This export name can be used by find_packge() 
-# in the NAMES section in order to select different
-# configs registered at for the package
+# in the NAMES section.
 # It should be used for all install(TARGET ... EXPORT ${VTKFIG_EXPORT_NAME}
 
-set(VTKFIG_EXPORT_NAME "VTKFIG${VTKFIG_CONFIG}")
+set(VTKFIG_EXPORT_NAME "VTKFIG")
 
-SET(VTKFIG_DEVEL False CACHE BOOL "VTKFIG  Devlopment configuration")
-SET(VTKFIG_WITH_EXAMPLES True CACHE BOOL "Compile with examples")
+
 
 
 
@@ -81,13 +81,12 @@ include_directories(${VTK_INCLUDE_DIRS})
 #link_directories(${VTK_LIBRARY_DIRS})
 
 
-
 set(CMAKE_CXX_STANDARD 11)
 include_directories(include ${PROJECT_BINARY_DIR})
 add_subdirectory(include)
 add_subdirectory(src)
 
-if("${VTFIG_WITH_EXAMPLES}")
+if(VTKFIG_BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
