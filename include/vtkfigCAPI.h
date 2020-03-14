@@ -99,34 +99,49 @@ extern "C" {
      \copybrief vtkfig::DataSet::SetRectilinearGrid
    */
   void vtkfigSetRectilinearGrid2D(vtkfigDataSet*dataset,double *x, int nx, double *y, int ny);
-  /**
-     \copybrief vtkfig::DataSet::SetRectilinearGrid
-   */
 
-  void vtkfigSetSimplexGrid(vtkfigDataSet*dataset,int dim, double *points, int npoints, int  *cells, int ncells);
   /**
      \copybrief vtkfig::DataSet::SetSimplexGrid
    */
+  void vtkfigSetSimplexGrid(vtkfigDataSet*dataset,int dim, double *points, int npoints, int  *cells, int ncells);
   
-  void vtkfigSetRectilinearGrid3D(vtkfigDataSet*dataset,double *x, int nx, double *y, int ny, double *z, int nz);
   /**
      \copybrief vtkfig::DataSet::SetPointScalar
    */
-  void vtkfigSetPointScalar(vtkfigDataSet*dataset,double *x, int nx, char *name);
-  /**
-     \copybrief vtkfig::ScalarView::SetData
-   */
+  void vtkfigSetRectilinearGrid3D(vtkfigDataSet*dataset,double *x, int nx, double *y, int ny, double *z, int nz);
 
-  void vtkfigSetGridViewData(vtkfigGridView*gridview, vtkfigDataSet*dataset);
+
+  /**
+     \copybrief vtkfig::ScalarView::SetPointScalar
+   */
+  void vtkfigSetPointScalar(vtkfigDataSet*dataset,double *x, int nx, char *name);
+
+  /**
+     \copybrief vtkfig::ScalarView::SetPointVector
+   */
+  void vtkfigSetPointVector(vtkfigDataSet*dataset,double *uvw, int npoints, int dim, char *name);
+
+    
   /**
      \copybrief vtkfig::GridView::SetData
   */
+  void vtkfigSetGridViewData(vtkfigGridView*gridview, vtkfigDataSet*dataset);
   
-  void vtkfigSetScalarViewData(vtkfigScalarView*scalarview, vtkfigDataSet*dataset, char *name);
   /**
      \copybrief vtkfig::ScalarView::SetData
    */
+  void vtkfigSetScalarViewData(vtkfigScalarView*scalarview, vtkfigDataSet*dataset, char *name);
+
+  /**
+     \copybrief vtkfig::VectorView::SetData
+   */
+  void vtkfigSetVectorViewData(vtkfigVectorView*vectorview, vtkfigDataSet*dataset, char *name);
+
+  /**
+     \copybrief vtkfig::Frame::Show
+   */
   void vtkfigShow(vtkfigFrame*frame);
+
   /**
      \copybrief vtkfig::Frame::Interact
    */
@@ -236,6 +251,17 @@ extern "C" {
    */
   void vtkfigShowIsosurfaces(vtkfigScalarView *scalarview, int show);
 
+  /**
+     \copybrief vtkfig::VectorView::SetQuiverGrid
+   */
+  void vtkfigSetQuiverGrid2D(vtkfigVectorView *vectorview, int nx, int ny );
+    
+  /**
+     \copybrief vtkfig::VectorView::SetQuiverGrid
+   */
+  void vtkfigSetQuiverGrid3D(vtkfigVectorView *vectorview, int nx, int ny, int nz );
+
+  
   /**
      \copybrief vtkfig::XYPlot::AddPlot
    */

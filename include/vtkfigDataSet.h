@@ -212,6 +212,19 @@ namespace vtkfig
       void SetPointVector(const V&u, const V& v, const V& w, const std::string name);
 
     ///
+    /// Set data of a vector function defined on the points on a 2D grid
+    ///
+    /// \tparam V Vector class counting from zero with member functions
+    ///  size() and operator[]. std::vector will work.
+    ///
+    /// \param uvw  Vector of row-wise stored component values ( u1 v1, w1, u2,v2,w2 ...)
+    ///
+    /// \param name Name of function
+    template <class V>
+    void SetPointVector(const V&uvw, const int dim, const std::string name);
+
+
+    ///
     /// Set data of a scalar function defined on the cells of the grid
     ///
     /// \tparam V Vector class counting from zero with member functions
@@ -767,6 +780,47 @@ namespace vtkfig
 
     for (size_t i=0;i<npoints; i++)
       gridvalues->InsertTuple3(i,u[i],v[i],w[i]);
+    gridvalues->Modified();
+  }    
+
+
+  template <class V>
+    inline
+    void DataSet::SetPointVector(const V&uvw, int dim, const std::string name)
+  {
+    assert(this->spacedim==dim);
+    assert(this->data!=NULL);
+    size_t npoints=this->data->GetNumberOfPoints();
+    assert(npoints==uvw.size()/dim);
+
+    vtkSmartPointer<vtkDoubleArray>gridvalues;
+    
+    if  (this->data->GetPointData()->HasArray(name.c_str()))
+    {
+      gridvalues=vtkDoubleArray::SafeDownCast(this->data->GetPointData()->GetAbstractArray(name.c_str()));
+    }
+    else
+    {
+      gridvalues=vtkSmartPointer<vtkDoubleArray>::New();
+      gridvalues->SetNumberOfComponents(3);
+      gridvalues->SetNumberOfTuples(npoints);
+      gridvalues->SetName(name.c_str());
+      this->data->GetPointData()->AddArray(gridvalues);
+    }
+    
+    switch(dim)
+    {
+    case 2:
+      for (size_t i=0,j=0;i<npoints; i++,j+=2)
+        gridvalues->InsertTuple3(i,uvw[j],uvw[j+1],0);
+      break;
+    case 3:
+      for (size_t i=0,j=0;i<npoints; i++,j+=3)
+        gridvalues->InsertTuple3(i,uvw[j],uvw[j+1],uvw[j+2]);
+      break;
+    default: break;
+    }
+    
     gridvalues->Modified();
   }    
   

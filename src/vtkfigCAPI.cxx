@@ -331,6 +331,12 @@ extern "C"
     dataset->cxxobj->SetPointScalar(X,name);
   }
 
+  void vtkfigSetPointVector(vtkfigDataSet*dataset,double *uvw, int npoints, int dim, char *name)
+  {
+    auto UVW=vector_adapter<double>(uvw,npoints*dim);
+    dataset->cxxobj->SetPointVector(UVW,dim,name);
+  }
+
   void vtkfigWriteVTK(vtkfigDataSet*dataset,char* filename, char* filetype)
   {
     dataset->cxxobj->WriteVTK(filename,filetype);
@@ -339,6 +345,11 @@ extern "C"
   void vtkfigSetScalarViewData(vtkfigScalarView*scalarview, vtkfigDataSet*dataset, char *name)
   {
     scalarview->cxxobj->SetData(dataset->cxxobj,name);
+  }
+
+  void vtkfigSetVectorViewData(vtkfigVectorView*vectorview, vtkfigDataSet*dataset, char *name)
+  {
+    vectorview->cxxobj->SetData(dataset->cxxobj,name);
   }
 
   void vtkfigSetGridViewData(vtkfigGridView*gridview, vtkfigDataSet*dataset)
@@ -361,6 +372,19 @@ extern "C"
   {
     scalarview->cxxobj->ShowIsosurfaces(bool(show));
   }
+
+
+  ///////////////////////////////////////////////////////////////////
+  void vtkfigSetQuiverGrid2D(vtkfigVectorView *vectorview, int nx, int ny )
+  {
+    vectorview->cxxobj->SetQuiverGrid(nx,ny);
+  }
+
+  void vtkfigSetQuiverGrid3D(vtkfigVectorView *vectorview, int nx, int ny, int nz )
+  {
+    vectorview->cxxobj->SetQuiverGrid(nx,ny,nz);
+  }
+
   
   ///////////////////////////////////////////////////////////////////
   void vtkfigAddPlot(vtkfigXYPlot*xyplot, double *x, int nx, double *y, int ny)
