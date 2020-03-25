@@ -104,7 +104,6 @@ extern "C" {
      \copybrief vtkfig::DataSet::SetRectilinearGrid
    */
   void vtkfigSetRectilinearGrid2D(vtkfigDataSet*dataset,double *x, int nx, double *y, int ny);
-
   
   /**
      \copybrief vtkfig::DataSet::SetPointScalar
@@ -131,6 +130,12 @@ extern "C" {
 
 
 
+
+
+  /**
+     \copybrief vtkfig::ScalarView::SetPointScalar
+   */
+  void vtkfigSetRectilinearGrid3D(vtkfigDataSet*dataset,double *x, int nx, double *y, int ny, double *z, int nz);
 
 
   /**
