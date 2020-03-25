@@ -29,7 +29,7 @@ class index_vector_adapter
   const size_t n;
   const size_t index_offset;
 public:
-  index_vector_adapter(T*d, int n, int offset): d(d), n(n), index_offset(offset){printf("*** %d\n",index_offset);};
+  index_vector_adapter(T*d, int n, int offset): d(d), n(n), index_offset(offset){};
   T operator[](int i)const { return d[i]-index_offset;}
   size_t size() const { return n;}
 };
@@ -340,6 +340,24 @@ extern "C"
     auto P=vector_adapter<double>(points,dim*npoints);
     auto C=index_vector_adapter<int>(cells,(dim+1)*ncells, index_offset);
     dataset->cxxobj->SetSimplexGrid(dim,P,C);
+  }
+
+  void vtkfigSetCellRegions(vtkfigDataSet*dataset, int *cr, int n)
+  {
+    auto  CR=vector_adapter<int>(cr,n);
+    dataset->cxxobj->SetCellRegions(CR);
+  }
+  
+  void vtkfigSetBoundaryCellRegions(vtkfigDataSet*dataset, int *cr, int n)
+  {
+    auto  CR=vector_adapter<int>(cr,n);
+    dataset->cxxobj->SetBoundaryCellRegions(CR);
+  }
+  
+  void vtkfigSetSimplexGridBoundaryCells(vtkfigDataSet*dataset, int index_offset, int dim, int *bc, int ncells)
+  {
+    auto BC=index_vector_adapter<int>(bc,dim*ncells, index_offset);
+    dataset->cxxobj->SetSimplexGridBoundaryCells(BC);
   }
   
   void vtkfigSetPointScalar(vtkfigDataSet*dataset,double *x, int nx, char *name)

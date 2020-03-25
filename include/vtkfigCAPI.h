@@ -105,15 +105,32 @@ extern "C" {
    */
   void vtkfigSetRectilinearGrid2D(vtkfigDataSet*dataset,double *x, int nx, double *y, int ny);
 
-  /**
-     \copybrief vtkfig::DataSet::SetSimplexGrid
-   */
-  void vtkfigSetSimplexGrid(vtkfigDataSet*dataset,int index_offset, int dim, double *points, int npoints, int  *cells, int ncells);
   
   /**
      \copybrief vtkfig::DataSet::SetPointScalar
    */
   void vtkfigSetRectilinearGrid3D(vtkfigDataSet*dataset,double *x, int nx, double *y, int ny, double *z, int nz);
+
+  /**
+     \copybrief vtkfig::DataSet::SetSimplexGrid
+   */
+  void vtkfigSetSimplexGrid(vtkfigDataSet*dataset,int index_offset, int dim, double *points, int npoints, int  *cells, int ncells);
+
+  /**
+     \copybrief vtkfig::DataSet::SetCellRegions
+   */
+  void vtkfigSetCellRegions(vtkfigDataSet*dataset, int *cr, int n);
+  /**
+     \copybrief vtkfig::DataSet::SetBoundaryCellRegions
+   */
+  void vtkfigSetBoundaryCellRegions(vtkfigDataSet*dataset, int *cr, int n);
+  /**
+     \copybrief vtkfig::DataSet::SetSimplexGridBoundaryCellRegions
+   */
+  void vtkfigSetSimplexGridBoundaryCells(vtkfigDataSet*dataset, int index_offset, int dim, int *bc, int n);
+
+
+
 
 
   /**
