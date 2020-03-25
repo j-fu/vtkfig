@@ -104,6 +104,8 @@ namespace vtkfig
     void Clear(void);
 
     
+    /// Unmap frame from screen
+    void Unmap();
 
     /// Link camera to other camera
     ///
@@ -264,7 +266,6 @@ Figures must be first clicked on before editing works.
   protected:
     Frame();
     ~Frame();
-
   private:
 
 

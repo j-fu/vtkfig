@@ -215,10 +215,18 @@ namespace vtkfig
     mainthread->SendCommand(number_in_frame_list, source, comm);
   }
 
+  void Frame::Unmap()
+  {
+    if (number_in_frame_list>=0)
+    {
+      mainthread->RemoveFrame(number_in_frame_list);
+      number_in_frame_list=-1;
+    }
+  }
+  
   Frame::~Frame()
   {
-    mainthread->RemoveFrame(number_in_frame_list);
-    number_in_frame_list=-1;
+    Unmap();      
     if (mainthread->debug_level>0)
       std::cout << "vtkfig: delete frame" << std::endl;
   }
