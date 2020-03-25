@@ -17,8 +17,20 @@ class vector_adapter
   T* d;
   const size_t n;
 public:
-  vector_adapter(T*d, int n): d(d), n(n){};
+  vector_adapter(T*d, int n): d(d), n(n) {};
   T&operator[](int i)const { return d[i];}
+  size_t size() const { return n;}
+};
+
+template<typename T>
+class index_vector_adapter
+{
+  T* d;
+  const size_t n;
+  const size_t index_offset;
+public:
+  index_vector_adapter(T*d, int n, int offset): d(d), n(n), index_offset(offset){printf("*** %d\n",index_offset);};
+  T operator[](int i)const { return d[i]-index_offset;}
   size_t size() const { return n;}
 };
 
@@ -159,7 +171,7 @@ extern "C"
     int *cells;
   };
 
-  void vtkfigDelaunay(vtkfigSimplexGrid *g, double *inpoints, int dim, int n_inpoints)
+  void vtkfigDelaunay(vtkfigSimplexGrid *g,int index_offset,  int dim, double *inpoints, int n_inpoints)
   {
     auto InPoints=vector_adapter<double>(inpoints,2*n_inpoints);
     std::vector<double>points;
@@ -177,7 +189,7 @@ extern "C"
       g->points[i]=points[i];
     g->cells=(int*)malloc(sizeof(int)*cells.size());
     for (int i=0;i<cells.size(); i++)
-      g->cells[i]=cells[i];
+      g->cells[i]=cells[i]+index_offset;
   }
   
   
@@ -190,6 +202,11 @@ extern "C"
     frame->cxxobj->Clear();
   }
   
+  void vtkfigUnmapFrame(vtkfigFrame *frame)
+  {
+    frame->cxxobj->Unmap();
+  }
+
   void vtkfigAddScalarView(vtkfigFrame*frame, vtkfigScalarView *scalarview)
   {
     frame->cxxobj->AddFigure(scalarview->cxxobj);
@@ -318,10 +335,10 @@ extern "C"
     dataset->cxxobj->SetRectilinearGrid(X,Y,Z);
   }
 
-  void vtkfigSetSimplexGrid(vtkfigDataSet*dataset,int dim, double *points, int npoints, int  *cells, int ncells)
+  void vtkfigSetSimplexGrid(vtkfigDataSet*dataset,int index_offset, int dim, double *points, int npoints, int  *cells, int ncells)
   {
     auto P=vector_adapter<double>(points,dim*npoints);
-    auto C=vector_adapter<int>(cells,(dim+1)*ncells);
+    auto C=index_vector_adapter<int>(cells,(dim+1)*ncells, index_offset);
     dataset->cxxobj->SetSimplexGrid(dim,P,C);
   }
   

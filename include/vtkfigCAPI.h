@@ -30,6 +30,11 @@ extern "C" {
   void vtkfigDestroyFrame(vtkfigFrame *frame);
 
   /**
+     \copybrief vtkfig::Frame::Unmap()
+   */
+  void vtkfigUnmapFrame(vtkfigFrame *frame);
+
+  /**
      \copybrief vtkfig::DataSet
    */
   typedef struct vtkfigDataSet_struct vtkfigDataSet;
@@ -103,7 +108,7 @@ extern "C" {
   /**
      \copybrief vtkfig::DataSet::SetSimplexGrid
    */
-  void vtkfigSetSimplexGrid(vtkfigDataSet*dataset,int dim, double *points, int npoints, int  *cells, int ncells);
+  void vtkfigSetSimplexGrid(vtkfigDataSet*dataset,int index_offset, int dim, double *points, int npoints, int  *cells, int ncells);
   
   /**
      \copybrief vtkfig::DataSet::SetPointScalar
@@ -357,7 +362,7 @@ extern "C" {
 
 
   typedef struct vtkfigSimplexGrid_struct vtkfigSimplexGrid;
-  void vtkfigDelaunay(vtkfigSimplexGrid *g, double *inpoints, int dim, int n_inpoints);
+  void vtkfigDelaunay(vtkfigSimplexGrid *g,int index_offset, int dim, double *inpoints,int n_inpoints);
   
 #ifdef __cplusplus
 }
