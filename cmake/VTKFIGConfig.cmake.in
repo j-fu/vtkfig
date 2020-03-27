@@ -7,7 +7,8 @@
 # Compute paths
 get_filename_component(VTKFIG_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 #message(STATUS "VTKFIG Configuration:" ${VTKFIG_CMAKE_DIR})
-set(VTKFIG_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@;@VTK_INCLUDE_DIRS@")
+
+set(VTKFIG_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@;@VTK_INCLUDE_DIRS@;@VTK_PREFIX_PATH@/include/vtk-@VTK_MAJOR_VERSION@.@VTK_MINOR_VERSION@")
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -40,8 +41,8 @@ set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${VTK_REQUIRED_MODUL
 set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS ${VTK_DEFINITIONS})
 
 # Add include directories needed to use VTK.
-# include_directories(${VTK_INCLUDE_DIRS})
-
+#include_directories(${VTK_INCLUDE_DIRS})
+include_directories(${VTKFIG_INCLUDE_DIRS})
 # Add link directories needed to use VTK.
 link_directories(${VTK_LIBRARY_DIRS})
 # END COPIED from UseVTK.cmake
