@@ -159,7 +159,8 @@ add_custom_target(upload
 # Furthermore, the target export allows client packages to
 # figure out if they need a recompile or not.
 
-export(TARGETS vtkfig-exec vtkfig FILE "${PROJECT_BINARY_DIR}/${VTKFIG_EXPORT_NAME}Targets.cmake" EXPORT_LINK_INTERFACE_LIBRARIES)
+#export(TARGETS vtkfig-exec vtkfig FILE "${PROJECT_BINARY_DIR}/${VTKFIG_EXPORT_NAME}Targets.cmake" EXPORT_LINK_INTERFACE_LIBRARIES)
+export(TARGETS vtkfig FILE "${PROJECT_BINARY_DIR}/${VTKFIG_EXPORT_NAME}Targets.cmake" EXPORT_LINK_INTERFACE_LIBRARIES)
 export(PACKAGE ${VTKFIG_EXPORT_NAME})
 
 
