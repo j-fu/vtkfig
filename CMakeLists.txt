@@ -2,18 +2,20 @@
 # see also https://github.com/forexample/package-example
 # https://cmake.org/Wiki/CMake/Tutorials/Exporting_and_Importing_Targets
 
-
-
 cmake_minimum_required(VERSION 2.8.12)
 cmake_policy(SET CMP0037 OLD) 
 
 PROJECT(VTKFIG C CXX)
 
 set(VTKFIG_MAJOR_VERSION 0)
-set(VTKFIG_MINOR_VERSION 23)
+set(VTKFIG_MINOR_VERSION 24)
 set(VTKFIG_PATCH_VERSION 0)
+
+
+
 set(VTKFIG_VERSION    ${VTKFIG_MAJOR_VERSION}.${VTKFIG_MINOR_VERSION}.${VTKFIG_PATCH_VERSION})
 
+SET(VTKFIG_BUILD_BINARIES True CACHE BOOL "Compile with binaries")
 
 SET(VTKFIG_BUILD_EXAMPLES True CACHE BOOL "Compile with examples")
 

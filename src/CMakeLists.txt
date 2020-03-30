@@ -24,16 +24,17 @@ add_library(vtkfig SHARED
   vtkfigSurf2D.cxx
 #  vtkfigChartXY.cxx
   )
-target_link_libraries(vtkfig ${VTK_LIBRARIES})
-target_include_directories(vtkfig SYSTEM PUBLIC ${VTK_INCLUDE_DIRS})
 
-###### target_link_libraries(vtkfig PUBLIC ${VTK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-#target_link_libraries(vtkfig vtklib)
+target_link_libraries(vtkfig  PUBLIC ${VTK_LIBRARIES})
+target_include_directories(vtkfig SYSTEM PUBLIC ${VTK_INCLUDE_DIRS})
 set_target_properties(vtkfig PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set_property(TARGET vtkfig PROPERTY CXX_STANDARD 11)
 install(TARGETS vtkfig DESTINATION lib EXPORT ${VTKFIG_EXPORT_NAME})
 
-add_vtkfig_binary(vtkfig-exec)
-add_vtkfig_binary(vtkfig-openglinfo)
-add_vtkfig_binary(vtkfig-view-xyzrect)
+
+if(VTKFIG_BUILD_BINARIES)
+  add_vtkfig_binary(vtkfig-exec)
+  add_vtkfig_binary(vtkfig-openglinfo)
+  add_vtkfig_binary(vtkfig-view-xyzrect)
+endif()
 

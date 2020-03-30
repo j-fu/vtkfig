@@ -3,8 +3,11 @@ Changes
 
 
 ## Changes
-- tip
-
+- v0.24
+  - more stuff in C API
+  - works with Julia
+  - works with vtk9 mininal build
+  
 - v0.21
   - Started vtkfig::GLScene for "free" drawing without predefined datasets
   - Removed reference based API as this cannot be handled well together with  the shared_ptr based stuff.
