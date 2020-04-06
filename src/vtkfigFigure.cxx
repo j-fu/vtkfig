@@ -12,6 +12,7 @@
 #include <vtkContextScene.h>
 
 
+#include "vtkfigFrame.h"
 #include "vtkfigFigure.h"
 #include "config.h"
 
@@ -359,66 +360,97 @@ namespace vtkfig
     return 0;
   }
 
+
+  void Figure::RefreshState()
+  {
+    auto & frame=Frame::FindFrame(this->framenum);
+    frame.RefreshState(this->framepos);
+  }
+
+  void Figure::RTRefreshState()
+  {
+    if (elevation_plot)
+    {
+      elevation_plot->SetVisibility(state.show_elevation);
+      elevation_plot->Modified();
+    }
+    if (isosurface_plot)
+    {
+      isosurface_plot->SetVisibility(state.show_isosurfaces);
+      RTUpdateIsoSurfaceFilter();
+      isosurface_plot->Modified();
+    }
+
+    if (isoline_plot)
+    {
+      isoline_plot->SetVisibility(state.show_surface);
+      isoline_plot->Modified();
+    }
+
+    if (surface_plot)
+    {         
+      surface_plot->SetVisibility(state.show_surface);
+      surface_plot->Modified();
+    }
+    if (axes)
+    {
+      axes->SetVisibility(state.show_domain_axes);
+      axes->Modified();
+    }
+
+    if (box)
+    {
+      box->SetVisibility(state.show_domain_box);
+      box->Modified();
+    }
+
+    if (outline)
+    {
+      outline->SetVisibility(state.show_domain_outline);
+      outline->Modified();
+    }
+
+  }
   
   void Figure::RTProcessKey(const std::string key)
   {
 
-    if (key=="I" && state.spacedim==3)
+    if (key=="I")
     {
-//      state.show_isolines=!state.show_isolines;
       state.show_isosurfaces=!state.show_isosurfaces;
-      isosurface_plot->SetVisibility(state.show_isosurfaces);
-      RTUpdateIsoSurfaceFilter();
-      isosurface_plot->Modified();
+      RTRefreshState();
       return;
     }
 
     if (key=="S")
     {
       state.show_surface=!state.show_surface;
-//      state.show_isolines=!state.show_isolines;
-      isoline_plot->SetVisibility(state.show_surface);
-      surface_plot->SetVisibility(state.show_surface);
-      isoline_plot->Modified();
-      surface_plot->Modified();
+      RTRefreshState();
       return;
     }
 
-    if (key=="E" && state.spacedim==2)
+    if (key=="E")
     {
       state.show_elevation=!state.show_elevation;
-      elevation_plot->SetVisibility(state.show_elevation);
-      elevation_plot->Modified();
+      RTRefreshState();
       return;
     }
     
     if (key=="A")
     {
-      if (axes) 
-      {
-        int vis=axes->GetVisibility();
-        vis=!vis;
-        axes->SetVisibility(vis);
-        if (outline)
-          outline->SetVisibility(vis);
-      }
+      state.show_domain_axes=!state.show_domain_axes;
+      state.show_domain_box=state.show_domain_axes;
+      RTRefreshState();
       return;
     }
     
     if (key=="O")
     {
-      if (splot)
-      {
-        int vis=splot->GetVisibility();
-        vis=!vis;
-        splot->SetVisibility(vis);
-      }
+      state.show_domain_outline=!state.show_domain_outline;
+      RTRefreshState();
       return;
     }
     
-
-
-
     if (key=="L")
     {
       isoline_filter->SetNumberOfContours(11);
@@ -818,42 +850,33 @@ namespace vtkfig
 
 
     /// if boundary cell color set, use this one!
-    if (state.show_domain_boundary && state.spacedim==3)
+    if (state.spacedim==3)
     {
       vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
       mapper->SetInputConnection(transgeometry->GetOutputPort());
-      splot=vtkSmartPointer<vtkActor>::New();
-      if (state.spacedim==3)
-      {
-        splot->GetProperty()->SetOpacity(state.domain_opacity);
-        splot->GetProperty()->SetColor(state.domain_surface_color);
-      }
-      else // TODO add filter to extract boundary edges
-      {
-        splot->GetProperty()->SetOpacity(1.0);
-        splot->GetProperty()->SetColor(0,0,0);
-      }
-
-      splot->SetMapper(mapper);
-      Figure::RTAddActor(splot);
-    }
-
-    
-    if (state.show_domain_box&& state.spacedim==3)
-    {
-      // create outline
-      vtkSmartPointer<vtkOutlineFilter>outlinefilter = vtkSmartPointer<vtkOutlineFilter>::New();
-      outlinefilter->SetInputConnection(transgeometry->GetOutputPort());
-      vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-      outlineMapper->SetInputConnection(outlinefilter->GetOutputPort());
-      outline = vtkSmartPointer<vtkActor>::New();
-      outline->SetMapper(outlineMapper);
-      outline->GetProperty()->SetColor(0, 0, 0);
+      outline=vtkSmartPointer<vtkActor>::New();
+      outline->GetProperty()->SetOpacity(state.domain_opacity);
+      outline->GetProperty()->SetColor(state.domain_surface_color);
+      outline->SetMapper(mapper);
       Figure::RTAddActor(outline);
     }
 
+    
+    if (state.spacedim==3)
+    {
+      // create box
+      vtkSmartPointer<vtkOutlineFilter>boxfilter = vtkSmartPointer<vtkOutlineFilter>::New();
+      boxfilter->SetInputConnection(transgeometry->GetOutputPort());
+      vtkSmartPointer<vtkPolyDataMapper> boxMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+      boxMapper->SetInputConnection(boxfilter->GetOutputPort());
+      box = vtkSmartPointer<vtkActor>::New();
+      box->SetMapper(boxMapper);
+      box->GetProperty()->SetColor(0, 0, 0);
+      Figure::RTAddActor(box);
+    }
 
-    if (state.show_domain_axes)
+
+    if (true)
     {
       axes=vtkSmartPointer<vtkCubeAxesActor2D>::New();
       double unscaled_data_bounds[6];
@@ -902,6 +925,8 @@ namespace vtkfig
       
       Figure::RTAddActor2D(axes);
     }
+    
+    Figure::RTRefreshState();
   } 
   
 

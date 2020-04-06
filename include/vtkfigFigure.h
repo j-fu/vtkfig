@@ -130,7 +130,7 @@ namespace vtkfig
     void ShowDomainBox(bool b) { state.show_domain_box=b;}
 
     /// Toggle rendering of domain boundary as transparent surface
-    void ShowDomainBoundary(bool b) { state.show_domain_boundary=b;}
+    void ShowDomainOutline(bool b) { state.show_domain_outline=b;}
 
     
     /// Add vtk Actor to renderer showing figure.
@@ -228,7 +228,7 @@ namespace vtkfig
     virtual void RTBuildVTKPipeline(){};
 
     /// Build domain pipeline for 2D/3D figures
-    /// (outline, suface, axes)
+    /// (box, suface, axes)
     void RTBuildDomainPipeline(vtkSmartPointer<vtkRenderer> renderer);
 
     /// Duck typing interface allowing to handle different VTK datatypes
@@ -262,12 +262,16 @@ namespace vtkfig
     void ClientMPReceiveData(vtkSmartPointer<internals::Communicator> communicator);
 
 
-
     /// Process keyboard event
     virtual void RTProcessKey(const std::string key);
 
     /// Process mouse  event
     virtual void RTProcessMove(int dx, int dy);
+
+    /// Trigger necessary actions to set state variables
+    void RTRefreshState();
+    void RefreshState();
+
     
     /// Process keyboard and mouse move events for plane section editing
     int RTProcessPlaneKey(const std::string plane,int idim, const std::string key, bool & edit, vtkSmartPointer<vtkCutter> planecut);
@@ -362,10 +366,12 @@ namespace vtkfig
 
     /// Axes actor
     vtkSmartPointer<vtkCubeAxesActor2D> axes;
-    /// Outline actor
+
+    /// Box actor
+    vtkSmartPointer<vtkActor> box;
+
+    /// Outline plot actor
     vtkSmartPointer<vtkActor> outline;
-    /// Surface plot actor
-    vtkSmartPointer<vtkActor> splot;
 
 
 
@@ -537,7 +543,7 @@ namespace vtkfig
 
       bool show_domain_axes=true;
       
-      bool show_domain_boundary=true;
+      bool show_domain_outline=true;
       
       bool show_domain_box=true;
       
@@ -608,6 +614,8 @@ namespace vtkfig
 
     /// position in its respective frame
     int framepos=0;
+    
+    int framenum=-1;
   };
 
   

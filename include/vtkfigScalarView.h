@@ -54,7 +54,7 @@ namespace vtkfig
     void SetSurfaceColorbarNumberOfLabels(int n) {state.surface_colorbar_num_labels=n;}
     
     /// Toggle elevation view  (yet to be implemented)
-    void ShowElevation(bool b) {state.show_elevation=b;}
+    void ShowElevation(bool b) {state.show_elevation=b; RefreshState();}
     
     /// Set number of isocontours to show
     void SetNumberOfIsocontours(int n) {isoline_filter->SetNumberOfContours(n);}

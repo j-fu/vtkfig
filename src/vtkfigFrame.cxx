@@ -82,6 +82,7 @@ namespace vtkfig
     
     this->figures.insert(fig);
     fig->framepos=ipos;
+    fig->framenum=this->number_in_frame_list;
     parameter.current_figure=fig;
     SendCommand("AddFigure", internals::Communicator::Command::FrameAddFigure);
   }
@@ -98,7 +99,17 @@ namespace vtkfig
     SendCommand("RemoveFigure", internals::Communicator::Command::FrameRemoveFigure);
   }
 
+  Frame& Frame::FindFrame(int number_in_framelist)
+  {
+    return internals::MainThread::FindFrame(number_in_framelist);
+  }
 
+  
+  // void Frame::SetFigureState(int framepos)
+  // {
+  //   //xxx
+  // }
+  
   void Frame::SetActiveSubFrame(int ipos)
   {
     if (ipos>=nvpx*nvpy)
@@ -146,6 +157,11 @@ namespace vtkfig
     SendCommand("LinkCamera", internals::Communicator::Command::FrameLinkCamera);
   }
   
+  void Frame::RefreshState(int figurepos)
+  {
+    parameter.figurepos=figurepos;
+    SendCommand("RefreshState", internals::Communicator::Command::FrameRefreshState);
+  }
 
   void Frame::WritePNG(std::string fname)
   {
@@ -208,8 +224,7 @@ namespace vtkfig
     SendCommand("SingleView", internals::Communicator::Command::FrameSingleView);
   }
 
-
-
+  
   void Frame::SendCommand(std::string source, internals::Communicator::Command comm)
   {
     mainthread->SendCommand(number_in_frame_list, source, comm);

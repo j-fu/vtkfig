@@ -175,6 +175,12 @@ namespace vtkfig
       std::this_thread::sleep_for (std::chrono::milliseconds(10));
     }
 
+    Frame& MainThread::FindFrame(int number_in_framelist)
+    {
+      auto &frame=*mainthread->framemap[number_in_framelist];
+      return frame;
+    }
+    
     void MainThread::Show()
     {
       SendCommand(-1, "Show", Communicator::Command::MainThreadShow);
@@ -738,6 +744,20 @@ namespace vtkfig
             frame.RTSetLayout(frame.parameter.nvpx,frame.parameter.nvpy); 
             frame.RTResetRenderers(false);
           }
+
+
+          case Communicator::Command::FrameRefreshState:
+          {                
+            auto &frame=*mainthread->framemap[mainthread->iframe];
+            for (auto & figure: frame.figures)
+            {
+              if (figure->framepos==frame.parameter.figurepos)
+              {
+                figure->RTRefreshState();
+              }
+            }
+          }
+          
           
           // Set frame size
           case Communicator::Command::FrameSize:

@@ -50,13 +50,15 @@ namespace vtkfig
     static std::shared_ptr<Frame> New();
 
 
-///
+    ///
     /// Set layout of subframe grid
     ///
     /// \param nvpx  number of  rows
     /// \param nvpy  number of  columns
     void SetLayout(int nvpx, int nvpy);
 
+    /// Refresh frame state for figure
+    void RefreshState(int figurepos);
     
     ///
     /// Write png image of frame content.
@@ -211,6 +213,8 @@ namespace vtkfig
     void Interact();
 
 
+    /// Find frame with number
+    static Frame& FindFrame(int number_in_framelist);
 
     int GetStepNumber() { return step_number;}
     void SetStepNumber(int n) { step_number=std::max(n,0);}
@@ -376,6 +380,7 @@ Figures must be first clicked on before editing works.
       int active_subframe;
 
       std::shared_ptr<Figure> current_figure;
+      int figurepos;
     } parameter;
     /// The spinning main thread
     std::shared_ptr<internals::MainThread> mainthread;

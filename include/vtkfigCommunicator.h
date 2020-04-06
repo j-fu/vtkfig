@@ -57,6 +57,7 @@ namespace vtkfig
         WindowTitle,
         FrameLinkCamera,
         FrameLayout,
+        FrameRefreshState,
         MainThreadTerminate,
         String,
         Clear,

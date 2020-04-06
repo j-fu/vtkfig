@@ -38,6 +38,11 @@ namespace vtkfig
     public:
       ~MainThread();
       MainThread();
+      
+      /// Find frame with number
+      static Frame& FindFrame(int number_in_framelist);
+
+
     private:
        vtkSmartPointer<vtkRenderWindowInteractor> interactor;
 
@@ -66,6 +71,7 @@ namespace vtkfig
       
       /// Remove frame from thread
       void RemoveFrame(int number_in_framelist);
+
 
       /// Spawn parallel thread
       /// for rendering or communication

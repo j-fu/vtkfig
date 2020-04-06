@@ -133,25 +133,16 @@ namespace vtkfig
 
     if (key=="A")
     {
-      if (axes) 
-      {
-        int vis=axes->GetVisibility();
-        vis=!vis;
-        axes->SetVisibility(vis);
-        if (outline)
-          outline->SetVisibility(vis);
-      }
+      state.show_domain_axes=!state.show_domain_axes;
+      state.show_domain_box=state.show_domain_axes;
+      RTRefreshState();
       return;
     }
     
     if (key=="O")
     {
-      if (splot)
-      {
-        int vis=splot->GetVisibility();
-        vis=!vis;
-        splot->SetVisibility(vis);
-      }
+      state.show_domain_outline=!state.show_domain_outline;
+      RTRefreshState();
       return;
     }
 

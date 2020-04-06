@@ -65,7 +65,8 @@ int main(void)
 
 
   frame->AddFigure(contour);
-
+  bool elevation=false;
+  
   while (ii<nspin)
   {
     for (int i=0; i<Nx; i++)
@@ -74,6 +75,11 @@ int main(void)
         z[j*Nx+i] = G(x[i],y[j],t);
       }
 
+    if (!(ii%10))
+    {
+      elevation=!elevation;
+      contour->ShowElevation(elevation);
+    }
     dataset->SetPointScalar(z ,"V");
 
     frame->Show();
