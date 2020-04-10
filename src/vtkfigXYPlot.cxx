@@ -263,6 +263,7 @@ namespace vtkfig
         PlotState.legend_posy+PlotState.legend_h);
       this->LegendActor->SetBorder(true);
       this->LegendActor->SetBox(true);
+      this->LegendActor->GetBoxProperty()->SetOpacity(0.75);
       LegendActor->GetProperty()->DeepCopy(XYPlotActor->GetProperty());
       LegendActor->ScalarVisibilityOff();
       auto text_prop = LegendActor->GetEntryTextProperty();
