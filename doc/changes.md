@@ -3,6 +3,12 @@ Changes
 
 
 ## Changes
+- v0.24.4
+  - start moving state toggle handling to render thread
+  - transparent legend box
+  - start semantic versioning
+  - sync patch version numbers with vtkfig_jll
+  - compiled with VTK 9.0.0.rc2
 - v0.24
   - more stuff in C API
   - works with Julia
