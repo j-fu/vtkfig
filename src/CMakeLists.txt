@@ -8,11 +8,13 @@ endfunction()
 
 
 add_library(vtkfig SHARED
+  vtkfigThread.cxx
+  vtkfigCommunicator.cxx
+  vtkfigInteractorStyle.cxx
+  vtkfigTimerCallback.cxx
   vtkfigFrame.cxx
   vtkfigFigure.cxx
   vtkfigDataSet.cxx
-  vtkfigMainThread.cxx
-  vtkfigCommunicator.cxx
   vtkfigTools.cxx
   vtkfigGLScene.cxx
   vtkfigScalarView.cxx  

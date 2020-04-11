@@ -7,16 +7,17 @@
 #include <memory>
 #include <vtkSmartPointer.h>
 
+#include "config.h"
+
 #include "vtkfigFrame.h"
-#include "vtkfigCommunicator.h"
 #include "vtkfigSurf2D.h"
 #include "vtkfigScalarView.h"
 #include "vtkfigVectorView.h"
 #include "vtkfigGridView.h"
 #include "vtkfigXYPlot.h"
-#include "vtkfigMainThread.h"
-#include "config.h"
 
+#include "internals/vtkfigThread.h"
+#include "internals/vtkfigCommunicator.h"
 
 namespace vtkfig
 {

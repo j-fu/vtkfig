@@ -5,10 +5,9 @@
 ///
 
 #include <cstdio>
+#include <chrono>
 #include "vtkfigFrame.h"
 #include "vtkfigXYPlot.h"
-#include "vtkfigMainThread.h"
-#include "vtkfigTools.h"
 
 
 int main()

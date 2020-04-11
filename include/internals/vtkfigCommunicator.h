@@ -1,9 +1,5 @@
 /**
     \file vtkfigCommunicator.h
-
-     Namespace vtkfig::internals: Tools for server-client communication.
-
-
 */
 
 
@@ -36,10 +32,10 @@ namespace vtkfig
       {
         Dummy=-1,
         Empty=0,
-        MainThreadShow=100,
-        MainThreadShowAndBlock,
-        MainThreadAddFrame,
-        MainThreadRemoveFrame,
+        RenderThreadShow=100,
+        RenderThreadShowAndBlock,
+        RenderThreadAddFrame,
+        RenderThreadRemoveFrame,
         FrameAddFigure,
         FrameRemoveFigure,
         FrameClear,
@@ -58,7 +54,7 @@ namespace vtkfig
         FrameLinkCamera,
         FrameLayout,
         FrameRefreshState,
-        MainThreadTerminate,
+        RenderThreadTerminate,
         String,
         Clear,
         Exit
@@ -130,8 +126,9 @@ namespace vtkfig
 
       static const int remoteHandle=1;
 
-    private:
-      friend class MainThread;
+      //!!! private:
+    public:
+      friend class vtkfigRenderThread;
       friend class Frame;
       friend class Client;
 

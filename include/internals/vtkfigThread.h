@@ -1,8 +1,10 @@
 /**
-    \file vtkfigMainThread.h
+    \file vtkfigThread.h
 
-    Namespace vtkfig::internals: Tools for server-client communication.
 */
+
+#ifndef VTKFIG_THREAD_H
+#define VTKFIG_THREAD_H
 
 #include <memory>
 #include <mutex>
@@ -10,12 +12,9 @@
 #include <memory>
 #include <map>
 #include <condition_variable>
-
 #include <vtkRenderWindowInteractor.h>
 
 #include "vtkfigCommunicator.h"
-
-
 
 namespace vtkfig
 {
@@ -28,16 +27,16 @@ namespace vtkfig
     /// Main communication thread.
     ///
     /// Not to be exposed to user.
-    class  MainThread
+    class  Thread
     {
       friend class vtkfig::Frame;
       friend class Client;
-      friend class MyTimerCallback;
-      friend class MyInteractorStyle;
+      friend class TimerCallback;
+      friend class InteractorStyle;
 
     public:
-      ~MainThread();
-      MainThread();
+      ~Thread();
+      Thread();
       
       /// Find frame with number
       static Frame& FindFrame(int number_in_framelist);
@@ -51,13 +50,13 @@ namespace vtkfig
       ///
       /// Create a singleton object. We need only
       /// as vtk is not thread save.
-      static std::shared_ptr<MainThread> CreateMainThread();
+      static std::shared_ptr<Thread> CreateThread();
 
       /// "This" thread
-      static std::shared_ptr<MainThread> mainthread;
+      static std::shared_ptr<Thread> mainthread;
       
       /// Kill the thread
-      static void DeleteMainThread();
+      static void KillThread();
 
       /// Show all frames aka nonblocking event loop
       void Show();
@@ -87,24 +86,24 @@ namespace vtkfig
       std::map<int,std::shared_ptr<Frame>> framemap;
 
       /// Prepare render thread before start
-      static void PrepareRenderThread(MainThread& thd);
+      static void PrepareRenderThread(Thread& thd);
 
       /// Callback function for render thread
-      static void RenderThread(MainThread& thd);
+      static void RenderThreadCallback(Thread& thd);
 
       /// Prepare comm thread before start
-      static void PrepareCommunicatorThread(MainThread& thd);
+      static void PrepareCommunicatorThread(Thread& thd);
 
       /// Callback function for communicator thread
-      static void CommunicatorThread(MainThread& thd);
+      static void CommunicatorThread(Thread& thd);
 
       /// Callback function for communicator thread 
       /// if multithreading is off
-      static void CommunicatorThreadCallback(MainThread& thd);
+      static void CommunicatorThreadCallback(Thread& thd);
 
       
       /// Add frame, to be called from render thread
-      static void RTAddFrame(MainThread& mt, int iframe);
+      static void RTAddFrame(Thread& mt, int iframe);
 
       /// Number of last frame created
       int lastframenum=0;
@@ -164,3 +163,5 @@ namespace vtkfig
     };
   }
 }
+
+#endif

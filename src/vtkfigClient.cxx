@@ -8,7 +8,7 @@ namespace vtkfig
     Client::Client(int argc, const char * argv[])
     {
       
-      MainThread::CreateMainThread();
+      Thread::CreateThread();
       char *debug_string=getenv("VTKFIG_DEBUG");
       if (debug_string!=0)
         debug_level=atoi(debug_string);
@@ -186,7 +186,7 @@ namespace vtkfig
             cout << "vtkfig-exec: received: " << static_cast<int>(cmd) << " frame: " << framenum <<  " ";
         
           if (framenum>=0)
-            frame=MainThread::mainthread->framemap[framenum];
+            frame=Thread::mainthread->framemap[framenum];
         
           switch(cmd)
           {
@@ -222,7 +222,7 @@ namespace vtkfig
           }
           break;
           
-          case Communicator::Command::MainThreadAddFrame:
+          case Communicator::Command::RenderThreadAddFrame:
           {
             frame=vtkfig::Frame::New();
             
@@ -243,9 +243,9 @@ namespace vtkfig
           }
           break;
 
-          case Communicator::Command::MainThreadRemoveFrame:
+          case Communicator::Command::RenderThreadRemoveFrame:
           {
-            MainThread::mainthread->RemoveFrame(framenum);
+            Thread::mainthread->RemoveFrame(framenum);
             if (debug_level>0)
               cout << " Remove Frame" << endl;
             
@@ -302,18 +302,18 @@ namespace vtkfig
           }
           break;
         
-          case Communicator::Command::MainThreadShow:
+          case Communicator::Command::RenderThreadShow:
           {
             if (debug_level>0)
-              cout << " MainThreadShow" << endl;
-            for (auto & framepair: MainThread::mainthread->framemap)
+              cout << " vtkfigRenderThreadShow" << endl;
+            for (auto & framepair: Thread::mainthread->framemap)
             {
               for (auto figure: framepair.second->figures)
               {
                 figure->ClientMPReceiveData(communicator);
               }
             }
-            MainThread::mainthread->Show();
+            Thread::mainthread->Show();
           }
           break;
         
@@ -392,7 +392,7 @@ namespace vtkfig
               cout << " FrameLinkCamera: "<< endl;
 
 
-            auto otherframe=MainThread::mainthread->framemap[otherframenum];
+            auto otherframe=Thread::mainthread->framemap[otherframenum];
             frame->LinkCamera(
               thisframepos,
               otherframe,
@@ -401,11 +401,11 @@ namespace vtkfig
           break;
 
         
-          case Communicator::Command::MainThreadTerminate:
+          case Communicator::Command::RenderThreadTerminate:
           {
             if (debug_level>0)
               cout << " client termination" << endl;
-            MainThread::mainthread->Terminate();
+            Thread::mainthread->Terminate();
             return 0;
           }
           break;

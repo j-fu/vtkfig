@@ -9,7 +9,7 @@
 #include <cstring>
 #include <cstdio>
 #include "vtkSmartPointer.h"
-#include "vtkfigCommunicator.h"
+#include "internals/vtkfigCommunicator.h"
 
 
 

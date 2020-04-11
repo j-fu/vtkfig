@@ -5,10 +5,11 @@
 #include <vtkCamera.h>
 #include <vtkRenderWindow.h>
 
+#include "config.h"
 #include "vtkfigFrame.h"
 #include "vtkfigFigure.h"
-#include "vtkfigMainThread.h"
-#include "config.h"
+
+#include "internals/vtkfigThread.h"
 
 namespace vtkfig
 {
@@ -34,7 +35,7 @@ namespace vtkfig
     // Trick from:  https://stackoverflow.com/a/25069711
     struct make_shared_enabler : public Frame {};
     auto frame= std::make_shared<make_shared_enabler>();
-    frame->mainthread=internals::MainThread::CreateMainThread();
+    frame->mainthread=internals::Thread::CreateThread();
     frame->mainthread->AddFrame(frame);
     frame->SetActiveSubFrame(0);
     return frame;
@@ -101,7 +102,7 @@ namespace vtkfig
 
   Frame& Frame::FindFrame(int number_in_framelist)
   {
-    return internals::MainThread::FindFrame(number_in_framelist);
+    return internals::Thread::FindFrame(number_in_framelist);
   }
 
   

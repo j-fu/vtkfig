@@ -15,7 +15,8 @@
 
 #include "vtkfigFigure.h"
 #include "vtkfigTools.h"
-#include "vtkfigCommunicator.h"
+
+#include "internals/vtkfigCommunicator.h"
 
 namespace vtkfig
 {

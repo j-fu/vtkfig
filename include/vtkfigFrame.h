@@ -16,7 +16,7 @@
 #include <vtkCornerAnnotation.h>
 #include <vtkOggTheoraWriter.h>
 
-#include "vtkfigCommunicator.h"
+#include "internals/vtkfigCommunicator.h"
 
 namespace vtkfig
 {
@@ -24,9 +24,9 @@ namespace vtkfig
 
   namespace internals
   {
-    class MainThread;
-    class MyInteractorStyle;
-    class MyTimerCallback;  
+    class Thread;
+    class InteractorStyle;
+    class TimerCallback;  
     class Client;           
   }
 
@@ -270,12 +270,12 @@ Figures must be first clicked on before editing works.
   protected:
     Frame();
     ~Frame();
-  private:
+    //!!! private:
+  public:
 
-
-    friend class internals::MainThread;
-    friend class internals::MyInteractorStyle;
-    friend class internals::MyTimerCallback;
+    friend class internals::Thread;
+    friend class internals::InteractorStyle;
+    friend class internals::TimerCallback;
     friend class internals::Client;
 
     int step_number=0;
@@ -383,7 +383,7 @@ Figures must be first clicked on before editing works.
       int figurepos;
     } parameter;
     /// The spinning main thread
-    std::shared_ptr<internals::MainThread> mainthread;
+    std::shared_ptr<internals::Thread> mainthread;
     
     /// Blocking send of commands to main thread
     void SendCommand(std::string source, internals::Communicator::Command cmd);

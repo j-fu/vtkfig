@@ -56,7 +56,7 @@ namespace vtkfig
 
 
     friend class Client;
-    friend class MainThread;
+    friend class vtkfigRenderThread;
     
     /// Process keyboard and mouse move events
     void RTProcessKey(const std::string key) override final;

@@ -29,9 +29,10 @@
 #include <vtkTrivialProducer.h>
 
 
-#include "vtkfigCommunicator.h"
 #include "vtkfigTools.h"
 #include "vtkfigDataSet.h"
+
+#include "internals/vtkfigCommunicator.h"
 
 namespace vtkfig
 {
@@ -39,10 +40,9 @@ namespace vtkfig
 
   namespace internals
   {
-    class MainThread;
-    class MyInteractorStyle;
-    class MyTimerCallback;  
-    class MySliderCallback;  
+    class vtkfigRenderThread;
+    class vtkfigInteractorStyle;
+    class vtkfigTimerCallback;  
     class Client;           
   }
 
@@ -159,13 +159,13 @@ namespace vtkfig
     void AddAnnotations(){RTAddAnnotations();}
 
     
-  protected:
+    //!!!protected:
+  public:
     friend class Frame;
-    friend class internals::MainThread;
+    friend class internals::vtkfigRenderThread;
     friend class internals::Client;
-    friend class internals::MyInteractorStyle;
-    friend class internals::MyTimerCallback;
-    friend class internals::MySliderCallback;
+    friend class internals::vtkfigInteractorStyle;
+    friend class internals::vtkfigTimerCallback;
 
     /// Add vtk Actor to renderer showing figure
     ///
@@ -600,8 +600,8 @@ namespace vtkfig
     Figure();
     virtual ~Figure(){};
     
-  private:
-
+    //private:
+  public:
     /// The different actor lists
     std::vector<vtkSmartPointer<vtkContextActor>> ctxactors;
     std::vector<vtkSmartPointer<vtkActor>> actors;
