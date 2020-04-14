@@ -12,7 +12,14 @@
 #include <memory>
 #include <map>
 #include <condition_variable>
+
+#ifdef QT
+#include <QVTKInteractor.h>
+using Interactor=QVTKInteractor;
+#else
 #include <vtkRenderWindowInteractor.h>
+using Interactor=vtkRenderWindowInteractor;
+#endif
 
 #include "vtkfigCommunicator.h"
 
@@ -43,7 +50,7 @@ namespace vtkfig
 
 
     private:
-       vtkSmartPointer<vtkRenderWindowInteractor> interactor;
+       vtkSmartPointer<Interactor> interactor;
 
 
       /// Start thread.

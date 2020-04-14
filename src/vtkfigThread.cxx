@@ -3,15 +3,22 @@
 #include <unistd.h>
 #endif
 
-#include <vtkRenderWindow.h>
+
 
 #include <vtkCommand.h>
 #include <vtkProperty.h>
 #include <vtkProperty2D.h>
 #include <vtkObjectBase.h>
 #include <vtkPropCollection.h>
-
 #include "config.h"
+
+#ifdef QT
+#include <QApplication>
+#include <QSurfaceFormat>
+#include <QVTKOpenGLNativeWidget.h>
+#endif
+
+
 
 #include "vtkfigFrame.h"
 #include "vtkfigFigure.h"
@@ -227,7 +234,7 @@ namespace vtkfig
     void Thread::RTAddFrame(Thread& mainthread, int iframe)
     {
       auto &frame=*mainthread.framemap[iframe];
-      frame.window = vtkSmartPointer<vtkRenderWindow>::New();
+      frame.window = vtkSmartPointer<Window>::New();
       frame.window->SetWindowName("vtkfig");
 
       if (mainthread.double_buffering)
@@ -252,7 +259,7 @@ namespace vtkfig
       RTAddFrame(mainthread,0);
       auto &frame=*mainthread.framemap[0];
 
-      mainthread.interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
+      mainthread.interactor = vtkSmartPointer<Interactor>::New();
       auto style =  vtkSmartPointer<InteractorStyle>::New();
       style->SetFrame(&frame);
       mainthread.interactor->SetInteractorStyle(style);
@@ -262,8 +269,6 @@ namespace vtkfig
       callback->mainthread=&mainthread;
       callback->Interactor=mainthread.interactor;
       mainthread.interactor->AddObserver(vtkCommand::TimerEvent,callback);
-
-      mainthread.interactor->Initialize();
 
       mainthread.interactor->CreateRepeatingTimer(mainthread.timer_interval);
     }
@@ -277,7 +282,26 @@ namespace vtkfig
       Thread::PrepareRenderThread(mainthread);
       mainthread.running_multithreaded=true;
 
+#ifdef QT
+      auto &frame=*mainthread.framemap[0];
+      int argc=1;
+      char arg0[]={'x','\0'};
+      char *argv[]={arg0};
+
+      QSurfaceFormat::setDefaultFormat(QVTKOpenGLNativeWidget::defaultFormat());
+      QApplication app(argc,argv);
+      QVTKOpenGLNativeWidget widget;
+      mainthread.interactor->Initialize();
+      frame.window->SetInteractor(mainthread.interactor);
+      widget.setRenderWindow(frame.window);
+      widget.show();
+      app.exec();
+#else      
+      mainthread.interactor->Initialize();
       mainthread.interactor->Start();
+#endif
+
+
       if (mainthread.debug_level>0)
         cout << "vtkfig: RenderThread prepare termination" << endl;
 

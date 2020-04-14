@@ -16,6 +16,14 @@
 #include <vtkCornerAnnotation.h>
 #include <vtkOggTheoraWriter.h>
 
+#ifdef QT
+#include <vtkGenericOpenGLRenderWindow.h>
+using Window=vtkGenericOpenGLRenderWindow;
+#else
+#include <vtkRenderWindow.h>
+using Window=vtkRenderWindow;
+#endif
+
 #include "internals/vtkfigCommunicator.h"
 
 namespace vtkfig
@@ -389,7 +397,7 @@ Figures must be first clicked on before editing works.
     void SendCommand(std::string source, internals::Communicator::Command cmd);
     
     /// Window vontaining frame
-    vtkSmartPointer<vtkRenderWindow> window;
+    vtkSmartPointer<Window> window;
     
     /// Actor for frame title annotation
     vtkSmartPointer<vtkCornerAnnotation> title_actor=0;
