@@ -164,7 +164,7 @@ namespace vtkfig
         }
         else
         {
-            PrepareRenderThread(*this);
+          PrepareRenderThread(*this);
         }
       }
       else
@@ -279,17 +279,20 @@ namespace vtkfig
       if (mainthread.debug_level>0)
         cout << "vtkfig: RenderThread start" << endl;
 
+#ifdef QT
+      // QApplication needs to be constructed before anything QT
+      // is performed
+      int argc=1;
+      char arg0[]={'x','\0'};
+      char *argv[]={arg0};
+      QSurfaceFormat::setDefaultFormat(QVTKOpenGLNativeWidget::defaultFormat());
+      QApplication app(argc,argv);
+#endif
       Thread::PrepareRenderThread(mainthread);
       mainthread.running_multithreaded=true;
 
 #ifdef QT
       auto &frame=*mainthread.framemap[0];
-      int argc=1;
-      char arg0[]={'x','\0'};
-      char *argv[]={arg0};
-
-      QSurfaceFormat::setDefaultFormat(QVTKOpenGLNativeWidget::defaultFormat());
-      QApplication app(argc,argv);
       QVTKOpenGLNativeWidget widget;
       mainthread.interactor->Initialize();
       frame.window->SetInteractor(mainthread.interactor);
@@ -328,11 +331,12 @@ namespace vtkfig
 
     void Thread::Start(void)
     {
+
       if (connection_open)
         this->thread=std::make_shared<std::thread>(CommunicatorThread,std::ref(*this));
       else
         this->thread=std::make_shared<std::thread>(RenderThreadCallback,std::ref(*this));
-
+      
       do
       {
         std::this_thread::sleep_for (std::chrono::milliseconds(10));
