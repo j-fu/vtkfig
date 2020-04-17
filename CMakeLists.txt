@@ -1,57 +1,69 @@
-# See https://cmake.org/Wiki/CMake/Tutorials/How_to_create_a_ProjectConfig.cmake_file
-# see also https://github.com/forexample/package-example
-# https://cmake.org/Wiki/CMake/Tutorials/Exporting_and_Importing_Targets
+#
+# CMake file for vtkfig build 
+#
+# Inspired by:
+# - https://cmake.org/Wiki/CMake/Tutorials/How_to_create_a_ProjectConfig.cmake_file
+# - https://github.com/forexample/package-example
+# - https://cmake.org/Wiki/CMake/Tutorials/Exporting_and_Importing_Targets
 
 cmake_minimum_required(VERSION 2.8.12)
-cmake_policy(SET CMP0037 OLD) 
 
 PROJECT(VTKFIG C CXX)
 
 set(VTKFIG_MAJOR_VERSION 0)
-set(VTKFIG_MINOR_VERSION 24)
-set(VTKFIG_PATCH_VERSION 4)
+set(VTKFIG_MINOR_VERSION 25)
+set(VTKFIG_PATCH_VERSION 0)
 
-
+SET(VTKFIG_BUILD_BINARIES True  CACHE BOOL "Compile with binaries")
+SET(VTKFIG_BUILD_EXAMPLES True  CACHE BOOL "Compile with examples")
+SET(VTKFIG_BUILD_DEVEL    False CACHE BOOL "Compile with development examples")
+SET(VTKFIG_USE_QT         False CACHE BOOL "Use QT for opening windows")
 
 set(VTKFIG_VERSION    ${VTKFIG_MAJOR_VERSION}.${VTKFIG_MINOR_VERSION}.${VTKFIG_PATCH_VERSION})
 
-SET(VTKFIG_BUILD_BINARIES True CACHE BOOL "Compile with binaries")
+#################################################################################
+#
+# Package content
 
-SET(VTKFIG_BUILD_EXAMPLES True CACHE BOOL "Compile with examples")
-
-SET(VTKFIG_BUILD_DEVEL False CACHE BOOL "Compile with development examples")
-
-SET(VTKFIG_USE_QT FALSE CACHE STRING "Use QT for opening windows")
 
 # Define an export name. It seems to be a good idea 
 # to that the default is just the package name.
-# This export name can be used by find_packge() 
+# This export name can be used by find_package() 
 # in the NAMES section.
 # It should be used for all install(TARGET ... EXPORT ${VTKFIG_EXPORT_NAME}
 
 set(VTKFIG_EXPORT_NAME "VTKFIG")
 
 
-
-
-
-#################################################################################
-#
-# Package content
- 
 find_package(Threads REQUIRED)
+
 find_package(VTK REQUIRED)
+
 message(STATUS "VTK version: ${VTK_VERSION}")
 
-if("${VTK_VERSION_MAJOR}" LESS 6)
-  message(STATUS "Supported VTK major versions are 6,7,8")
-  message(FATAL_ERROR "insufficient VTK version")
+if (VTKFIG_USE_QT)
+  message(STATUS "VTK backend: QT")
+else()
+  message(STATUS "VTK backend: Default")
 endif()
 
-#  We need this since the update to vtk 8 on OpenSUSE 42.2
-if(NOT ("${VTK_VERSION_MAJOR}" LESS 8))
-  find_package(Qt4)
+if (VTK_USE_QT)
+  if("${VTK_VERSION_MAJOR}" LESS 9)
+    message(STATUS "QT is supported  only with VTK major versions are 9")
+    message(FATAL_ERROR "insufficient VTK version")
+  endif()
+else()
+  if("${VTK_VERSION_MAJOR}" LESS 6)
+  message(STATUS "Supported VTK major versions are 6,7,8,9")
+  message(FATAL_ERROR "insufficient VTK version")
 endif()
+endif()
+
+
+#  We need this since the update to vtk 8 on OpenSUSE 42.2
+# if(NOT ("${VTK_VERSION_MAJOR}" LESS 8))
+#   find_package(Qt4)
+# endif()
 
 # BEGIN COPIED from UseVTK.cmake
 # Update CMAKE_MODULE_PATH so includes work.
