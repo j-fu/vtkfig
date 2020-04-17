@@ -21,9 +21,9 @@ namespace vtkfig
           return;
         
         // Lock mutex
-        if (this->mainthread->running_multithreaded)
-          std::unique_lock<std::mutex> lock(this->mainthread->mutex);
-        
+        // if (this->mainthread->running_multithreaded)
+        std::unique_lock<std::mutex> lock(this->mainthread->mutex);
+
         // Command dispatch
         switch(this->mainthread->cmd)
           {
@@ -43,7 +43,6 @@ namespace vtkfig
               subframe.renderer->RemoveAllViewProps();
             
             frame.window->Finalize();
-            std::unique_lock<std::mutex> lock(this->mainthread->mutex);
             mainthread->framemap.erase(frame.number_in_frame_list);
           }
           break;
