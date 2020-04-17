@@ -12,7 +12,7 @@
 #include <vtkPropCollection.h>
 #include "config.h"
 
-#ifdef QT
+#if USE_QT
 #include <QApplication>
 #include <QSurfaceFormat>
 #include <QVTKOpenGLNativeWidget.h>
@@ -279,19 +279,24 @@ namespace vtkfig
       if (mainthread.debug_level>0)
         cout << "vtkfig: RenderThread start" << endl;
 
-#ifdef QT
+#if USE_QT
       // QApplication needs to be constructed before anything QT
       // is performed
       int argc=1;
       char arg0[]={'x','\0'};
       char *argv[]={arg0};
-      QSurfaceFormat::setDefaultFormat(QVTKOpenGLNativeWidget::defaultFormat());
+      auto format=QVTKOpenGLNativeWidget::defaultFormat();
+      QSurfaceFormat::setDefaultFormat(format);
+      
+      // We seem to have a weird problem with vtk/qt interaction here...
+      // This may switch off antialiasing
+      vtkGenericOpenGLRenderWindow::SetGlobalMaximumNumberOfMultiSamples(0);
       QApplication app(argc,argv);
 #endif
       Thread::PrepareRenderThread(mainthread);
       mainthread.running_multithreaded=true;
 
-#ifdef QT
+#if USE_QT
       auto &frame=*mainthread.framemap[0];
       QVTKOpenGLNativeWidget widget;
       mainthread.interactor->Initialize();

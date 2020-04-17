@@ -13,7 +13,7 @@
 #include <map>
 #include <condition_variable>
 
-#ifdef QT
+#if USE_QT
 #include <QVTKInteractor.h>
 using Interactor=QVTKInteractor;
 #else

@@ -16,7 +16,7 @@
 #include <vtkCornerAnnotation.h>
 #include <vtkOggTheoraWriter.h>
 
-#ifdef QT
+#if USE_QT
 #include <vtkGenericOpenGLRenderWindow.h>
 using Window=vtkGenericOpenGLRenderWindow;
 #else

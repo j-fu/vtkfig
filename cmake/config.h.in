@@ -9,7 +9,7 @@
 #define CONFIG_APPLE @CONFIG_APPLE@
 #endif
 
-//#define QT
+#define USE_QT @USE_QT@
 
 #include <vtkVersionMacros.h>
 

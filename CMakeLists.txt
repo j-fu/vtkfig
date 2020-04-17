@@ -21,6 +21,7 @@ SET(VTKFIG_BUILD_EXAMPLES True CACHE BOOL "Compile with examples")
 
 SET(VTKFIG_BUILD_DEVEL False CACHE BOOL "Compile with development examples")
 
+SET(VTKFIG_USE_QT FALSE CACHE STRING "Use QT for opening windows")
 
 # Define an export name. It seems to be a good idea 
 # to that the default is just the package name.
@@ -63,6 +64,8 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VTK_REQUIRED_EXE_LINKER_
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${VTK_REQUIRED_SHARED_LINKER_FLAGS}")
 set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${VTK_REQUIRED_MODULE_LINKER_FLAGS}")
 
+
+
 # Add preprocessor definitions needed to use VTK.
 set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS ${VTK_DEFINITIONS})
 
@@ -98,6 +101,12 @@ if (APPLE)
   set(CONFIG_APPLE 1)
 else()
   set(CONFIG_APPLE 0)
+endif()
+
+if(VTKFIG_USE_QT)
+  set(USE_QT 1)
+else()
+  set(USE_QT 0)
 endif()
 
 configure_file(cmake/config.h.in   "${PROJECT_BINARY_DIR}/config.h" @ONLY)
