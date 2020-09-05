@@ -110,7 +110,7 @@ namespace vtkfig
         if (this->Interactor->GetControlKey())
         {
           this->Interactor->TerminateApp();
-#ifdef __APPLE__
+#if __APPLE__ || __MINGW32__
           _exit(0);
 #else
           std::quick_exit(0);
